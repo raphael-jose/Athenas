@@ -137,10 +137,10 @@ export function Home() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "1.5rem"
+              overflow: "hidden"
             }}
           >
-            
+            <Mascot mood="explaining" size={48} />
           </span>
           <div className="grow">
             <div className="muted small bold">MINHA MENTORA</div>
