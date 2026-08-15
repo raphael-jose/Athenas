@@ -1,0 +1,27 @@
+# ── Dependências ──────────────────────────────────────────────
+node_modules/
+dist/
+*.tsbuildinfo
+
+# ── Ambiente / segredos ───────────────────────────────────────
+.env
+.env.local
+.env*.local
+secrets/
+worker/.dev.vars
+
+# ── Ferramentas / ambiente local ──────────────────────────────
+.freebuff/
+
+# ── Logs ──────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# ── Sistema / editor ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

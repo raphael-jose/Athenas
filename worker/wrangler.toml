@@ -1,0 +1,21 @@
+# ══════════════════════════════════════════════════════════════
+# Athenas — Configuração do Cloudflare Worker (proxy seguro da IA)
+# Deploy:  npx wrangler deploy --config worker/wrangler.toml
+# Secret:  npx wrangler secret put OLLAMA_API_KEY  (nunca no repo!)
+# Local:   npx wrangler dev --config worker/wrangler.toml
+# ══════════════════════════════════════════════════════════════
+name = "athenas-ai-proxy"
+main = "index.mjs"
+compatibility_date = "2024-11-01"
+
+# Vars públicas (visíveis no dashboard — nada de chave aqui!)
+[vars]
+# Origem(ns) permitidas no CORS, separadas por vírgula.
+# Deixe VAZIO apenas em desenvolvimento. Em produção, ex.:
+#   https://SEU-USUARIO.github.io
+# Você pode definir isso também pelo dashboard (Settings → Variables).
+ALLOWED_ORIGINS = ""
+OLLAMA_BASE_URL = "https://ollama.com/api"
+OLLAMA_MODEL = "qwen3:8b"
+RATE_LIMIT_MAX = "30"
+RATE_LIMIT_WINDOW = "60"
