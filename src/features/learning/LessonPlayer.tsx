@@ -13,6 +13,7 @@ import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
 import { LuluBurst } from "@/components/LuluBurst";
 import { AudioButton } from "@/components/AudioButton";
+import { useSpeech } from "@/hooks/useSpeech";
 import { sfxComplete } from "@/lib/sfx";
 import { fireConfetti } from "@/lib/confetti";
 
@@ -21,6 +22,7 @@ type Phase = "intro" | "theory" | "examples" | "exercise" | "done";
 export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const { state, completeLesson } = useApp();
   const { navigate } = useRouter();
+  const { speak } = useSpeech();
   const lesson = lessonById(lessonId);
 
   const [phase, setPhase] = useState<Phase>("intro");
@@ -178,9 +180,16 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                   const w = wordById(wid);
                   if (!w) return null;
                   return (
-                    <Chip key={wid} variant="accent">
+                    <button
+                      key={wid}
+                      className="word-audio-chip"
+                      onClick={() => speak(w.fr)}
+                      title={`Ouvir ${w.fr}`}
+                      aria-label={`Ouvir ${w.fr}`}
+                    >
                       {w.fr} <span className="muted">= {w.pt}</span>
-                    </Chip>
+                      <Icon name="speaker" size={13} />
+                    </button>
                   );
                 })}
               </div>

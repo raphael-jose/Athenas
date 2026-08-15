@@ -11,7 +11,7 @@ import {
   useState,
   type ReactNode
 } from "react";
-import { STARS, XP } from "@/lib/constants";
+import { COSTUMES, STARS, XP } from "@/lib/constants";
 import { fireConfetti, fireSparkle } from "@/lib/confetti";
 import { setSfxEnabled, sfxAchievement, sfxLevelUp, sfxVictory } from "@/lib/sfx";
 import { dayKey, uid } from "@/lib/utils";
@@ -19,7 +19,7 @@ import { missionsForDate, type MissionDef } from "@/data/missions";
 import { WORLDS, worldById } from "@/data/worlds";
 import { newlyUnlocked, levelFromXp, levelName, updateStreak, type AchievementDef } from "@/services/gamification";
 import { newReviewItem, scheduleReview } from "@/services/srs";
-import { defaultState, loadState, saveState, clearState } from "@/services/storage";
+import { defaultState, loadState, saveState, clearState, importBackup } from "@/services/storage";
 import type { CefrBand, ChatMessage, ConversationLog, DailyMission, IconName, StudentState, Settings } from "@/types";
 import { Icon } from "@/components/Icons";
 
@@ -41,9 +41,11 @@ export interface AppApi {
   sendAiMessage: (role: "user" | "assistant", content: string) => void;
   logConversation: (log: ConversationLog) => void;
   buyTheme: (themeId: string) => boolean;
+  /** Compra uma roupinha da Lulu (desconta étoiles e aplica na hora). */
+  buyCostume: (costumeId: string) => boolean;
   setSettings: (patch: Partial<Settings>) => void;
   finishOnboarding: (opts: { name: string; avatar: string; band: CefrBand }) => void;
-  updateProfile: (opts: { name?: string; avatar?: string }) => void;
+  updateProfile: (opts: { name?: string; avatar?: string; photo?: string; email?: string; passwordHash?: string }) => void;
   finishDiagnostic: (result: { band: CefrBand; correct: number; total: number; history: number[] }) => void;
   resetProgress: () => void;
   /** Marca o login do dia (fecha a tela de boas-vindas até amanhã). */
@@ -52,6 +54,8 @@ export interface AppApi {
   setLastRoute: (route: string) => void;
   /** Marca o modal de atalho (PWA) como visto/respondido. */
   markInstallPrompt: () => void;
+  /** Restaura um backup (valida o selo de integridade). Devolve false se inválido. */
+  restoreBackup: (raw: string) => boolean;
   addStudyTime: (seconds: number) => void;
   levelUpEvent: LevelUpEvent | null;
   dismissLevelUp: () => void;
@@ -334,15 +338,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
         toast("Tema desbloqueado!", "gift");
         return true;
       },
+      buyCostume: (costumeId) => {
+        const s0 = stateRef.current;
+        if (s0.boughtCostumes.includes(costumeId)) return true;
+        const def = COSTUMES.find((c) => c.id === costumeId);
+        const price = def?.price ?? 0;
+        if (s0.stars < price) {
+          toast("Étoiles insuficientes… continue estudando!", "starFour");
+          return false;
+        }
+        commit({
+          ...s0,
+          stars: s0.stars - price,
+          boughtCostumes: [...s0.boughtCostumes, costumeId],
+          settings: { ...s0.settings, costume: costumeId }
+        });
+        toast("Roupinha desbloqueada!", "gift");
+        return true;
+      },
       setSettings: (patch) => {
         commit({ ...stateRef.current, settings: { ...stateRef.current.settings, ...patch } });
       },
-      updateProfile: ({ name, avatar }) => {
+      updateProfile: ({ name, avatar, photo, email, passwordHash }) => {
         const s0 = stateRef.current;
         commit({
           ...s0,
           name: name !== undefined ? (name.trim() || s0.name || "Amélie") : s0.name,
-          avatar: avatar ?? s0.avatar
+          avatar: avatar ?? s0.avatar,
+          photo: photo !== undefined ? photo : s0.photo,
+          email: email !== undefined ? email.trim() : s0.email,
+          passwordHash: passwordHash !== undefined ? passwordHash : s0.passwordHash
         });
       },
       finishOnboarding: ({ name, avatar, band }) => {
@@ -389,6 +414,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         clearState();
         commit(defaultState());
         toast("Progresso resetado. Nova aventura!", "leaf");
+      },
+      restoreBackup: (raw) => {
+        const restored = importBackup(raw);
+        if (!restored) {
+          toast("Backup inválido ou adulterado — não restaurado.", "warning");
+          return false;
+        }
+        commit(restored);
+        toast("Backup restaurado! Bem-vinda de volta 🌸", "flower");
+        return true;
       },
       addStudyTime: (seconds) => {
         commit({ ...stateRef.current, timeStudied: stateRef.current.timeStudied + seconds });

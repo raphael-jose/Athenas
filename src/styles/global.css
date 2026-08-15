@@ -1121,6 +1121,29 @@ input, textarea, select {
   box-shadow: none;
 }
 
+/* Stickers no chat */
+.sticker-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 0 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sticker-row::-webkit-scrollbar { display: none; }
+.sticker-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-lg);
+  border: 1.5px solid var(--card-border);
+  background: var(--c-surface);
+  font-size: 1.35rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.sticker-btn:hover { transform: translateY(-2px) scale(1.08); border-color: var(--c-primary); }
+
 .chat-input-bar {
   position: sticky;
   bottom: var(--nav-h);
@@ -1216,6 +1239,168 @@ input, textarea, select {
 .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+
+/* Lulu: mensagens entram com um pulinho carinhoso */
+.lulu-msg-in { animation: lulu-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes lulu-pop {
+  0% { opacity: 0; transform: translateY(10px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Formatação das mensagens da Lulu */
+.rich-text p { margin: 0 0 8px; }
+.rich-h { font-weight: 700; font-size: 0.98em; color: var(--c-accent-deep); }
+.rich-tbl-row {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--c-surface);
+}
+.rich-tbl-row:first-of-type { font-weight: 700; background: var(--c-accent-soft); }
+.rich-tbl-cell { flex: 1; min-width: 0; word-break: break-word; }
+.rich-text p:last-child { margin-bottom: 0; }
+.rich-list { margin: 6px 0 10px; padding-left: 22px; }
+.rich-list li { margin: 3px 0; }
+.rich-list li::marker { color: var(--c-primary); }
+.rich-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--c-accent-soft);
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: var(--c-accent-deep);
+}
+
+/* Roupinhas da Lulu: a boina e a echarpe mudam de cor com a loja */
+:root,
+[data-costume="classic"] {
+  --c-beret: #e5484d;
+  --c-beret-dark: #c93a3f;
+  --c-beret-dot: #f28bb4;
+  --c-scarf: #f28bb4;
+  --c-scarf-dark: #e56b9d;
+}
+[data-costume="lavande"] {
+  --c-beret: #9a7bd8;
+  --c-beret-dark: #7d5ec2;
+  --c-beret-dot: #e3d4ff;
+  --c-scarf: #b9a5f0;
+  --c-scarf-dark: #9a7bd8;
+}
+[data-costume="bleuet"] {
+  --c-beret: #4d8fe5;
+  --c-beret-dark: #3a70c2;
+  --c-beret-dot: #cfe6ff;
+  --c-scarf: #7fb3f2;
+  --c-scarf-dark: #4d8fe5;
+}
+[data-costume="chocolat"] {
+  --c-beret: #a06a3f;
+  --c-beret-dark: #7d4f2b;
+  --c-beret-dot: #e8c9a8;
+  --c-scarf: #c98f5f;
+  --c-scarf-dark: #a06a3f;
+}
+[data-costume="emeraude"] {
+  --c-beret: #2e9e5b;
+  --c-beret-dark: #217a45;
+  --c-beret-dot: #c6f0d8;
+  --c-scarf: #5fc98a;
+  --c-scarf-dark: #2e9e5b;
+}
+
+/* Palavras da aula que falam ao toque */
+.word-audio-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--c-accent-soft);
+  background: var(--c-accent-soft);
+  color: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.word-audio-chip:hover { transform: translateY(-1px); border-color: var(--c-accent-deep); }
+
+/* Foto de perfil */
+.profile-avatar-wrap {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto;
+  border-radius: var(--r-full);
+  background: var(--c-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: visible;
+  border: 2px solid var(--card-border);
+}
+.profile-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--r-full);
+  object-fit: cover;
+}
+.profile-photo-btn {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-full);
+  background: var(--c-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--c-bg);
+  box-shadow: var(--card-shadow);
+}
+
+/* Feedback: botões de humor + linha de contato */
+.mood-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: var(--r-lg);
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--c-muted);
+  cursor: pointer;
+  min-width: 74px;
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.mood-btn:hover { transform: translateY(-2px); }
+.mood-btn.selected {
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+.mood-lbl { font-size: 0.68rem; font-weight: 600; }
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--card-border);
+}
+.contact-row:last-child { border-bottom: none; }
+.contact-row:hover { opacity: 0.85; }
+.tint-green { color: #2e9e5b; background: rgba(46, 158, 91, 0.12); }
 
 /* Stats grid */
 .stats-grid {

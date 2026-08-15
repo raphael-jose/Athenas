@@ -3,13 +3,13 @@
 // ══════════════════════════════════════════════════════════════
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
-import { THEMES } from "@/lib/constants";
+import { COSTUMES, THEMES } from "@/lib/constants";
 import { Button, Card, Chip, PageHeader } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
 
 export function CustomizePage() {
-  const { state, buyTheme, setSettings } = useApp();
+  const { state, buyTheme, buyCostume, setSettings } = useApp();
   const { navigate } = useRouter();
 
   return (
@@ -60,11 +60,48 @@ export function CustomizePage() {
       </div>
 
       <div className="section-title">
+        <Icon name="shirtFolded" size={18} /> Roupinhas da Lulu
+      </div>
+      <div className="stack">
+        {COSTUMES.map((c) => {
+          const owned = state.boughtCostumes.includes(c.id) || c.price === 0;
+          const active = state.settings.costume === c.id;
+          return (
+            <Card key={c.id} className="tap" onClick={() => owned && setSettings({ costume: c.id })}>
+              <div className="row-between">
+                <div className="row">
+                  <div
+                    className="lc-emoji"
+                    style={{ width: 52, height: 52, borderRadius: 16, background: "var(--c-accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 0 }}
+                  >
+                    <Mascot mood="happy" size={46} />
+                  </div>
+                  <div>
+                    <div className="bold">{c.name}</div>
+                    <div className="muted small">{c.desc}</div>
+                  </div>
+                </div>
+                {!owned ? (
+                  <Button size="sm" variant={state.stars >= c.price ? "gold" : "ghost"} onClick={() => buyCostume(c.id)}>
+                    <Icon name="star" size={14} /> {c.price}
+                  </Button>
+                ) : active ? (
+                  <Chip variant="green"> vestindo</Chip>
+                ) : (
+                  <Chip variant="rose">vestir</Chip>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="section-title">
         <Icon name="radio" size={18} /> Em breve
       </div>
       <Card className="center">
         <p className="muted small">
-          Roupinhas da Lulu, stickers, molduras e efeitos de confete chegam nas próximas fases. Continue estudando para juntar étoiles!
+          Molduras, efeitos de confete e mais surpresas chegam nas próximas fases. Continue estudando para juntar étoiles!
         </p>
       </Card>
     </div>

@@ -187,9 +187,13 @@ export interface ChatMessage {
 
 export interface Settings {
   theme: string;
+  /** Roupinha da Lulu (id de COSTUMES — afeta a boina e a echarpe). */
+  costume: string;
   fontScale: number; // 0.9 | 1 | 1.1 | 1.2
   animations: boolean;
   sound: boolean;
+  /** Música de fundo (por mundo + trilha tensa no boss). */
+  music: boolean;
   tts: boolean;
   aiProvider: "mock" | "ollama" | "proxy";
   aiBaseUrl: string;
@@ -224,6 +228,12 @@ export interface StudentState {
   version: number;
   name: string;
   avatar: string;
+  /** Foto de perfil (dataURL) — vazia = sem foto (usa o avatar). */
+  photo: string;
+  /** Conta local: email para recuperação ("" = sem conta cadastrada). */
+  email: string;
+  /** Hash da senha (nunca guardamos a senha em claro). */
+  passwordHash: string;
   onboarded: boolean;
   diagnosticDone: boolean;
   startedAt: number;
@@ -254,6 +264,8 @@ export interface StudentState {
   timeStudied: number; // segundos
   settings: Settings;
   boughtThemes: string[];
+  /** Roupinhas da Lulu compradas na Loja. */
+  boughtCostumes: string[];
   notificationsSeen: Record<string, number>;
   /** Sessão: último dia em que o usuário fez login (yyyy-mm-dd) — controla a tela de boas-vindas. */
   lastLoginDate: string;

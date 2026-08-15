@@ -13,10 +13,12 @@ import { analyzeFrench, SOUND_FRENCH_TIPS } from "@/services/ai/corrections";
 import { SCENARIOS, scenarioLines, type Scenario } from "@/data/scenarios";
 import { compareEvolution, computeInterviewCompetencies, conversationStats, nextAttempt, overallCompetencyScore, practicedScenarios, previousLog, type CompetencyScore } from "@/services/conversationReview";
 import { round } from "@/lib/utils";
+import { STICKERS } from "@/lib/constants";
 import { Button, Card, Chip, PageHeader, Segmented } from "@/components/ai-ui";
 import { Mascot } from "@/components/Mascot";
 import { Icon } from "@/components/Icons";
 import { AudioButton } from "@/components/AudioButton";
+import { RichText } from "@/components/RichText";
 import { useSpeech } from "@/hooks/useSpeech";
 import { usePushToTalk } from "@/hooks/usePushToTalk";
 import { cleanSpokenText } from "@/services/speechClean";
@@ -158,9 +160,9 @@ function ChatMode() {
           const prev = history[i - 1];
           const sug = m.role === "assistant" && prev && prev.role === "user" ? naturalSuggestion(prev.content) : null;
           return (
-            <div key={i}>
+            <div key={i} className={m.role === "assistant" ? "lulu-msg-in" : undefined}>
               <div className={`msg ${m.role === "user" ? "user" : "assistant"}`}>
-                {m.content}
+                <RichText text={m.content} />
                 {m.role === "assistant" && (
                   <span className="msg-audio">
                     <AudioButton text={frenchSpeakText(m.content)} size="sm" label="Ouvir o francês desta resposta" />
@@ -204,6 +206,33 @@ function ChatMode() {
         </div>
       )}
 
+      <div className="sticker-row" role="toolbar" aria-label="Stickers">
+        {STICKERS.map((s) => (
+          <button
+            key={s}
+            className="sticker-btn"
+            onClick={() => {
+              if (typing) return;
+              sendAiMessage("user", s);
+              // resposta carinhosa da Lulu pra cada sticker
+              const replies: Record<string, string> = {
+                "🌹": "Une rose pour moi ? Merci, tu es adorable ! 🌹",
+                "🥐": "Mmmh, un croissant ! Ça donne envie d'aller à la boulangerie ! 🥐",
+                "🗼": "La Tour Eiffel ! On y va ensemble un jour ? 🗼",
+                "❤️": "Cœur sur toi aussi ! On continue ? ❤️",
+                "✨": "Des étoiles partout ! Tu brilles aujourd'hui ✨",
+                "😘": "Bisous ! Allez, on étudie un peu ? 😘",
+                "🍷": "Un petit vin français ? Santé — mais d'abord la leçon ! 🍷",
+                "🐌": "Un escargot ! Bon appétit… ou pas. 😆"
+              };
+              setTimeout(() => sendAiMessage("assistant", replies[s] ?? "Adorable ! 🌸"), 500);
+            }}
+            aria-label={`Sticker ${s}`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
       <div className="chat-input-bar">
         <textarea
           value={input}
@@ -461,7 +490,7 @@ function ConversationMode() {
           <p className="muted small mt-3" style={{ textAlign: "left" }}>
             Estimativa local carinhosa {provider.ready() ? "(a Lulu está refinando…)" : "(demo — configure a IA online para análise real)"}
           </p>
-          {feedback.text && <div className="card-soft mt-2 small" style={{ textAlign: "left" }}>{feedback.text}</div>}
+          {feedback.text && <div className="card-soft mt-2 small" style={{ textAlign: "left" }}><RichText text={feedback.text} /></div>}
           <div className="card-soft mt-3" style={{ textAlign: "left" }}>
             <div className="small bold mb-2 row" style={{ gap: 6 }}>
               <Icon name="chatCircleDots" size={14} /> Como um francês diria — ouça de novo

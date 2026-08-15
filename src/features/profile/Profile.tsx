@@ -1,23 +1,87 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Perfil, métricas e configurações
 // ══════════════════════════════════════════════════════════════
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
 import { AVATARS, CEFR_LABELS, THEMES } from "@/lib/constants";
+import { exportBackup } from "@/services/storage";
 import { levelFromXp, levelName, ACHIEVEMENTS } from "@/services/gamification";
 import { formatDuration, percent } from "@/lib/utils";
 import { Button, Card, Chip, Modal, PageHeader, Segmented, SettingRow, StatCard, Switch } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import type { IconName } from "@/types";
 import { Mascot } from "@/components/Mascot";
+import { AccountSection } from "./AccountSection";
+
+/** Redimensiona a foto para 256×256 (JPEG) — leve e cabe no armazenamento local. */
+function resizePhoto(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("read"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("img"));
+      img.onload = () => {
+        const side = 256;
+        const canvas = document.createElement("canvas");
+        canvas.width = side;
+        canvas.height = side;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("canvas"));
+        // recorte quadrado central
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2;
+        const sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, side, side);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 export function ProfilePage() {
-  const { state, setSettings, resetProgress, toast, updateProfile } = useApp();
+  const { state, setSettings, resetProgress, toast, updateProfile, restoreBackup } = useApp();
   const { navigate } = useRouter();
   const [editName, setEditName] = useState(false);
   const [name, setName] = useState(state.name);
   const [resetOpen, setResetOpen] = useState(false);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const backupRef = useRef<HTMLInputElement>(null);
+
+  const downloadBackup = () => {
+    const blob = new Blob([exportBackup(state)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `athenas-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("Backup baixado! Guarde com carinho 💾", "flower");
+  };
+
+  const onRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const text = await file.text();
+    if (restoreBackup(text)) navigate("/");
+  };
+
+  const onPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const dataUrl = await resizePhoto(file);
+      updateProfile({ photo: dataUrl });
+      toast("Foto de perfil atualizada!", "flower");
+    } catch {
+      toast("Não consegui ler essa imagem… tenta outra!", "warning");
+    }
+  };
 
   const acc = percent(state.exercisesCorrect, state.exercisesTotal);
   const level = levelFromXp(state.xp);
@@ -38,9 +102,19 @@ export function ProfilePage() {
 
       {/* Cabeçalho */}
       <Card className="center">
-        <div style={{ color: "var(--c-primary)", display: "flex", justifyContent: "center" }}>
-          <Icon name={avatarIcon} size={56} />
+        <div className="profile-avatar-wrap" onClick={() => photoRef.current?.click()} role="button" aria-label="Trocar foto de perfil">
+          {state.photo ? (
+            <img src={state.photo} alt="Foto de perfil" className="profile-photo" />
+          ) : (
+            <div style={{ color: "var(--c-primary)", display: "flex", justifyContent: "center" }}>
+              <Icon name={avatarIcon} size={56} />
+            </div>
+          )}
+          <span className="profile-photo-btn" title="Trocar foto">
+            <Icon name="camera" size={16} />
+          </span>
         </div>
+        <input ref={photoRef} type="file" accept="image/*" hidden onChange={onPhoto} aria-label="Escolher foto" />
         <h2 style={{ fontSize: "1.3rem", margin: "4px 0 0" }}>{state.name || "Amélie"}</h2>
         <p className="muted small">Desde {new Date(state.startedAt).toLocaleDateString("pt-BR")}</p>
         <Button variant="soft" size="sm" onClick={() => setEditName(true)}>
@@ -147,9 +221,33 @@ export function ProfilePage() {
         <SettingRow icon="musicNote" title="Efeitos sonoros" desc="Sons de acerto, erro, level up e cliques">
           <Switch on={state.settings.sound} onChange={(v) => setSettings({ sound: v })} label="efeitos sonoros" />
         </SettingRow>
+        <SettingRow icon="radio" title="Música de fundo" desc="Cada mundo tem sua trilha; o boss fica tenso">
+          <Switch on={state.settings.music} onChange={(v) => setSettings({ music: v })} label="música" />
+        </SettingRow>
         <SettingRow icon="speaker" title="Áudio (TTS)" desc="Voz nas aulas de listening">
           <Switch on={state.settings.tts} onChange={(v) => setSettings({ tts: v })} label="áudio" />
         </SettingRow>
+      </Card>
+
+      {/* Conta (cadastro + recuperação de senha) */}
+      <AccountSection />
+
+      {/* Feedback + Sobre */}
+      <Card className="tap mt-3" onClick={() => navigate("/feedback")}>
+        <div className="row-between">
+          <span className="bold row" style={{ gap: 8 }}>
+            <Icon name="chatText" size={18} /> Feedback
+          </span>
+          <span className="muted small">Sua opinião melhora o app →</span>
+        </div>
+      </Card>
+      <Card className="tap mt-3" onClick={() => navigate("/about")}>
+        <div className="row-between">
+          <span className="bold row" style={{ gap: 8 }}>
+            <Icon name="flower" size={18} /> Sobre mim
+          </span>
+          <span className="muted small">Contato e WhatsApp →</span>
+        </div>
       </Card>
 
       {/* Conquistas */}
@@ -160,6 +258,25 @@ export function ProfilePage() {
           </span>
           <span className="muted small">{unlockedCount}/{ACHIEVEMENTS.length} →</span>
         </div>
+      </Card>
+
+      {/* Backup */}
+      <Card className="mt-3">
+        <div className="row-between">
+          <div>
+            <div className="bold small">Backup do progresso</div>
+            <div className="muted small">Baixe uma cópia segura ou restaure de um arquivo.</div>
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            <Button variant="soft" size="sm" onClick={downloadBackup}>
+              <Icon name="arrowClockwise" size={15} /> Baixar
+            </Button>
+            <Button variant="soft" size="sm" onClick={() => backupRef.current?.click()}>
+              <Icon name="arrowClockwise" size={15} /> Restaurar
+            </Button>
+          </div>
+        </div>
+        <input ref={backupRef} type="file" accept="application/json,.json" hidden onChange={onRestore} aria-label="Restaurar backup" />
       </Card>
 
       {/* Reset */}

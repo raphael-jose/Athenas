@@ -374,7 +374,36 @@ export const WORDS: WordEntry[] = [
   { id: "w-magasiner", fr: "magasiner", pt: "fazer compras (Quebec)", cls: "regionalismo", diff: 5, exampleFr: "On va magasiner en ville.", examplePt: "Vamos às compras na cidade." },
   { id: "w-souper", fr: "souper", pt: "jantar (Quebec/Bélgica)", gender: "m", cls: "regionalismo", diff: 4, exampleFr: "Le souper est servi à 18h.", examplePt: "O jantar é servido às 18h." },
   { id: "w-tuque", fr: "tuque", pt: "gorro de lã (Quebec)", gender: "f", cls: "regionalismo", diff: 5, exampleFr: "En hiver, je porte une tuque.", examplePt: "No inverno, uso um gorro." },
-  { id: "w-septante", fr: "septante", pt: "setenta (Bélgica/Suíça)", cls: "regionalismo", diff: 5, exampleFr: "La Suisse dit 'septante'.", examplePt: "A Suíça diz 'septante'." }
+  { id: "w-septante", fr: "septante", pt: "setenta (Bélgica/Suíça)", cls: "regionalismo", diff: 5, exampleFr: "La Suisse dit 'septante'.", examplePt: "A Suíça diz 'septante'." },
+  // ── Nacionalidades (mundo 1, A1) ───────────────────────────
+  { id: "w-bresilien", fr: "brésilien(ne)", pt: "brasileiro(a)", cls: "nacionalidade", diff: 2, exampleFr: "Je suis brésilienne.", examplePt: "Sou brasileira." },
+  { id: "w-francais-nat", fr: "français(e)", pt: "francês(a)", cls: "nacionalidade", diff: 2, exampleFr: "Elle est française.", examplePt: "Ela é francesa." },
+  { id: "w-italien", fr: "italien(ne)", pt: "italiano(a)", cls: "nacionalidade", diff: 3 },
+  { id: "w-espagnol", fr: "espagnol(e)", pt: "espanhol(a)", cls: "nacionalidade", diff: 3 },
+  { id: "w-allemand", fr: "allemand(e)", pt: "alemão(ã)", cls: "nacionalidade", diff: 3 },
+  // ── Profissões (mundo 1, A1) ───────────────────────────────
+  { id: "w-professeur", fr: "professeur", pt: "professor(a)", gender: "m", cls: "profissão", diff: 2, exampleFr: "Mon père est professeur.", examplePt: "Meu pai é professor." },
+  { id: "w-medecin", fr: "médecin", pt: "médico(a)", gender: "m", cls: "profissão", diff: 2 },
+  { id: "w-infirmiere", fr: "infirmière", pt: "enfermeira", gender: "f", cls: "profissão", diff: 3 },
+  { id: "w-cuisinier", fr: "cuisinier", pt: "cozinheiro", gender: "m", cls: "profissão", diff: 3 },
+  { id: "w-boulanger", fr: "boulanger", pt: "padeiro", gender: "m", cls: "profissão", diff: 3, exampleFr: "Le boulanger ouvre à 6h.", examplePt: "O padeiro abre às 6h." },
+  { id: "w-pharmacien", fr: "pharmacien(ne)", pt: "farmacêutico(a)", gender: "m", cls: "profissão", diff: 4 },
+  // ── Avançado (mundo 13) ───────────────────────────────────
+  { id: "w-nuance", fr: "nuance", pt: "nuance / matiz", gender: "f", cls: "avançado", diff: 4, exampleFr: "Il y a une nuance importante.", examplePt: "Há uma nuance importante." },
+  { id: "w-registre", fr: "registre", pt: "registro (nível de língua)", gender: "m", cls: "avançado", diff: 5 },
+  { id: "w-connoter", fr: "connoter", pt: "conotar / sugerir", cls: "verbo", diff: 5 },
+  { id: "w-soutenu", fr: "soutenu", pt: "erudito / formal", cls: "adjetivo", diff: 5 },
+  { id: "w-familier", fr: "familier", pt: "familiar / informal", cls: "adjetivo", diff: 4 },
+  // ── Mastery (mundo 14) ────────────────────────────────────
+  { id: "w-rhetorique", fr: "rhétorique", pt: "retórica", gender: "f", cls: "mastery", diff: 5 },
+  { id: "w-litote", fr: "litote", pt: "litotes (atenuação irônica)", gender: "f", cls: "mastery", diff: 5 },
+  { id: "w-zeugme", fr: "zeugme", pt: "zeugma (figura de linguagem)", gender: "m", cls: "mastery", diff: 5 },
+  // ── Native (mundo 15) ─────────────────────────────────────
+  { id: "w-verlan", fr: "verlan", pt: "gíria invertida (ex.: meuf)", gender: "m", cls: "native", diff: 5, exampleFr: "Meuf, c'est le verlan de femme.", examplePt: "Meuf é o verlan de femme." },
+  { id: "w-meuf", fr: "meuf", pt: "mina / mulher (verlan)", gender: "f", cls: "native", diff: 5 },
+  { id: "w-ouf-nat", fr: "ouf", pt: "louco / doido (verlan de fou)", cls: "native", diff: 5 },
+  { id: "w-relou", fr: "relou", pt: "chato (verlan de lourd)", cls: "native", diff: 5 },
+  { id: "w-voila", fr: "voilà", pt: "pronto / aí está (tique de fala)", cls: "expressão", diff: 3, exampleFr: "Voilà, c'est tout !", examplePt: "Pronto, é só isso!" }
 ];
 
 export const WORDS_BY_ID: Record<string, WordEntry> = Object.fromEntries(WORDS.map((w) => [w.id, w]));

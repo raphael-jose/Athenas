@@ -208,6 +208,7 @@ export function Home() {
             { icon: "speaker" as IconName, lbl: "Pronúncia", to: "/practice/pronunciation", tint: "blue" },
             { icon: "book" as IconName, lbl: "Vocabulário", to: "/vocabulary", tint: "lilac" },
             { icon: "sword" as IconName, lbl: "Duelo", to: "/duel", tint: "gold" },
+            { icon: "lightning" as IconName, lbl: "Desafio ⚡", to: "/challenge", tint: "gold" },
             { icon: "scales" as IconName, lbl: "Negociação", to: "/negociation", tint: "gold" },
             { icon: "heart" as IconName, lbl: "Loja", to: "/customize", tint: "rose" }
           ]

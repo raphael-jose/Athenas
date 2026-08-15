@@ -217,6 +217,26 @@ async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
 // pelas vozes antes de falar (nunca cai na voz padrão masculina).
 let voiceCache: SpeechSynthesisVoice[] = [];
 
+// ── Warm-up da voz natural (sem travar a tela) ────────────────
+// O carregamento do modelo do HuggingFace (WASM) roda na thread
+// principal e pode CONGELAR a interface por alguns segundos no
+// celular. Por isso a regra é: enquanto o modelo não está pronto,
+// falamos imediatamente com a melhor voz do aparelho (zero trava);
+// o modelo é aquecido em background e, quando estiver pronto, todas
+// as falas seguintes usam a voz natural.
+let warmupDone = false;
+
+/** Aquece o modelo de voz natural em background (uma vez por sessão). */
+export function warmUpNaturalVoice(delayMs = 4000) {
+  if (warmupDone || isNaturalReady()) return;
+  warmupDone = true;
+  window.setTimeout(() => {
+    // Carrega o francês (idioma principal do app). Se falhar (offline,
+    // CDN bloqueado), simplesmente seguimos com a voz do aparelho.
+    synthesizeNaturalVoice("bonjour", "fr-FR").catch(() => {});
+  }, delayMs);
+}
+
 function refreshCache(): SpeechSynthesisVoice[] {
   try {
     const list = window.speechSynthesis.getVoices();
@@ -319,9 +339,11 @@ export function useSpeech(): SpeechResult {
       if (!supported) return false;
       const lang = opts?.lang ?? detectLang(text);
       // 1. Voz natural feminina (HuggingFace no navegador) — grátis,
-      //    sem chave. Se falhar (sem internet, CDN fora do ar…), cai
-      //    automaticamente na melhor voz feminina do dispositivo.
-      if (langToModel(lang) && !naturalBusy) {
+      //    sem chave. Só usamos quando o modelo JÁ ESTÁ carregado em
+      //    memória: carregá-lo na hora pode congelar a tela no celular
+      //    (WASM na thread principal) — por isso o warm-up roda em
+      //    background (warmUpNaturalVoice) e o restante fala na hora.
+      if (langToModel(lang) && isNaturalReady() && !naturalBusy) {
         naturalBusy = true;
         stop();
         speakNatural(text, lang, opts).finally(() => {
@@ -329,7 +351,7 @@ export function useSpeech(): SpeechResult {
         });
         return true;
       }
-      // 2. Fallback: melhor voz feminina do dispositivo.
+      // 2. Sem travamento: melhor voz feminina do dispositivo, agora.
       webSpeak(text, lang, opts);
       return true;
     },

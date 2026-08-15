@@ -29,9 +29,11 @@ describe("Conteúdo do curso", () => {
     const playable = WORLDS.filter((w) => w.lessons.length > 0);
     const total = playable.reduce((a, w) => a + w.lessons.length, 0);
     expect(total).toBeGreaterThanOrEqual(10);
-    // cada mundo jogável tem no mínimo 6 aulas (conteúdo denso)
+    // cada mundo jogável tem conteúdo denso: 6+ aulas, exceto os finais
+    // (C2/NATIF — Advanced/Mastery/Native) que são focados, com 2+
     for (const w of playable) {
-      expect(w.lessons.length, `mundo ${w.id} com poucas aulas`).toBeGreaterThanOrEqual(6);
+      const min = w.cefr >= 6 ? 2 : 6;
+      expect(w.lessons.length, `mundo ${w.id} com poucas aulas`).toBeGreaterThanOrEqual(min);
     }
     for (const w of playable) {
       for (const lid of w.lessons) {
@@ -90,10 +92,18 @@ describe("Desbloqueio", () => {
     expect(isWorldUnlocked(w, 1, [])).toBe(true);
   });
 
-  it("mundos futuros (sem conteúdo) ficam bloqueados", () => {
-    const w = WORLDS[13];
-    expect(w.lessons.length).toBe(0);
-    expect(isWorldUnlocked(w, 7, [])).toBe(false);
+  it("mundos 13-15 (Advanced French, Mastery, Native Mode) têm conteúdo endgame liberado só no NATIF", () => {
+    const [w13, w14, w15] = WORLDS.slice(12, 15);
+    expect(w13.id).toBe("world-13");
+    expect(w14.id).toBe("world-14");
+    expect(w15.id).toBe("world-15");
+    for (const w of [w13, w14, w15]) {
+      expect(w.lessons.length).toBeGreaterThanOrEqual(2);
+      expect(w.boss).toBeDefined();
+      expect(w.cefr).toBe(7); // NATIF
+      expect(isWorldUnlocked(w, 7, [])).toBe(true);
+      expect(isWorldUnlocked(w, 6, [])).toBe(false); // C2 ainda não abre
+    }
   });
 
   it("mundos 4-6 (Conversations, Voyage, Relations) têm conteúdo e desbloqueiam na faixa certa", () => {

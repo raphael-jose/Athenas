@@ -152,11 +152,11 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
         <circle cx={104} cy={14} r={2} fill="#fff" opacity={0.7} />
       </g>
 
-      {/* boina francesa */}
+      {/* boina francesa (cores da roupinha — veja COSTUMES em global.css) */}
       <g transform="rotate(-6 70 30)">
-        <ellipse cx={70} cy={30} rx={33} ry={13} fill="#e5484d" />
-        <path d="M55 34 q15 -14 30 0 l-4 6 q-11 -7 -22 0 z" fill="#c93a3f" />
-        <circle cx={70} cy={26} r={3} fill="#f28bb4" />
+        <ellipse cx={70} cy={30} rx={33} ry={13} fill="var(--c-beret, #e5484d)" />
+        <path d="M55 34 q15 -14 30 0 l-4 6 q-11 -7 -22 0 z" fill="var(--c-beret-dark, #c93a3f)" />
+        <circle cx={70} cy={26} r={3} fill="var(--c-beret-dot, #f28bb4)" />
       </g>
 
       {/* corpo / rostinho */}
@@ -173,9 +173,9 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       <Eyes kind={m.eyes} />
       <Mouth kind={m.mouth} />
 
-      {/* echarpe */}
-      <path d="M44 112 q26 10 52 0 l-4 10 q-22 8 -44 0 z" fill="#f28bb4" />
-      <path d="M88 112 l6 14 l-8 -3 z" fill="#e56b9d" />
+      {/* echarpe (cores da roupinha) */}
+      <path d="M44 112 q26 10 52 0 l-4 10 q-22 8 -44 0 z" fill="var(--c-scarf, #f28bb4)" />
+      <path d="M88 112 l6 14 l-8 -3 z" fill="var(--c-scarf-dark, #e56b9d)" />
 
       {/* ondas de fala */}
       {speaking && (

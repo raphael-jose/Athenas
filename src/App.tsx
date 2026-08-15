@@ -25,9 +25,15 @@ import { GrammarPracticePage } from "@/features/learning/GrammarPractice";
 import { GrammarDuelPage } from "@/features/learning/GrammarDuel";
 import { NegotiationGamePage } from "@/features/learning/NegotiationGame";
 import { PronunciationPage } from "@/features/practice/Pronunciation";
+import { ChallengePage } from "@/features/practice/Challenge";
 import { VocabularyPage } from "@/features/profile/Vocabulary";
 import { CustomizePage } from "@/features/profile/Customize";
+import { FeedbackPage } from "@/features/profile/Feedback";
+import { AboutPage } from "@/features/profile/About";
 import { MentorPage } from "@/features/mentor/Mentor";
+import { warmUpNaturalVoice } from "@/hooks/useSpeech";
+import { lessonById, worldById } from "@/data/worlds";
+import { playBossMusic, playWorldMusic, setMusicEnabled, stopMusic } from "@/lib/music";
 
 function Shell() {
   const { state, touchStreak, setLastRoute } = useApp();
@@ -42,17 +48,53 @@ function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, state.onboarded, showWelcomeBack]);
 
-  // Aplica tema + escala de fonte no <html>
+  // Aplica tema + escala de fonte + roupinha da Lulu no <html>
   useEffect(() => {
     document.documentElement.dataset.theme = state.settings.theme;
     document.documentElement.dataset.font = String(state.settings.fontScale);
+    document.documentElement.dataset.costume = state.settings.costume;
     document.documentElement.style.colorScheme = state.settings.theme === "nuit" ? "dark" : "light";
-  }, [state.settings.theme, state.settings.fontScale]);
+  }, [state.settings.theme, state.settings.fontScale, state.settings.costume]);
+
+  // Música de fundo conforme o mapa: cada mundo tem sua trilha, o boss
+  // fica tenso, e as demais telas ficam em silêncio (ou no tema da casa).
+  useEffect(() => {
+    setMusicEnabled(state.settings.music);
+    if (!state.settings.music || !state.onboarded) {
+      stopMusic();
+      return;
+    }
+    const seg = parts[0];
+    if (seg === "boss") {
+      playBossMusic();
+      return;
+    }
+    if (seg === "world") {
+      playWorldMusic(worldById(parts[1] ?? "")?.order ?? 1);
+      return;
+    }
+    if (seg === "lesson") {
+      const wid = lessonById(parts[1] ?? "")?.worldId;
+      playWorldMusic(worldById(wid ?? "")?.order ?? 1);
+      return;
+    }
+    if (seg === "map" || seg === "") {
+      playWorldMusic(1); // tema da casa
+      return;
+    }
+    stopMusic();
+  }, [path, state.settings.music, state.onboarded]);
 
   // Streak carinhoso em cada visita
   useEffect(() => {
     touchStreak();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Aquece a voz natural em background (sem travar a tela na 1ª fala)
+  useEffect(() => {
+    const t = setTimeout(() => warmUpNaturalVoice(0), 4000);
+    return () => clearTimeout(t);
   }, []);
 
   if (!state.onboarded) {
@@ -70,7 +112,10 @@ function Shell() {
       case "": return <Home />;
       case "map": return <MapPage />;
       case "world": return <WorldDetail worldId={parts[1] ?? ""} />;
-      case "lesson": return <LessonPlayer lessonId={parts[1] ?? ""} />;
+      // key={lessonId}: sem ela, o React reaproveita o estado interno do
+      // player ao trocar de aula (ex.: botão "Próxima aula" ficava preso
+      // na tela de "Bravo!" da aula anterior).
+      case "lesson": return <LessonPlayer key={parts[1] ?? ""} lessonId={parts[1] ?? ""} />;
       case "boss": return <BossBattle bossId={parts[1] ?? ""} />;
       case "review": return <ReviewPage />;
       case "ai": return <AIHub />;
@@ -82,10 +127,13 @@ function Shell() {
         if (parts[1] === "pronunciation") return <PronunciationPage />;
         if (parts[1] === "grammar" && parts[2]) return <GrammarPracticePage nodeId={parts[2]} />;
         return <GrammarPage />;
+      case "challenge": return <ChallengePage />;
       case "vocabulary": return <VocabularyPage />;
       case "customize": return <CustomizePage />;
       case "mentor": return <MentorPage />;
       case "profile": return <ProfilePage />;
+      case "feedback": return <FeedbackPage />;
+      case "about": return <AboutPage />;
       case "welcome":
         // já onboarded: volta pra home
         window.location.hash = "/";

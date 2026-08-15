@@ -6,7 +6,6 @@ import type {
   ChoiceExercise,
   Exercise,
   FillBlankExercise,
-  IconName,
   Lesson,
   ListeningExercise,
   SentenceBuilderExercise,
@@ -394,6 +393,84 @@ const world1Lessons: Lesson[] = [
       choice("Il fait froid ! O que você pega?", ["le manteau", "la jupe", "les sandales"], 0)
     ],
     words: ["w-robe", "w-chaussures", "w-manteau", "w-jupe"]
+  },
+  {
+    id: "l14-nationalites",
+    worldId: "world-1",
+    title: "Les nationalités",
+    icon: "globe",
+    topic: "nacionalidades",
+    objective: "Dizer de onde você é e falar nacionalidades com o gênero certo.",
+    theory: [
+      "Je suis + nacionalidade: Je suis brésilienne. / Je suis français.",
+      "Feminino: -ien → -ienne (italien → italienne) · -ais → -aise (français → française).",
+      "Tu es d'où ? = de onde você é? · Je suis du Brésil = sou do Brasil."
+    ],
+    examples: [
+      { fr: "Tu es d'où ? — Je suis du Brésil.", pt: "De onde você é? — Sou do Brasil." },
+      { fr: "Elle est italienne et lui est espagnol.", pt: "Ela é italiana e ele é espanhol." },
+      { fr: "Nous sommes françaises.", pt: "Nós somos francesas." }
+    ],
+    exercises: [
+      choice("Feminino de 'italien' é…", ["italienne", "italien", "italiène"], 0),
+      fill("Je suis b___ (brasileira).", "brésilienne", { accept: ["bresilienne"], hint: "br + ésilienne" }),
+      choice("Como perguntar de onde a pessoa é?", ["Tu es d'où ?", "Tu as quel âge ?", "Tu manges quoi ?"], 0),
+      match([["français", "francês"], ["italienne", "italiana"], ["espagnol", "espanhol"], ["allemande", "alemã"]]),
+      trans("Eu sou do Brasil.", "Je suis du Brésil.", { accept: ["Je suis du Bresil", "Je suis brésilienne", "Je suis brésilien"] })
+    ],
+    words: ["w-bresilien", "w-francais-nat", "w-italien", "w-espagnol", "w-allemand"]
+  },
+  {
+    id: "l15-metiers",
+    worldId: "world-1",
+    title: "Les métiers",
+    icon: "briefcase",
+    topic: "profissoes",
+    objective: "Dizer sua profissão e a dos outros com o artigo certo.",
+    theory: [
+      "Je suis + profissão: Je suis étudiante. / Je suis cuisinier.",
+      "Il est professeur. / Elle est infirmière. (com être, sem artigo!)",
+      "O gênero muda: un médecin (m) · une pharmacienne (f)."
+    ],
+    examples: [
+      { fr: "Je suis étudiante à Lyon.", pt: "Sou estudante em Lyon." },
+      { fr: "Il est médecin à l'hôpital.", pt: "Ele é médico no hospital." },
+      { fr: "Elle veut devenir pharmacienne.", pt: "Ela quer ser farmacêutica." }
+    ],
+    exercises: [
+      choice("Para dizer sua profissão: Je suis…", ["étudiante", "une étudiante", "le étudiant"], 0, "Com être, a profissão vai sem artigo!"),
+      fill("Il est m___ (médico) à l'hôpital.", "médecin", { accept: ["medecin"], hint: "m + édecin" }),
+      match([["le médecin", "o médico"], ["l'infirmière", "a enfermeira"], ["le boulanger", "o padeiro"], ["le cuisinier", "o cozinheiro"]]),
+      trans("Ela é enfermeira.", "Elle est infirmière.", { accept: ["Elle est infirmiere"] }),
+      choice("Quem trabalha com pão todo dia?", ["le boulanger", "le médecin", "l'infirmière"], 0)
+    ],
+    words: ["w-professeur", "w-medecin", "w-infirmiere", "w-cuisinier", "w-boulanger", "w-pharmacien"]
+  },
+  {
+    id: "l16-dialogue",
+    worldId: "world-1",
+    title: "Un petit dialogue",
+    icon: "chatCircleDots",
+    topic: "dialogo",
+    objective: "Costurar tudo: cumprimentar, se apresentar e se despedir numa conversa curta.",
+    theory: [
+      "Sequência clássica: Bonjour ! → Comment tu t'appelles ? → Je m'appelle… → Enchantée ! → Au revoir !",
+      "Ça va ? → Ça va bien, merci ! (resposta natural)",
+      "Et toi ? = e você? — devolve a pergunta com carinho."
+    ],
+    examples: [
+      { fr: "— Bonjour ! Ça va ? — Ça va bien, merci ! Et toi ?", pt: "— Olá! Tudo bem? — Tudo bem, obrigada! E você?" },
+      { fr: "— Comment tu t'appelles ? — Je m'appelle Ana, enchantée !", pt: "— Como você se chama? — Eu me chamo Ana, prazer!" },
+      { fr: "— Au revoir, à demain ! — À demain !", pt: "— Tchau, até amanhã! — Até amanhã!" }
+    ],
+    exercises: [
+      build("Monte: 'Tudo bem, obrigada! E você?'", ["Ça va", "bien", "merci", ".", "Et", "toi", "?"], ["Ça va", "bien", "merci", ".", "Et", "toi", "?"]),
+      choice("Qual vem PRIMEIRO numa conversa?", ["Bonjour", "Au revoir", "Merci beaucoup"], 0),
+      fill("Ench___ ! (prazer em conhecer)", "antée", { accept: ["antee", "anté"], hint: "enchantée" }),
+      choice("'Et toi ?' serve para…", ["devolver a pergunta", "pedir desculpa", "se despedir"], 0),
+      trans("Eu me chamo Ana, prazer!", "Je m'appelle Ana, enchantée !", { accept: ["Je m'appelle Ana, enchantee", "Je m'appelle Ana enchanté"] })
+    ],
+    words: ["w-bonjour", "w-salu", "w-au-revoir", "w-appeler"]
   }
 ];
 
@@ -2855,11 +2932,233 @@ const world12Boss: World["boss"] = {
 };
 
 // ══════════════════════════════════════════════════════════════
-// Mundos futuros (estrutura pronta; conteúdo entra em fases)
+// WORLD 13 —  Advanced French
 // ══════════════════════════════════════════════════════════════
-function futureWorld(id: string, order: number, title: string, icon: IconName, cefr: World["cefr"], description: string, color: string): World {
-  return { id, order, title, icon, cefr, description, color, unlockCefr: cefr, lessons: [] };
-}
+const world13Lessons: Lesson[] = [
+  {
+    id: "a13-01-registres",
+    worldId: "world-13",
+    title: "Les registres de langue",
+    icon: "books",
+    topic: "registros",
+    objective: "Escolher o registro certo: soutenu, courant ou familier — e sentir a diferença.",
+    theory: [
+      "Três registros: soutenu (erudito), courant (normal) e familier (informal).",
+      "A MESMA ideia muda de roupa: Je suis fatigué (courant) · Je suis crevé (familier) · Je suis épuisé (soutenu).",
+      "Escolher o registro é escolher o efeito: respeitar, impressionar, aproximar ou provocar.",
+      "Nuance = a diferença fina entre duas palavras que parecem iguais (ex.: regarder x observer)."
+    ],
+    examples: [
+      { fr: "Courant: Tu peux fermer la porte ?", pt: "Normal: você pode fechar a porta?" },
+      { fr: "Familier: Tu peux fermer la porte, mec ?", pt: "Informal: fecha a porta aí, cara?" },
+      { fr: "Soutenu: Pourriez-vous fermer la porte, s'il vous plaît ?", pt: "Erudito: o senhor poderia fechar a porta, por favor?" }
+    ],
+    exercises: [
+      choice("Qual frase está no registro FAMILIER?", ["Tu peux fermer la porte ?", "Tu peux fermer la porte, mec ?", "Pourriez-vous fermer la porte ?"], 1),
+      choice("Registro SOUTENU serve para…", ["conversa com amigos", "carta formal / entrevista", "mensagem no zap"], 1),
+      match([["courant", "normal"], ["familier", "informal"], ["soutenu", "erudito"], ["la nuance", "a diferença fina"]]),
+      fill("Je suis c___ (morto de cansado, familier).", "crevé", { accept: ["creve"], hint: "familier de épuisé" }),
+      trans("Você pode fechar a porta? (courant)", "Tu peux fermer la porte ?", { accept: ["Tu peux fermer la porte"] })
+    ],
+    words: ["w-registre", "w-soutenu", "w-familier", "w-nuance"]
+  },
+  {
+    id: "a13-02-connotation",
+    worldId: "world-13",
+    title: "La connotation",
+    icon: "magicWand",
+    topic: "conotacao",
+    objective: "Perceber o que as palavras SUGEREM além do sentido literal — e usar isso a seu favor.",
+    theory: [
+      "Denotação = o sentido literal (une maison = uma casa).",
+      "Conotação = o que a palavra FAZ SENTIR (une baraque = um barraco, cheio de julgamento).",
+      "Escolher 'maigre' (magro, negativo) em vez de 'mince' (magro, elogio) muda tudo.",
+      "O subtexto: às vezes o que não se diz importa mais do que o que se diz."
+    ],
+    examples: [
+      { fr: "Elle est mince.", pt: "Ela é magra (elogio — leve, elegante)." },
+      { fr: "Elle est maigre.", pt: "Ela é magra (preocupante — frágil)." },
+      { fr: "Il conduit une voiture.", pt: "Ele dirige um carro (neutro)." },
+      { fr: "Il conduit une bagnole.", pt: "Ele dirige uma lata-velha (familier, julgamento)." }
+    ],
+    exercises: [
+      choice("Qual palavra soa como ELOGIO?", ["maigre", "mince", "chétif"], 1),
+      choice("'Une baraque' conota…", ["um casebre (pejorativo)", "um castelo", "uma escola"], 0),
+      fill("Denotação é o sentido ___.", "literal", { hint: "o sentido da palavra no dicionário" }),
+      trans("Ela é magra (elogio).", "Elle est mince.", { accept: ["Elle est mince"] }),
+      choice("O que é 'subtexto'?", ["o que fica nas entrelinhas", "o texto escrito", "um tipo de fonte"], 0)
+    ],
+    words: ["w-connoter", "w-nuance", "w-sous-entendu"]
+  }
+];
+
+const world13Boss: World["boss"] = {
+  id: "boss-13",
+  worldId: "world-13",
+  title: "Le Censeur des Registres",
+  icon: "scales",
+  intro: "Um crítico literário implacável avalia cada palavra sua. Escolha o registro certo ou ele te devolve ao rascunho !",
+  xp: 180,
+  exercises: [
+    choice("Registro FAMILIER de 'Je suis fatigué'?", ["Je suis crevé", "Je suis épuisé", "Je suis las"], 0),
+    choice("'Mince' conota…", ["elogio", "insulto", "medo"], 0),
+    fill("Escolher o registro é escolher o ___.", "efeito", { hint: "efeito / impressão" }),
+    trans("Você pode fechar a porta? (soutenu)", "Pourriez-vous fermer la porte ?", { accept: ["Pourriez-vous fermer la porte, s'il vous plaît"] }),
+    match([["courant", "normal"], ["familier", "informal"], ["soutenu", "erudito"], ["la nuance", "a diferença fina"]])
+  ]
+};
+
+// ══════════════════════════════════════════════════════════════
+// WORLD 14 —  Mastery
+// ══════════════════════════════════════════════════════════════
+const world14Lessons: Lesson[] = [
+  {
+    id: "a14-01-rhetorique",
+    worldId: "world-14",
+    title: "La rhétorique",
+    icon: "magicWand",
+    topic: "retorica",
+    objective: "Persuadir com elegância: figuras de linguagem que dobram qualquer interlocutor.",
+    theory: [
+      "Retórica = a arte de falar de um jeito que convence, sem mentir.",
+      "Litote: dizer MENOS para dar a entender MAIS: 'Ce n'est pas mal' = é ótimo!",
+      "Zeugme: ligar duas ideias com uma palavra só, com efeito: 'Il a perdu sa montre et son sang-froid'.",
+      "Silepse: concordar com a IDEIA, não com a gramática: 'La plupart sont d'accord' (plural na ideia)."
+    ],
+    examples: [
+      { fr: "Ce gâteau n'est pas mauvais du tout !", pt: "Esse bolo não é nada ruim! (litote = é uma delícia)" },
+      { fr: "Elle a perdu son temps et son calme.", pt: "Ela perdeu tempo e a paciência (zeugme)." },
+      { fr: "Tout le monde étaient contents.", pt: "Todo mundo estava contente (silepse: ideia no plural)." }
+    ],
+    exercises: [
+      choice("O que é uma LITOTE?", ["dizer menos para implicar mais", "exagerar demais", "inventar fatos"], 0),
+      choice("'Ce n'est pas mal !' geralmente quer dizer…", ["é ótimo!", "é horrível", "é mediano"], 0),
+      match([["la litote", "atenuação irônica"], ["le zeugme", "duas ideias, uma palavra"], ["la silepse", "concordar com a ideia"], ["la rhétorique", "a arte de persuadir"]]),
+      fill("Retórica é a arte de ___.", "persuadir", { hint: "convencer sem mentir" }),
+      trans("Esse bolo não é nada ruim! (litote)", "Ce gâteau n'est pas mauvais du tout !", { accept: ["Ce gâteau n'est pas mauvais du tout"] })
+    ],
+    words: ["w-rhetorique", "w-litote", "w-zeugme"]
+  },
+  {
+    id: "a14-02-argument",
+    worldId: "world-14",
+    title: "L'argument parfait",
+    icon: "target",
+    topic: "argumentacao",
+    objective: "Montar um argumento à prova de balas: tese, prova, exemplo e contra-ataque.",
+    theory: [
+      "Estrutura: Thèse (o que defendo) → Argument (por quê) → Exemple (prova concreta).",
+      "Conectores que somam: d'ailleurs (aliás), de plus (além disso), en outre (ademais).",
+      "Conectores que contrastam: pourtant (no entanto), en revanche (por outro lado), néanmoins (contudo).",
+      "Antecipar a objeção e respondê-la na hora é sinal de domínio total."
+    ],
+    examples: [
+      { fr: "Je pense que le vélo est idéal en ville. D'ailleurs, je l'utilise chaque jour.", pt: "Acho a bicicleta ideal na cidade. Aliás, uso todos os dias." },
+      { fr: "Le télétravail gagne du terrain. En revanche, il isole parfois.", pt: "O home office ganha espaço. Por outro lado, às vezes isola." },
+      { fr: "Pourtant, les études montrent l'inverse.", pt: "No entanto, os estudos mostram o contrário." }
+    ],
+    exercises: [
+      choice("Qual conector SOMa um argumento?", ["d'ailleurs", "pourtant", "néanmoins"], 0),
+      choice("Qual conector CONTRASTA?", ["de plus", "en revanche", "d'ailleurs"], 1),
+      build("Monte: 'Aliás, uso todos os dias.'", ["D'ailleurs", "je", "l'utilise", "chaque", "jour", "."], ["D'ailleurs", "je", "l'utilise", "chaque", "jour", "."]),
+      fill("Thèse → Argument → ___", "exemple", { hint: "a prova concreta" }),
+      trans("No entanto, os estudos mostram o contrário.", "Pourtant, les études montrent l'inverse.", { accept: ["Pourtant les études montrent l'inverse"] })
+    ],
+    words: ["w-argument", "w-pourtant", "w-dailleurs", "w-donc", "w-preuve"]
+  }
+];
+
+const world14Boss: World["boss"] = {
+  id: "boss-14",
+  worldId: "world-14",
+  title: "Le Débatteur Sans Pitié",
+  icon: "crosshair",
+  intro: "Um debatedor profissional quer te destruir com palavras. Responda com retórica afiada ou vire estatística do debate !",
+  xp: 200,
+  exercises: [
+    choice("Litote de 'é ótimo'?", ["Ce n'est pas mal !", "C'est nul !", "C'est moyen."], 0),
+    choice("Conector para CONTRASTAR:", ["en revanche", "de plus", "d'ailleurs"], 0),
+    fill("Thèse → Argument → ___", "exemple", { hint: "prova concreta" }),
+    build("Monte: 'Aliás, uso todos os dias.'", ["D'ailleurs", "je", "l'utilise", "chaque", "jour", "."], ["D'ailleurs", "je", "l'utilise", "chaque", "jour", "."]),
+    trans("No entanto, os estudos mostram o contrário.", "Pourtant, les études montrent l'inverse.", { accept: ["Pourtant les études montrent l'inverse"] })
+  ]
+};
+
+// ══════════════════════════════════════════════════════════════
+// WORLD 15 —  Native Mode
+// ══════════════════════════════════════════════════════════════
+const world15Lessons: Lesson[] = [
+  {
+    id: "a15-01-verlan",
+    worldId: "world-15",
+    title: "Le verlan",
+    icon: "maskHappy",
+    topic: "verlan",
+    objective: "Entender a gíria invertida que todo francês jovem usa — e soar nativa de verdade.",
+    theory: [
+      "Verlan = inverter as sílabas: femme → meuf · fou → ouf · lourd → relou.",
+      "Regra prática: pegue a palavra, inverta as sílabas e às vezes solte o final: bizarre → zarbi.",
+      "É informal — use com amigos, nunca em entrevista ou carta formal.",
+      "Ouvir verlan é o teste definitivo de compreensão real de ouvido."
+    ],
+    examples: [
+      { fr: "C'est ouf, cette histoire !", pt: "Essa história é doida!" },
+      { fr: "La meuf là-bas, c'est ta sœur ?", pt: "Aquela mina ali é sua irmã?" },
+      { fr: "Ce film, il est trop relou.", pt: "Esse filme é muito chato." }
+    ],
+    exercises: [
+      choice("Verlan de 'femme' é…", ["meuf", "ouf", "relou"], 0),
+      choice("Verlan de 'fou' é…", ["ouf", "meuf", "fouf"], 0),
+      fill("Verlan de 'lourd' é ___.", "relou", { hint: "lourd → relou" }),
+      trans("Essa mina é sua irmã? (informal)", "La meuf là-bas, c'est ta sœur ?", { accept: ["La meuf c'est ta soeur", "La meuf là-bas c'est ta sœur"] }),
+      choice("Quando usar verlan?", ["só com amigos", "em entrevista de emprego", "em carta formal"], 0)
+    ],
+    words: ["w-verlan", "w-meuf", "w-ouf-nat", "w-relou"]
+  },
+  {
+    id: "a15-02-natif",
+    worldId: "world-15",
+    title: "Parler comme un natif",
+    icon: "moon",
+    topic: "nativo",
+    objective: "Os tiques de fala, ligações e pequenos truques que separam aluno de nativo.",
+    theory: [
+      "Liaison: les_amis, deux_heures — o som que liga as palavras.",
+      "Tiques de fala: du coup (então), en fait (na verdade), quoi (tipo…), voilà (pronto).",
+      "Elisão na fala: 'Je sais pas' no lugar de 'Je ne sais pas'.",
+      "Nativos repetem, hesitam e usam 'euh' — naturalidade é ritmo, não perfeição."
+    ],
+    examples: [
+      { fr: "Du coup, on part demain.", pt: "Então, a gente parte amanhã." },
+      { fr: "En fait, c'est pas si compliqué.", pt: "Na verdade, não é tão complicado." },
+      { fr: "Les amis arrivent à deux heures.", pt: "Os amigos chegam às duas horas (liaison: les-z-amis)." }
+    ],
+    exercises: [
+      choice("O que é 'liaison'?", ["ligar o som entre palavras", "uma cidade", "um tipo de verbo"], 0),
+      choice("'Du coup' significa…", ["então / por causa disso", "de repente", "de novo"], 0),
+      fill("Na fala, 'Je ne sais pas' vira 'Je s___ pas'.", "sais", { hint: "s + ais" }),
+      trans("Na verdade, não é tão complicado.", "En fait, c'est pas si compliqué.", { accept: ["En fait ce n'est pas si compliqué"] }),
+      choice("Qual frase soa mais NATIVA em conversa?", ["Je ne sais pas.", "Je sais pas.", "Je ne le sais point."], 1)
+    ],
+    words: ["w-du-coup", "w-en-fait", "w-voila"]
+  }
+];
+
+const world15Boss: World["boss"] = {
+  id: "boss-15",
+  worldId: "world-15",
+  title: "Le Roi du Verlan",
+  icon: "crown",
+  intro: "O rei da gíria parisiense te desafia: entenda o verlan, as liaisons e o ritmo de rua — ou fica pra trás no metrô !",
+  xp: 220,
+  exercises: [
+    choice("Verlan de 'femme'?", ["meuf", "ouf", "fouf"], 0),
+    choice("'Du coup' na conversa significa…", ["então", "nunca", "também"], 0),
+    fill("Liaison: les_amis soa como 'les-___'.", "zamis", { hint: "les z-amis" }),
+    trans("Essa história é doida! (informal)", "C'est ouf, cette histoire !", { accept: ["C'est ouf cette histoire", "Cette histoire c'est ouf"] }),
+    choice("Onde NÃO usar verlan?", ["entrevista de emprego", "com amigos no zap", "num show"], 0)
+  ]
+};
 
 export const WORLDS: World[] = [
   {
@@ -3006,13 +3305,46 @@ export const WORLDS: World[] = [
     lessons: world12Lessons.map((l) => l.id),
     boss: world12Boss
   },
-  futureWorld("world-13", 13, "Advanced French", "fire", 7, "Registros, estilo, subtexto e nuances avançadas.", "world-rose"),
-  futureWorld("world-14", 14, "Mastery", "crown", 7, "Linguística, retórica e domínio absoluto.", "world-gold"),
-  futureWorld("world-15", 15, "Native Mode", "moon", 7, "O Modo Deus Supremo: a língua como um francês nativo a vive.", "world-lilac")
+  {
+    id: "world-13",
+    order: 13,
+    title: "Advanced French",
+    icon: "fire",
+    cefr: 7,
+    description: "Registros, estilo, subtexto e nuances avançadas.",
+    color: "world-rose",
+    unlockCefr: 7,
+    lessons: world13Lessons.map((l) => l.id),
+    boss: world13Boss
+  },
+  {
+    id: "world-14",
+    order: 14,
+    title: "Mastery",
+    icon: "crown",
+    cefr: 7,
+    description: "Linguística, retórica e domínio absoluto.",
+    color: "world-gold",
+    unlockCefr: 7,
+    lessons: world14Lessons.map((l) => l.id),
+    boss: world14Boss
+  },
+  {
+    id: "world-15",
+    order: 15,
+    title: "Native Mode",
+    icon: "moon",
+    cefr: 7,
+    description: "O Modo Deus Supremo: a língua como um francês nativo a vive.",
+    color: "world-lilac",
+    unlockCefr: 7,
+    lessons: world15Lessons.map((l) => l.id),
+    boss: world15Boss
+  }
 ];
 
 export const LESSONS: Record<string, Lesson> = Object.fromEntries(
-  [...world1Lessons, ...world2Lessons, ...world3Lessons, ...world4Lessons, ...world5Lessons, ...world6Lessons, ...world7Lessons, ...world8Lessons, ...world9Lessons, ...world10Lessons, ...world11Lessons, ...world12Lessons].map((l) => [l.id, l])
+  [...world1Lessons, ...world2Lessons, ...world3Lessons, ...world4Lessons, ...world5Lessons, ...world6Lessons, ...world7Lessons, ...world8Lessons, ...world9Lessons, ...world10Lessons, ...world11Lessons, ...world12Lessons, ...world13Lessons, ...world14Lessons, ...world15Lessons].map((l) => [l.id, l])
 );
 
 export const BOSSES: Record<string, World["boss"]> = {
@@ -3027,7 +3359,10 @@ export const BOSSES: Record<string, World["boss"]> = {
   "boss-9": world9Boss,
   "boss-10": world10Boss,
   "boss-11": world11Boss,
-  "boss-12": world12Boss
+  "boss-12": world12Boss,
+  "boss-13": world13Boss,
+  "boss-14": world14Boss,
+  "boss-15": world15Boss
 };
 
 export function worldById(id: string): World | undefined {

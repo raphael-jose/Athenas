@@ -25,9 +25,11 @@ export function defaultSettings(): Settings {
           : "mock";
   return {
     theme: "rose",
+    costume: "classic",
     fontScale: 1,
     animations: true,
     sound: true,
+    music: true,
     tts: true,
     aiProvider: defaultProvider,
     // no proxy, a URL padrão é a do Worker (chave vive no servidor)
@@ -46,6 +48,9 @@ export function defaultState(): StudentState {
     version: APP_VERSION,
     name: "",
     avatar: "rabbit",
+    photo: "",
+    email: "",
+    passwordHash: "",
     onboarded: false,
     diagnosticDone: false,
     startedAt: Date.now(),
@@ -75,6 +80,7 @@ export function defaultState(): StudentState {
     timeStudied: 0,
     settings: defaultSettings(),
     boughtThemes: [],
+    boughtCostumes: [],
     notificationsSeen: {},
     lastLoginDate: "",
     lastRoute: "",
@@ -86,7 +92,11 @@ export function loadState(): StudentState {
   try {
     let raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
-    const parsed = JSON.parse(raw) as Partial<StudentState>;
+    // confere o selo de integridade: dados corrompidos/adulterados
+    // voltam ao zero em vez de quebrar o app
+    const unwrapped = unwrap(raw);
+    if (!unwrapped) return defaultState();
+    const parsed = unwrapped as Partial<StudentState>;
     const base = defaultState();
     // Merge defensivo: dados desconhecidos são descartados, faltantes ganham o padrão.
     const state: StudentState = {
@@ -111,9 +121,52 @@ export function loadState(): StudentState {
   }
 }
 
+// ── Integridade do banco local ─────────────────────────────────
+// O "banco de dados" do Athenas é o localStorage do aparelho (não há
+// servidor — o app roda no navegador/GitHub Pages). Para proteger o
+// progresso de corrupção acidental (gravação cortada, versão velha,
+// edição externa), cada gravação leva um selo de integridade (hash) e
+// o carregamento confere o selo antes de confiar nos dados. Se algo
+// não bater, recomeça limpo em vez de quebrar o app.
+
+/** Hash rápido (djb2) — selo de integridade, não criptografia. */
+function integrityHash(s: string): string {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return (h >>> 0).toString(36);
+}
+
+interface WrappedState {
+  v: number;
+  d: StudentState;
+  c: string; // selo de integridade
+}
+
+function wrap(state: StudentState): string {
+  const d = JSON.stringify(state);
+  const wrapped: WrappedState = { v: APP_VERSION, d: state, c: integrityHash(d) };
+  return JSON.stringify(wrapped);
+}
+
+/** Valida um JSON de backup/estado e devolve o estado, ou null. */
+export function unwrap(raw: string): StudentState | null {
+  try {
+    const parsed = JSON.parse(raw) as WrappedState | StudentState;
+    if (parsed && typeof parsed === "object" && "d" in parsed && "c" in parsed) {
+      const w = parsed as WrappedState;
+      if (integrityHash(JSON.stringify(w.d)) !== w.c) return null; // adulterado/corrompido
+      return w.d as StudentState;
+    }
+    // formato antigo (sem selo): aceita como está
+    return parsed as StudentState;
+  } catch {
+    return null;
+  }
+}
+
 export function saveState(state: StudentState) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, wrap(state));
   } catch {
     // quota excedida — ignora silenciosamente (o app segue funcionando em memória)
   }
@@ -125,4 +178,24 @@ export function clearState() {
   } catch {
     // ignore
   }
+}
+
+/** Gera o texto do backup para download. */
+export function exportBackup(state: StudentState): string {
+  return wrap(state);
+}
+
+/**
+ * Restaura um backup. Devolve o estado pronto para uso, ou null se o
+ * arquivo estiver corrompido/adulterado (o selo de integridade não bate).
+ */
+export function importBackup(raw: string): StudentState | null {
+  const s = unwrap(raw);
+  if (!s || typeof s !== "object") return null;
+  const base = defaultState();
+  return {
+    ...base,
+    ...s,
+    settings: { ...base.settings, ...(s.settings ?? {}) }
+  };
 }

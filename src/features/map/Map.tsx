@@ -75,7 +75,7 @@ export function MapPage() {
       <div className="card-soft mt-4 center">
         <Mascot mood="happy" size={80} />
         <p className="small muted">
-          Quanto mais você estuda, mais o mapa se abre. Os mundos avançados (Fire, Crown e Moon) chegam em novas fases da aventura… e o Modo Deus Supremo já está na arquitetura.
+          Quanto mais você estuda, mais o mapa se abre. O caminho vai de A0 até o Modo Deus Supremo: os mundos Advanced French, Mastery e Native Mode se liberam quando você alcança o nível NATIF.
         </p>
       </div>
     </div>

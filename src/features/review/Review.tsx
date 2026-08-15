@@ -2,7 +2,7 @@
 // Athenas — Revisão inteligente
 // "Aujourd'hui, ton cerveau veut réviser ça"
 // ══════════════════════════════════════════════════════════════
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
 import { dueItems, masteryLevel, newReviewItem } from "@/services/srs";
@@ -25,6 +25,10 @@ export function ReviewPage() {
   const [mode, setMode] = useState<"review" | "practice">(due.length > 0 ? "review" : "practice");
   const [flipped, setFlipped] = useState(false);
   const [done, setDone] = useState(0);
+  // Reforço: palavras que a pessoa errou NESTA sessão voltam no final,
+  // com a pronúncia tocando sozinha para gravar o som na memória. 
+  const [missed, setMissed] = useState<string[]>([]);
+  const [reinfIdx, setReinfIdx] = useState(-1); // -1 = não está reforçando
 
   const items = queue.length > 0 ? queue : mode === "practice" ? practiceItems() : [];
 
@@ -40,11 +44,76 @@ export function ReviewPage() {
     setDone((d) => d + 1);
     setFlipped(false);
     reviewWords([{ wordId: item.wordId, quality }]);
+    // Errou? A palavra entra no reforço e a pronúncia toca na hora.
+    if (quality < 3) {
+      setMissed((m) => (m.includes(item.wordId) ? m : [...m, item.wordId]));
+      const w = wordById(item.wordId);
+      if (w) speak(w.fr);
+    }
   };
 
   const current = items[0];
 
+  // ── Reforço das palavras erradas (toca o áudio sozinho) ──────
+  const reinforcing = reinfIdx >= 0 && reinfIdx < missed.length;
+  const reinforceWord = reinforcing ? wordById(missed[reinfIdx]) : undefined;
+  useEffect(() => {
+    if (reinforcing && reinforceWord && supported) speak(reinforceWord.fr);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reinfIdx]);
+
+  // Quando a fila acaba com palavras erradas, o reforço começa sozinho.
+  useEffect(() => {
+    if (mode === "review" && items.length === 0 && done > 0 && missed.length > 0 && reinfIdx === -1) {
+      setReinfIdx(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, items.length, done, missed.length, reinfIdx]);
+
   if (mode === "review" && items.length === 0 && done > 0) {
+    // Ainda há palavras erradas? Reforça primeiro — com som e carinho.
+    if (reinforceWord) {
+      return (
+        <div className="page">
+          <PageHeader
+            title={<><Icon name="brain" size={20} style={{ verticalAlign: -3 }} /> Reforço</>}
+            sub={`${reinfIdx + 1} de ${missed.length} palavras para fixar`}
+            onBack={() => navigate("/")}
+          />
+          <Card className="center">
+            <Mascot mood="explaining" size={90} />
+            <div className="bold" style={{ fontSize: "1.9rem" }}>{reinforceWord.fr}</div>
+            {reinforceWord.gender && <Chip variant="accent">{reinforceWord.gender === "m" ? "masculino" : "feminino"}</Chip>}
+            <div className="row center mt-2" style={{ justifyContent: "center" }}>
+              <AudioButton text={reinforceWord.fr} label={`Ouvir ${reinforceWord.fr}`} />
+              <Button variant="soft" size="sm" onClick={() => speak(reinforceWord.fr)}>
+                <Icon name="speaker" size={15} /> Ouvir de novo
+              </Button>
+            </div>
+            {reinforceWord.exampleFr && (
+              <p className="small muted mt-2">
+                {reinforceWord.exampleFr}
+                <br />
+                <em>{reinforceWord.examplePt}</em>
+              </p>
+            )}
+            <div className="bold mt-3" style={{ fontSize: "1.4rem" }}>{reinforceWord.pt}</div>
+            <p className="muted small mt-2">Ouviu o som? Agora essa palavra vai ficar na memória !</p>
+            <Button
+              className="mt-4"
+              block
+              onClick={() => {
+                setReinfIdx((i) => i + 1);
+                setFlipped(false);
+              }}
+            >
+              {reinfIdx + 1 >= missed.length ? "Concluir reforço" : "Próxima palavra →"}
+            </Button>
+          </Card>
+        </div>
+      );
+    }
+
     return (
       <div className="page">
         <PageHeader title={<><Icon name="brain" size={20} style={{ verticalAlign: -3 }} /> Revisão</>} onBack={() => navigate("/")} />
@@ -57,7 +126,7 @@ export function ReviewPage() {
             <Button block onClick={() => navigate("/")}>
               Voltar pra casa
             </Button>
-            <Button variant="soft" block onClick={() => { setDone(0); setQueue(dueItems(state.reviewQueue)); setMode(dueItems(state.reviewQueue).length > 0 ? "review" : "practice"); }}>
+            <Button variant="soft" block onClick={() => { setDone(0); setMissed([]); setReinfIdx(-1); setQueue(dueItems(state.reviewQueue)); setMode(dueItems(state.reviewQueue).length > 0 ? "review" : "practice"); }}>
               Revisar de novo
             </Button>
           </div>

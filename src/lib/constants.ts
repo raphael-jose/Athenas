@@ -112,6 +112,35 @@ export const THEMES: ThemeDef[] = [
 
 export const AVATARS: IconName[] = ["rabbit", "cat", "dog", "horse", "cow", "butterfly", "fish", "bird", "bug", "flower", "starFour", "heart", "coffee", "book", "moon", "sun", "sparkle"];
 
+// ── Roupinhas da Lulu (loja) ──────────────────────────────────
+export interface CostumeDef {
+  id: string;
+  name: string;
+  icon: IconName;
+  price: number;
+  desc: string;
+}
+
+export const COSTUMES: CostumeDef[] = [
+  { id: "classic", name: "Rosé Classique", icon: "flower", price: 0, desc: "A boina vermelha e a echarpe rosa de sempre." },
+  { id: "lavande", name: "Mystère Lavande", icon: "flowerLotus", price: 90, desc: "Boina lilás e echarpe de lavanda da Provence." },
+  { id: "bleuet", name: "Bleuet Étoilé", icon: "drop", price: 110, desc: "Azul céu com estrelinhas — perfeita pra sonhar." },
+  { id: "chocolat", name: "Chocolat Fondant", icon: "cake", price: 130, desc: "Tons quentinhos de chocolate francês." },
+  { id: "emeraude", name: "Émeraude Parisienne", icon: "sparkle", price: 160, desc: "Verde esmeralda elegante, estilo museu." }
+];
+
+export const STICKERS = ["🌹", "🥐", "🗼", "❤️", "✨", "😘", "🍷", "🐌"];
+
+// ── Contatos (Sobre) ──────────────────────────────────────────
+// ✏️ Troque pelos seus contatos reais aqui.
+export const CONTACTS = {
+  email: "contato@athenas.app",
+  whatsapp: "5511999999999" // só números, com DDI (55) e DDD
+} as const;
+
+export const APP_TAGLINE =
+  "Athenas é sua escola de francês de bolso: aulas, pronúncia, Lulu (sua professora IA), revisão inteligente e muito carinho.";
+
 // ── Diversos ──────────────────────────────────────────────────
 export const DAILY_XP_GOAL = 50;
 
