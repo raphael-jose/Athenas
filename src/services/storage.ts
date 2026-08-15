@@ -1,28 +1,36 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Persistência (localStorage) + estado inicial
 // ══════════════════════════════════════════════════════════════
-import { APP_VERSION, AI_DEFAULTS, AI_ENV, LEGACY_STORAGE_KEY, STORAGE_KEY } from "@/lib/constants";
+import { APP_VERSION, AI_DEFAULTS, AI_ENV, ELEVENLABS_DEFAULT_VOICE_ID, LEGACY_STORAGE_KEY, STORAGE_KEY } from "@/lib/constants";
 import { embeddedKey } from "@/lib/embeddedKey";
 import { dayKey } from "@/lib/utils";
 import type { Settings, StudentState } from "@/types";
 
 export function defaultSettings(): Settings {
+  // chave: primeiro a embutida (app pronto de cara, sem configurar nada);
+  // o usuário pode trocar pela própria nas Configurações → IA (BYOK).
+  const embedded = embeddedKey() ?? "";
+  // o "mock" do AI_ENV é o fallback de build (não uma escolha explícita)
+  const envProvider = AI_ENV.provider as Settings["aiProvider"];
   return {
     theme: "rose",
     fontScale: 1,
     animations: true,
     sound: true,
     tts: true,
-    aiProvider: (AI_ENV.provider as Settings["aiProvider"]) || "mock",
+    // PADRÃO: Ollama Cloud (online) quando há chave; offline só sem chave
+    // (MockProvider), que funciona 100% sem internet.
+    aiProvider: envProvider && envProvider !== "mock" ? envProvider : embedded ? "ollama" : "mock",
     // no proxy, a URL padrão é a do Worker (chave vive no servidor)
     aiBaseUrl:
       AI_ENV.provider === "proxy" && AI_ENV.proxyUrl
         ? AI_ENV.proxyUrl
         : AI_ENV.baseUrl || AI_DEFAULTS.baseUrl,
     aiModel: AI_ENV.model || AI_DEFAULTS.model,
-    // chave: primeiro a embutida (app pronto de cara, sem configurar nada);
-    // o usuário pode trocar pela própria nas Configurações → IA (BYOK).
-    aiKey: embeddedKey() ?? ""
+    aiKey: embedded,
+    // voz natural feminina: sem chave, a Lulu usa a melhor voz do dispositivo
+    elevenlabsKey: "",
+    elevenlabsVoiceId: ELEVENLABS_DEFAULT_VOICE_ID
   };
 }
 
@@ -91,16 +99,6 @@ export function loadState(): StudentState {
     // se a chave salva está vazia (ex.: perfil criado antes da chave embutida),
     // cai de volta para a embutida — o app continua funcionando de cara.
     if (!state.settings.aiKey.trim()) state.settings.aiKey = embeddedKey() ?? "";
-
-    // Migração da IA: versões antigas apontavam para "https://ollama.com/api"
-    // (prefixo da API nativa — o /v1/chat/completions dá 404) com o modelo
-    // qwen3:8b (que NÃO existe no cloud, é local). Corrige silenciosamente.
-    if (state.settings.aiBaseUrl.trim().replace(/\/+$/, "") === AI_DEFAULTS.baseUrl + "/api") {
-      state.settings.aiBaseUrl = AI_DEFAULTS.baseUrl;
-    }
-    if (state.settings.aiModel.trim() === "qwen3:8b") {
-      state.settings.aiModel = AI_DEFAULTS.model;
-    }
     state.version = APP_VERSION;
     if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
     if (!Array.isArray(state.conversationLogs)) state.conversationLogs = [];

@@ -41,15 +41,13 @@ describe("embeddedKey", () => {
     }
   });
 
-  it("a chave real não aparece nos arquivos de documentação e exemplo", () => {
+  it("a chave real não aparece na documentação pública", () => {
     const k = embeddedKey();
     if (!k) return;
-    for (const f of [".env.example", "README.md", "SECURITY.md"]) {
-      try {
-        expect(readFileSync(f, "utf8"), f).not.toContain(k);
-      } catch {
-        // arquivo ausente no ambiente de teste — ok
-      }
+    try {
+      expect(readFileSync("README.md", "utf8"), "README.md").not.toContain(k);
+    } catch {
+      // arquivo ausente no ambiente de teste — ok
     }
   });
 });

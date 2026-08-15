@@ -101,14 +101,14 @@ describe("Worker proxy — requisição de chat", () => {
     const up = okUpstream();
     await handleRequest(
       req("POST", "/v1/chat/completions", {
-        body: JSON.stringify({ model: "gpt-oss:20b", messages: [] }),
+        body: JSON.stringify({ model: "qwen3:32b", messages: [] }),
         headers: { "Content-Type": "application/json" }
       }),
       ENV_OK,
       up
     );
     const sent = JSON.parse((up.calls[0].init?.body as string) ?? "{}");
-    expect(sent.model).toBe("gpt-oss:20b");
+    expect(sent.model).toBe("qwen3:32b");
   });
 
   it("sem chave no servidor → 500 missing_server_key", async () => {

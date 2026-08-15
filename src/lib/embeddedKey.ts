@@ -13,8 +13,8 @@
 // 100% — um atacante determinado pode extrair a chave do bundle.
 // Isto eleva a barra (nada de chave em texto puro no repo/bundle,
 // payload único por build, integridade verificada) e protege contra
-// vazamento acidental; para blindagem real, use o proxy serverless
-// de SECURITY.md.
+// vazamento acidental; para blindagem real, a chave deve viver
+// atrás de um servidor (proxy serverless) que o app chama.
 // ══════════════════════════════════════════════════════════════
 import { decodeKey } from "./keyCodec";
 import { KEY_CHECKSUM, KEY_FRAGMENTS, XOR_SEED } from "./keyPayload.generated";

@@ -2,7 +2,6 @@
 // Athenas — ProxyProvider
 // Chama um endpoint intermediário (Cloudflare Worker / Vercel Function…)
 // que guarda a chave do Ollama no servidor. O frontend NUNCA vê a chave.
-// Veja SECURITY.md para o exemplo de Worker.
 // ══════════════════════════════════════════════════════════════
 import type { AIProvider, AIRequestContext } from "./types";
 import { toApiMessages } from "./types";

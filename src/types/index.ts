@@ -195,6 +195,9 @@ export interface Settings {
   aiBaseUrl: string;
   aiModel: string;
   aiKey: string; // guardada só no navegador do usuário
+  /** Voz natural da Lulu (ElevenLabs): chave do usuário, só no navegador. */
+  elevenlabsKey: string;
+  elevenlabsVoiceId: string;
 }
 
 export interface MistakeEntry {

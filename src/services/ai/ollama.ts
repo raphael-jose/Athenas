@@ -30,11 +30,7 @@ export class OllamaProvider implements AIProvider {
     if (!this.ready()) {
       throw new Error("missing_api_key");
     }
-    let base = this.cfg.baseUrl.replace(/\/+$/, "");
-    // Ollama Cloud: "https://ollama.com/api" é o prefixo da API NATIVA
-    // (/api/chat, /api/tags). O endpoint OpenAI-compatível /v1/chat/completions
-    // vive em "https://ollama.com" — então remove o "/api" se estiver lá.
-    if (base.endsWith("/api")) base = base.slice(0, -4);
+    const base = this.cfg.baseUrl.replace(/\/+$/, "");
     const url = base.endsWith("/v1") ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
 
     const res = await fetch(url, {

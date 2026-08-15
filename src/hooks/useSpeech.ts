@@ -1,33 +1,35 @@
 // ══════════════════════════════════════════════════════════════
-// Athenas — Fala (Web Speech API): síntese + reconhecimento
+// Athenas — Fala: síntese + reconhecimento
+//
+// 🎀 VOZ DA LULU (regra única em todo o app):
+//   1. VOZ NATURAL FEMININA (ElevenLabs) quando o usuário conecta a
+//      chave em Perfil → Configurações → Voz — o padrão Rachel
+//      (feminina, multilíngue) fala francês e português com
+//      naturalidade. A chave fica só no navegador dele.
+//   2. FALLBACK: a melhor voz FEMININA do dispositivo (Web Speech
+//      API) — cache global + retry + seleção estrita, nunca a voz
+//      padrão masculina genérica do navegador.
+//
 // Detecção de idioma: texto em francês → voz fr-FR; texto em
 // português → voz pt-BR. Cada um na sua língua, sem sotaque
 // cruzado.
-//
-// 🎀 REGRA DE VOZ: o app é SEMPRE feminino quando o navegador
-// oferece uma voz feminina no idioma. Três camadas garantem isso:
-//   1. Cache global de vozes + retry — se as vozes ainda não
-//      carregaram (comum no primeiro toque), o app ESPERA por elas
-//      em vez de falar com a voz padrão do navegador (que costuma
-//      ser masculina).
-//   2. Seleção estrita (pickVoice): feminina conhecida → voz de
-//      gênero neutro → só no fim, masculina conhecida (último
-//      recurso, quando o dispositivo não tem feminina no idioma).
-//   3. Hints de nomes expandidos (Windows/Edge, Google/Android,
-//      Apple/macOS/iOS, FR e PT-BR).
-// Provedores premium (ElevenLabs, Deepgram…) podem entrar depois
-// pela mesma interface.
 // ══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useMemo } from "react";
+import { ELEVENLABS_API_BASE, ELEVENLABS_DEFAULT_VOICE_ID, ELEVENLABS_MODEL } from "@/lib/constants";
+
+export interface NaturalVoiceConfig {
+  key: string;
+  voiceId: string;
+}
 
 export interface SpeechResult {
   supported: boolean;
   /**
-   * Fala o texto no idioma certo com voz FEMININA (quando existir).
-   * Se as vozes ainda não carregaram, aguarda e tenta de novo.
-   * `lang` força um idioma.
+   * Fala o texto com voz FEMININA NATURAL (ElevenLabs, se configurada)
+   * ou com a melhor voz feminina do dispositivo. `lang` força um idioma;
+   * `voice` testa uma configuração sem salvar.
    */
-  speak: (text: string, opts?: { rate?: number; lang?: string; onEnd?: () => void }) => boolean;
+  speak: (text: string, opts?: { rate?: number; lang?: string; onEnd?: () => void; voice?: NaturalVoiceConfig }) => boolean;
   stop: () => void;
   /** Escuta o usuário e devolve a transcrição. Retorna false se o navegador não suportar. */
   listen: (opts: { onResult: (transcript: string) => void; onError?: (code: string) => void; lang?: string }) => boolean;
@@ -141,6 +143,70 @@ export function pickVoice(lang: string, voices: SpeechSynthesisVoice[]): SpeechS
   return bestOf(matches);
 }
 
+// ── Voz natural (ElevenLabs) ──────────────────────────────────
+// Configuração global alimentada pelo AppProvider (settings). A
+// chave vive só no navegador do usuário — nunca no código, nunca no
+// bundle público.
+let naturalVoiceConfig: NaturalVoiceConfig | null = null;
+
+/** Define a voz natural do app (chamada quando as settings mudam). Vazio desativa. */
+export function configureNaturalVoice(key: string, voiceId: string): NaturalVoiceConfig | null {
+  naturalVoiceConfig = key.trim()
+    ? { key: key.trim(), voiceId: voiceId.trim() || ELEVENLABS_DEFAULT_VOICE_ID }
+    : null;
+  return naturalVoiceConfig;
+}
+
+/** Monta a requisição de síntese (pura — testável). */
+export function elevenLabsRequest(text: string, cfg: NaturalVoiceConfig) {
+  const url = `${ELEVENLABS_API_BASE}/${encodeURIComponent(cfg.voiceId)}`;
+  const init: RequestInit = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "xi-api-key": cfg.key
+    },
+    body: JSON.stringify({
+      text,
+      model_id: ELEVENLABS_MODEL,
+      voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true }
+    })
+  };
+  return { url, init };
+}
+
+// Áudio natural em reprodução (para o stop() silenciar de qualquer tela).
+let currentAudio: HTMLAudioElement | null = null;
+
+/** Sintetiza no ElevenLabs e toca. Devolve false se falhar (fallback p/ voz do dispositivo). */
+async function elevenLabsSpeak(text: string, cfg: NaturalVoiceConfig, onEnd?: () => void): Promise<boolean> {
+  try {
+    const { url, init } = elevenLabsRequest(text, cfg);
+    const res = await fetch(url, init);
+    if (!res.ok) return false;
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const audio = new Audio(objectUrl);
+    currentAudio = audio;
+    const cleanup = () => {
+      if (currentAudio === audio) currentAudio = null;
+      URL.revokeObjectURL(objectUrl);
+    };
+    audio.onended = () => {
+      cleanup();
+      onEnd?.();
+    };
+    audio.onerror = () => {
+      cleanup();
+      onEnd?.();
+    };
+    await audio.play();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Cache global: as vozes chegam de forma assíncrona (voiceschanged).
 // Todas as instâncias de useSpeech alimentam o mesmo cache, e o speak
 // consulta o cache + getVoices() na hora — e, se ainda vazio, ESPERA
@@ -161,6 +227,8 @@ interface SpeakOpts {
   rate?: number;
   lang?: string;
   onEnd?: () => void;
+  /** Testa uma configuração de voz natural sem salvar (ex.: botão "Testar"). */
+  voice?: NaturalVoiceConfig;
 }
 
 /** Fala imediatamente com a voz escolhida (ou sem voz se não houver nenhuma). */
@@ -214,6 +282,17 @@ function speakWaitingForVoices(text: string, lang: string, opts?: SpeakOpts) {
   }
 }
 
+/** Fala com a melhor voz feminina do dispositivo (fallback). */
+function webSpeak(text: string, lang: string, opts?: SpeakOpts) {
+  const voice = pickVoice(lang, refreshCache());
+  if (voice) {
+    speakNow(text, lang, voice, opts);
+  } else {
+    // vozes ainda não carregaram: espera por elas antes de falar
+    speakWaitingForVoices(text, lang, opts);
+  }
+}
+
 export function useSpeech(): SpeechResult {
   const supported = typeof window !== "undefined" && "speechSynthesis" in window;
   const canListen = typeof window !== "undefined" && getRecognitionCtor() !== null;
@@ -237,14 +316,18 @@ export function useSpeech(): SpeechResult {
     (text: string, opts?: SpeakOpts) => {
       if (!supported) return false;
       const lang = opts?.lang ?? detectLang(text);
-      // cache global + consulta síncrona: se houver voz (feminina), fala já
-      const voice = pickVoice(lang, refreshCache());
-      if (voice) {
-        speakNow(text, lang, voice, opts);
-      } else {
-        // vozes ainda não carregaram: espera por elas antes de falar
-        speakWaitingForVoices(text, lang, opts);
+      // 1. Voz natural feminina (ElevenLabs) — se falhar (offline, chave
+      //    inválida…), cai automaticamente na voz do dispositivo.
+      const cfg = opts?.voice ?? naturalVoiceConfig;
+      if (cfg) {
+        stop();
+        elevenLabsSpeak(text, cfg, opts?.onEnd).then((ok) => {
+          if (!ok) webSpeak(text, lang, opts);
+        });
+        return true;
       }
+      // 2. Fallback: melhor voz feminina do dispositivo.
+      webSpeak(text, lang, opts);
       return true;
     },
     [supported]
@@ -252,6 +335,14 @@ export function useSpeech(): SpeechResult {
 
   const stop = useCallback(() => {
     if (supported) window.speechSynthesis.cancel();
+    if (currentAudio) {
+      try {
+        currentAudio.pause();
+      } catch {
+        // ignore
+      }
+      currentAudio = null;
+    }
   }, [supported]);
 
   const listen = useCallback(
