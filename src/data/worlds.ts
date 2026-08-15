@@ -67,6 +67,7 @@ const world1Lessons: Lesson[] = [
       "Bonjour = olá / bom dia (usado o dia inteiro até o anoitecer).",
       "Bonsoir = boa noite (quando CHEGA à noite).",
       "Salut = oi / tchau (informal, para amigos).",
+      "Ça va ? = tudo bem? (pergunta carinhosa, informal).",
       "Au revoir = até logo / tchau (ao SAIR)."
     ],
     examples: [

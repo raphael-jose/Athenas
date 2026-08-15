@@ -44,14 +44,14 @@ export function CustomizePage() {
                     <div className="muted small">{t.desc}</div>
                   </div>
                 </div>
-                {active ? (
-                  <Chip variant="green"> ativo</Chip>
-                ) : owned ? (
-                  <Chip variant="rose">usar</Chip>
-                ) : (
+                {!owned ? (
                   <Button size="sm" variant={state.stars >= t.price ? "gold" : "ghost"} onClick={() => buyTheme(t.id)}>
                     <Icon name="star" size={14} /> {t.price}
                   </Button>
+                ) : active ? (
+                  <Chip variant="green"> ativo</Chip>
+                ) : (
+                  <Chip variant="rose">usar</Chip>
                 )}
               </div>
             </Card>

@@ -20,7 +20,6 @@ import { WORLDS, worldById } from "@/data/worlds";
 import { newlyUnlocked, levelFromXp, levelName, updateStreak, type AchievementDef } from "@/services/gamification";
 import { newReviewItem, scheduleReview } from "@/services/srs";
 import { defaultState, loadState, saveState, clearState } from "@/services/storage";
-import { configureNaturalVoice } from "@/hooks/useSpeech";
 import type { CefrBand, ChatMessage, ConversationLog, DailyMission, IconName, StudentState, Settings } from "@/types";
 import { Icon } from "@/components/Icons";
 
@@ -123,11 +122,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
   const [achievementEvent, setAchievementEvent] = useState<AchievementDef | null>(null);
-
-  // Voz natural da Lulu: sincroniza a config global do TTS com as settings.
-  useEffect(() => {
-    configureNaturalVoice(state.settings.elevenlabsKey, state.settings.elevenlabsVoiceId);
-  }, [state.settings.elevenlabsKey, state.settings.elevenlabsVoiceId]);
 
   const commit = useCallback((next: StudentState) => {
     stateRef.current = next;

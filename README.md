@@ -33,16 +33,13 @@ Athenas transforma o aprendizado de francês em uma aventura: você cria sua per
 
 ## 🎀 A voz da Lulu
 
-A Lulu fala com **voz feminina natural** em todo o app — nas aulas, no chat, nos diálogos e nos exercícios de pronúncia.
+A Lulu fala com **voz feminina natural** em todo o app — nas aulas, no chat, nos diálogos e nos exercícios de pronúncia. **Sem configurar nada**: a voz roda de graça no próprio aparelho e funciona até offline.
 
-- Sem configurar nada, ela usa a melhor voz feminina do seu aparelho
-- Para a voz mais natural possível (como uma francesa de verdade), adicione sua chave de voz em **Perfil → Configurações → Voz da Lulu** — a chave fica só no seu navegador
-
-## 💬 A Lulu online (opcional)
+## 💬 A Lulu online
 
 O app funciona **100% offline de graça** — as aulas, jogos e até a professora IA respondem sem internet.
 
-Para respostas ilimitadas da Lulu online, adicione sua chave da IA em **Perfil → Configurações → IA**. Ela fica guardada só no seu navegador — nada vai para o ar além da sua conversa.
+Com internet, a Lulu **online** responde pela nuvem com respostas ilimitadas — sem precisar configurar nada. Se o sinal cair no meio de uma conversa, ela continua respondendo pelo modo offline para você nunca ficar na mão. 🌸
 
 ---
 

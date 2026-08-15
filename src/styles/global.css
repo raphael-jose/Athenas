@@ -1526,6 +1526,31 @@ input, textarea, select {
   gap: 3px;
 }
 
+/* Com muitas opções (ex.: fonte), os pills quebram linha em vez de
+   estourar o card e ficar cortados — com largura natural, centrados. */
+.setting-row .seg {
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+}
+.setting-row .seg button {
+  flex: 0 1 auto;
+}
+
+/* Seletor de tema (dropdown) — compacto no fim da linha, com chevron */
+.setting-row .theme-select {
+  flex: 0 1 180px;
+  min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23777777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 15px;
+  cursor: pointer;
+}
+
 .seg button {
   flex: 1;
   padding: 8px 12px;

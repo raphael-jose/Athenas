@@ -1,17 +1,19 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Central de IA 
-// Chat, Conversa, "Ça sonne français?", Modo Professor
+// Chat, Conversa e "Ça sonne français?" — todos com a Lulu online
+// quando há chave/proxy configurado (fallback offline embutido).
 // ══════════════════════════════════════════════════════════════
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
 import { buildStudentProfile, buildSystemPrompt } from "@/services/ai/prompts";
-import { createProvider, providerErrorToMessage } from "@/services/ai";
+import { createProvider, providerErrorToMessage, MockProvider } from "@/services/ai";
+import { relayChat } from "@/services/ai/relay";
 import { analyzeFrench, SOUND_FRENCH_TIPS } from "@/services/ai/corrections";
 import { SCENARIOS, scenarioLines, type Scenario } from "@/data/scenarios";
 import { compareEvolution, computeInterviewCompetencies, conversationStats, nextAttempt, overallCompetencyScore, practicedScenarios, previousLog, type CompetencyScore } from "@/services/conversationReview";
 import { round } from "@/lib/utils";
-import { Button, Card, Chip, Modal, PageHeader, Segmented, TextInput } from "@/components/ai-ui";
+import { Button, Card, Chip, PageHeader, Segmented } from "@/components/ai-ui";
 import { Mascot } from "@/components/Mascot";
 import { Icon } from "@/components/Icons";
 import { AudioButton } from "@/components/AudioButton";
@@ -22,10 +24,9 @@ import { sfxComplete, sfxCorrect, sfxVictory, sfxWrong } from "@/lib/sfx";
 import { fireConfetti } from "@/lib/confetti";
 import { soundFrenchQuiz, isSoundFrenchCorrect, soundFrenchScore, soundFrenchTier } from "@/services/soundFrenchQuiz";
 import type { SoundFrenchQuestion } from "@/data/soundFrench";
-import { AI_ENV } from "@/lib/constants";
 import type { ChatMessage, ConversationLog, IconName } from "@/types";
 
-type Tab = "chat" | "conversa" | "sonne" | "prof";
+type Tab = "chat" | "conversa" | "sonne";
 
 // ── Áudio nas falas da Lulu ────────────────────────────────────
 // Fala mista (português com exemplos em francês entre aspas): extrai
@@ -54,13 +55,6 @@ export function AIHub() {
   const { state } = useApp();
   const { navigate } = useRouter();
   const [tab, setTab] = useState<Tab>("chat");
-  const [configOpen, setConfigOpen] = useState(false);
-  const [pending, setPending] = useState<string | null>(null);
-
-  const askTeacher = (prompt: string) => {
-    setPending(prompt);
-    setTab("chat");
-  };
 
   return (
     <div className="page">
@@ -68,11 +62,6 @@ export function AIHub() {
         title={<><Icon name="robot" size={20} style={{ verticalAlign: -3 }} /> Lulu IA</>}
         sub="Sua professora particular de francês"
         onBack={() => navigate("/")}
-        right={
-          <button className="back-btn" onClick={() => setConfigOpen(true)} aria-label="Configurar IA">
-            <Icon name="gear" size={19} />
-          </button>
-        }
       />
 
       <div className="mb-3">
@@ -81,26 +70,22 @@ export function AIHub() {
           options={[
             { value: "chat", label: <><Icon name="chat" size={15} /> Chat</> },
             { value: "conversa", label: <><Icon name="maskHappy" size={15} /> Conversa</> },
-            { value: "sonne", label: <><Icon name="magicWand" size={15} /> Sonne?</> },
-            { value: "prof", label: <><Icon name="chalkboardTeacher" size={15} /> Prof</> }
+            { value: "sonne", label: <><Icon name="magicWand" size={15} /> Sonne?</> }
           ]}
           value={tab}
           onChange={setTab}
         />
       </div>
 
-      {tab === "chat" && <ChatMode initialPrompt={pending} onConsumed={() => setPending(null)} />}
+      {tab === "chat" && <ChatMode />}
       {tab === "conversa" && <ConversationMode />}
       {tab === "sonne" && <SoundFrenchMode />}
-      {tab === "prof" && <TeacherMode onAsk={askTeacher} />}
-
-      <ConfigModal open={configOpen} onClose={() => setConfigOpen(false)} />
 
       <div className="center mt-4">
         <p className="muted small">
           {state.settings.aiProvider === "mock"
-            ? "Modo offline: a Lulu responde sem internet. Configure a chave do Ollama para respostas ilimitadas!"
-            : `Provedor: ${state.settings.aiProvider} · modelo ${state.settings.aiModel}`}
+            ? "Modo offline: a Lulu responde sem internet. Ative o modo online para respostas ilimitadas!"
+            : "Modo online: a Lulu responde com a IA na nuvem ✨"}
         </p>
       </div>
     </div>
@@ -110,14 +95,13 @@ export function AIHub() {
 // ══════════════════════════════════════════════════════════════
 // Chat
 // ══════════════════════════════════════════════════════════════
-function ChatMode({ initialPrompt, onConsumed }: { initialPrompt?: string | null; onConsumed?: () => void }) {
-  const { state, sendAiMessage } = useApp();
+function ChatMode() {
+  const { state, sendAiMessage, toast } = useApp();
   const { navigate } = useRouter();
-  const [input, setInput] = useState(initialPrompt ?? "");
+  const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
-  const autoSent = useRef(false);
 
   const provider = useMemo(() => createProvider(state.settings), [state.settings]);
   const profile = useMemo(() => buildStudentProfile(state), [state]);
@@ -130,16 +114,6 @@ function ChatMode({ initialPrompt, onConsumed }: { initialPrompt?: string | null
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length, typing]);
 
-  // Envia automaticamente o prompt do Modo Professor
-  useEffect(() => {
-    if (initialPrompt && !autoSent.current) {
-      autoSent.current = true;
-      onConsumed?.();
-      void send();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const send = async () => {
     const text = input.trim();
     if (!text || typing) return;
@@ -147,14 +121,31 @@ function ChatMode({ initialPrompt, onConsumed }: { initialPrompt?: string | null
     setError(null);
     sendAiMessage("user", text);
     setTyping(true);
+    const historyForLulu: ChatMessage[] = [...state.aiMessages, { role: "user", content: text, at: Date.now() }];
     try {
-      const reply = await provider.chat({
-        messages: [...state.aiMessages, { role: "user", content: text, at: Date.now() }],
-        system
-      });
+      // 1) Lulu NA NUVEM direto (proxy/Worker configurado) — a melhor resposta
+      const reply = await provider.chat({ messages: historyForLulu, system });
       sendAiMessage("assistant", reply);
     } catch (err) {
-      setError(providerErrorToMessage(err));
+      try {
+        // 2) O navegador não fala direto com o ollama.com (sem CORS). O relay
+        // leva a mensagem à NUVEM com a chave — a Lulu online funciona de verdade.
+        if (state.settings.aiProvider === "mock") throw new Error("offline_mode");
+        const reply = await relayChat(
+          { baseUrl: state.settings.aiBaseUrl, model: state.settings.aiModel, apiKey: state.settings.aiKey },
+          { messages: historyForLulu, system }
+        );
+        sendAiMessage("assistant", reply);
+      } catch {
+        try {
+          // 3) Último recurso: Lulu offline (banco de vocabulário local)
+          const offlineReply = await new MockProvider().chat({ messages: historyForLulu, system });
+          sendAiMessage("assistant", offlineReply);
+          toast("Sem sinal com a Lulu online — respondi pelo modo offline 🌸", "radio");
+        } catch {
+          setError(providerErrorToMessage(err));
+        }
+      }
     } finally {
       setTyping(false);
     }
@@ -364,7 +355,24 @@ function ConversationMode() {
             system: "Você é a Lulu, professora fofa de francês."
           })
           .then((t) => setFeedback((f) => (f ? { ...f, text: t } : f)))
-          .catch(() => undefined);
+          .catch(() => {
+            // Direto sem sinal? O relay leva à nuvem com a chave.
+            void relayChat(
+              { baseUrl: state.settings.aiBaseUrl, model: state.settings.aiModel, apiKey: state.settings.aiKey },
+              {
+                messages: [
+                  {
+                    role: "user",
+                    content: `Cenário: ${scenario.title}. Respostas do aluno em francês:\n${nextReplies.join("\n")}\n\nDê um feedback curto e encorajador em português: 2 pontos fortes e 1 sugestão.`,
+                    at: Date.now()
+                  }
+                ],
+                system: "Você é a Lulu, professora fofa de francês."
+              }
+            )
+              .then((t) => setFeedback((f) => (f ? { ...f, text: t } : f)))
+              .catch(() => undefined);
+          });
       }
       toast(attempt > 1 ? "Revisão de conversa concluída! +12 XP" : "Conversa concluída! +15 XP", "maskHappy");
     } else {
@@ -627,14 +635,62 @@ function computeFeedback(replies: string[], state: StudentStateLite) {
 // Ça sonne français ?
 // ══════════════════════════════════════════════════════════════
 function SoundFrenchMode() {
+  const { state } = useApp();
   const [text, setText] = useState("");
   const [result, setResult] = useState<ReturnType<typeof analyzeFrench> | null>(null);
+  const [aiNote, setAiNote] = useState<string | null>(null);
+  const [thinking, setThinking] = useState(false);
 
-  const analyze = () => {
-    const res = analyzeFrench(text);
+  const provider = useMemo(() => createProvider(state.settings), [state.settings]);
+
+  const analyze = async () => {
+    const phrase = text.trim();
+    if (!phrase || thinking) return;
+    setThinking(true);
+    setAiNote(null);
+    setResult(null);
+    // Resposta local imediata (funciona sempre, até offline)
+    const res = analyzeFrench(phrase);
     setResult(res);
     if (res.isNatural) sfxCorrect();
     else sfxWrong();
+    // A Lulu ONLINE entende a frase de verdade (chave/proxy configurado);
+    // sem sinal, o cérebro local analisa; e o resultado de regras acima
+    // é a rede de segurança final.
+    try {
+      const ai = await provider.chat({
+        messages: [
+          {
+            role: "user",
+            content: `Analise esta frase em francês: "${phrase}".\nResponda em português do Brasil, em no máximo 3 frases: 1) a frase está correta e natural? 2) se não estiver, qual é a versão mais natural? 3) uma dica rápida.`,
+            at: Date.now()
+          }
+        ],
+        system: "Você é a Lulu, professora fofa de francês."
+      });
+      setAiNote(ai);
+    } catch {
+      try {
+        const ai = await relayChat(
+          { baseUrl: state.settings.aiBaseUrl, model: state.settings.aiModel, apiKey: state.settings.aiKey },
+          {
+            messages: [
+              {
+                role: "user",
+                content: `Analise esta frase em francês: "${phrase}".\nResponda em português do Brasil, em no máximo 3 frases: 1) a frase está correta e natural? 2) se não estiver, qual é a versão mais natural? 3) uma dica rápida.`,
+                at: Date.now()
+              }
+            ],
+            system: "Você é a Lulu, professora fofa de francês."
+          }
+        );
+        setAiNote(ai);
+      } catch {
+        // offline: o resultado local continua valendo
+      }
+    } finally {
+      setThinking(false);
+    }
   };
 
   return (
@@ -652,12 +708,27 @@ function SoundFrenchMode() {
           placeholder="Ex.: Je suis très fatigué aujourd'hui."
           aria-label="Frase em francês"
         />
-        <Button className="mt-3" block onClick={analyze} disabled={!text.trim()}>
-          Analisar
+        <Button className="mt-3" block onClick={analyze} disabled={!text.trim() || thinking}>
+          {thinking ? "Lulu está pensando…" : "Analisar"}
         </Button>
       </Card>
 
-      {result && (
+      {thinking && (
+        <Card className="center muted small">
+          A Lulu está analisando sua frase…
+        </Card>
+      )}
+
+      {aiNote && (
+        <Card className="pop-in">
+          <div className="feedback good">
+            <Icon name="sparkle" size={15} style={{ verticalAlign: -2 }} /> <strong>Lulu (online) analisou:</strong>
+          </div>
+          <p className="mt-2 mb-0" style={{ whiteSpace: "pre-wrap" }}>{aiNote}</p>
+        </Card>
+      )}
+
+      {!aiNote && result && (
         <Card className="pop-in">
           {result.isNatural && (
             <div className="feedback good">
@@ -861,134 +932,6 @@ function SoundFrenchQuiz() {
         </div>
       )}
     </Card>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════
-// Modo Professor
-// ══════════════════════════════════════════════════════════════
-function TeacherMode({ onAsk }: { onAsk: (q: string) => void }) {
-  const { toast } = useApp();
-  const PRESETS: { id: string; icon: IconName; label: string; prompt: string }[] = [
-    { id: "plano", icon: "notePencil", label: "Plano de aula", prompt: "Crie um plano de aula de francês (nível A1, tema: apresentações) com objetivo, vocabulário, gramática, atividades e um desafio final." },
-    { id: "exercicios", icon: "pencilSimple", label: "Gerar exercícios", prompt: "Gere 5 exercícios de francês (nível A2) sobre o passé composé, com respostas comentadas." },
-    { id: "conceito", icon: "lightbulb", label: "Explicar conceito", prompt: "Explique a diferença entre passé composé e imparfait para um aluno de nível A2, com exemplos." },
-    { id: "prova", icon: "notePencil", label: "Prova rápida", prompt: "Crie uma mini prova de francês nível B1 com 8 questões variadas (vocabulário, gramática, interpretação) e gabarito." },
-    { id: "erros", icon: "warning", label: "Erros comuns", prompt: "Liste os 6 erros mais comuns de brasileiros falando francês e como corrigi-los." }
-  ];
-
-  return (
-    <div className="stack">
-      <Card className="center">
-        <Mascot mood="proud" size={100} />
-        <h3 className="row" style={{ gap: 8, justifyContent: "center" }}><Icon name="chalkboardTeacher" size={22} /> Modo Professor</h3>
-        <p className="muted small">
-          Para quem ensina francês: a Lulu gera planos, exercícios, provas e explicações. É só escolher!
-        </p>
-      </Card>
-      {PRESETS.map((p) => (
-        <button key={p.id} className="choice-btn" onClick={() => { toast("Pergunta enviada para a Lulu!", "chat"); onAsk(p.prompt); }}>
-          <span className="cb-emoji" style={{ color: "var(--c-accent-deep)" }}>
-            <Icon name={p.icon} size={22} />
-          </span>
-          <span className="grow">
-            {p.label}
-            <small>{p.prompt.slice(0, 60)}…</small>
-          </span>
-          <span aria-hidden>→</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════
-// Config
-// ══════════════════════════════════════════════════════════════
-function ConfigModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { state, setSettings, toast } = useApp();
-  const [base, setBase] = useState(state.settings.aiBaseUrl);
-  const [model, setModel] = useState(state.settings.aiModel);
-  const [key, setKey] = useState(state.settings.aiKey);
-  const [testing, setTesting] = useState(false);
-
-  const provider = useMemo(
-    () => createProvider({ ...state.settings, aiBaseUrl: base, aiModel: model, aiKey: key }),
-    [state.settings, base, model, key]
-  );
-
-  const save = () => {
-    setSettings({ aiBaseUrl: base.trim(), aiModel: model.trim(), aiKey: key.trim() });
-    toast("Configurações de IA salvas!", "radio");
-    onClose();
-  };
-
-  const test = async () => {
-    setTesting(true);
-    try {
-      const r = await provider.chat({ messages: [{ role: "user", content: "Dis bonjour !", at: Date.now() }], system: "Responda em uma palavra." });
-      toast(`Sinal forte! Lulu: ${r.slice(0, 40)}`, "checkCircle");
-    } catch (e) {
-      toast(providerErrorToMessage(e), "radio");
-    } finally {
-      setTesting(false);
-    }
-  };
-
-  return (
-    <Modal open={open} onClose={onClose} title="Configuração da IA">
-      <div className="stack">
-        <label className="small bold" htmlFor="provider">Provedor</label>
-        <Segmented
-          label="Provedor"
-          value={state.settings.aiProvider}
-          onChange={(v) => {
-            if (v === "proxy" && !base.trim()) {
-              // ao escolher o proxy, preenche a URL do Worker se soubermos dela
-              const url = AI_ENV.proxyUrl || "";
-              setBase(url);
-              setSettings({ aiProvider: v, aiBaseUrl: url });
-            } else {
-              setSettings({ aiProvider: v });
-            }
-          }}
-          options={[
-            { value: "mock", label: "Offline" },
-            { value: "ollama", label: "Ollama" },
-            { value: "proxy", label: "Proxy" }
-          ]}
-        />
-        {state.settings.aiProvider === "proxy" ? (
-          <>
-            <label className="small bold" htmlFor="base">URL do proxy (Cloudflare Worker)</label>
-            <TextInput id="base" value={base} onChange={setBase} placeholder="https://athenas-ai-proxy.SEU-SUBDOMINIO.workers.dev" />
-            <p className="muted small row" style={{ gap: 6 }}>
-              <Icon name="lock" size={14} /> A chave vive no servidor do proxy — aqui nem precisa.
-            </p>
-          </>
-        ) : (
-          <>
-            <label className="small bold" htmlFor="base">Base URL</label>
-            <TextInput id="base" value={base} onChange={setBase} placeholder="https://ollama.com/api" />
-            <label className="small bold" htmlFor="model">Modelo</label>
-            <TextInput id="model" value={model} onChange={setModel} placeholder="qwen3:8b" />
-            <label className="small bold" htmlFor="key">API Key</label>
-            <TextInput id="key" value={key} onChange={setKey} placeholder="sk-…" type="password" />
-            <p className="muted small row" style={{ gap: 6 }}>
-              <Icon name="lock" size={14} /> A chave fica só no seu navegador.
-            </p>
-          </>
-        )}
-        <div className="row">
-          <Button variant="ghost" className="grow" onClick={test} disabled={testing}>
-            {testing ? "Testando…" : "Testar sinal"}
-          </Button>
-          <Button className="grow" onClick={save}>
-            Salvar
-          </Button>
-        </div>
-      </div>
-    </Modal>
   );
 }
 

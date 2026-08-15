@@ -12,7 +12,7 @@ import { Icon } from "@/components/Icons";
 import { Mascot, type Mood } from "@/components/Mascot";
 import { AudioButton } from "@/components/AudioButton";
 import { useSpeech } from "@/hooks/useSpeech";
-import { LEGACY_STORAGE_KEY, STORAGE_KEY } from "@/lib/constants";
+import { STORAGE_KEY } from "@/lib/constants";
 import type { ReviewItem } from "@/types";
 
 export function ReviewPage() {
@@ -67,17 +67,29 @@ export function ReviewPage() {
   }
 
   if (!current) {
+    const hasWords = state.wordsLearned.length > 0;
     return (
       <div className="page">
         <PageHeader title={<><Icon name="brain" size={20} style={{ verticalAlign: -3 }} /> Revisão</>} sub="Repetição espaçada inteligente" onBack={() => navigate("/")} />
-        <EmptyState
-          icon="flower"
-          title="Nada para revisar agora"
-          text="Você está em dia! Complete mais aulas para encher sua fila de revisão — ou pratique as palavras recentes."
-          action={
-            <Button onClick={startPractice}>Praticar palavras recentes</Button>
-          }
-        />
+        {hasWords ? (
+          <EmptyState
+            icon="flower"
+            title="Nada para revisar agora"
+            text="Você está em dia! Complete mais aulas para encher sua fila de revisão — ou pratique as palavras recentes."
+            action={
+              <Button onClick={startPractice}>Praticar palavras recentes</Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon="flower"
+            title="Vamos aprender as primeiras palavras !"
+            text="Sua fila de revisão está vazia porque você ainda não aprendeu nenhuma palavra — complete a primeira aula e elas entram aqui automaticamente."
+            action={
+              <Button onClick={() => navigate("/map")}>Ir para a primeira aula</Button>
+            }
+          />
+        )}
         <div className="center mt-4">
           <Mascot mood="happy" size={100} />
         </div>
@@ -150,7 +162,7 @@ function practiceItems(): ReviewItem[] {
   // Palavras já aprendidas (sem precisar mexer na fila real)
   const learned: string[] = [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const s = JSON.parse(raw);
       if (Array.isArray(s.wordsLearned)) learned.push(...s.wordsLearned.slice(-10));

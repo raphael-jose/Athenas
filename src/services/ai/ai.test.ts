@@ -9,8 +9,10 @@ describe("AIProvider (abstração)", () => {
   it("padrão é Ollama Cloud quando há chave embutida (cloud como padrão)", () => {
     const s = defaultSettings();
     expect(s.aiProvider).toBe("ollama");
-    expect(s.aiBaseUrl).toContain("ollama.com/api");
-    expect(s.aiModel).toBe("qwen3:8b");
+    // endpoint OpenAI-compatível do Ollama Cloud (sem /api — é a API nativa)
+    expect(s.aiBaseUrl).toBe("https://ollama.com");
+    // modelo que existe de verdade no cloud (qwen3:8b é local)
+    expect(s.aiModel).toBe("gpt-oss:20b");
   });
 
   it("provedor mock está sempre pronto", () => {
@@ -40,6 +42,57 @@ describe("AIProvider (abstração)", () => {
     });
     expect(out.length).toBeGreaterThan(10);
     expect(out.toLowerCase()).toContain("bonjour");
+  });
+
+  it("mock consulta o banco completo de vocabulário (FR→PT e PT→FR)", async () => {
+    const p = new MockProvider();
+    const a = await p.chat({ messages: [{ role: "user", content: "o que significa table?", at: 0 }], system: "x" });
+    expect(a).toContain("mesa");
+    const b = await p.chat({ messages: [{ role: "user", content: "como se diz 'mesa'?", at: 0 }], system: "x" });
+    expect(b).toContain("table");
+    const c = await p.chat({ messages: [{ role: "user", content: "o que significa bonjour?", at: 0 }], system: "x" });
+    expect(c.toLowerCase()).toContain("olá".toLowerCase());
+  });
+
+  it("mock reconhece formas conjugadas e aponta o verbo", async () => {
+    const p = new MockProvider();
+    const out = await p.chat({ messages: [{ role: "user", content: "o que significa 'suis'?", at: 0 }], system: "x" });
+    expect(out).toContain("être");
+    expect(out).toContain("suis");
+  });
+
+  it("mock mantém conversa com mini-perguntas (acerta ou erra, segue o fluxo)", async () => {
+    const p = new MockProvider();
+    const first = await p.chat({ messages: [{ role: "user", content: "me dá um exercício", at: 0 }], system: "x" });
+    expect(first).toContain("Perguntinha");
+    const history = [
+      { role: "user" as const, content: "me dá um exercício", at: 0 },
+      { role: "assistant" as const, content: first, at: 1 },
+      { role: "user" as const, content: "merci", at: 2 }
+    ];
+    const second = await p.chat({ messages: history, system: "x" });
+    expect(second).toMatch(/Bravo|Quase/);
+    const third = await p.chat({
+      messages: [...history, { role: "assistant" as const, content: second, at: 3 }, { role: "user" as const, content: "pular", at: 4 }],
+      system: "x"
+    });
+    expect(third).toContain("Sem problema");
+  });
+
+  it("mock não prende o aluno no loop do quiz (pergunta real responde de verdade)", async () => {
+    const p = new MockProvider();
+    const first = await p.chat({ messages: [{ role: "user", content: "me dá um exercício", at: 0 }], system: "x" });
+    expect(first).toContain("Perguntinha:");
+    const out = await p.chat({
+      messages: [
+        { role: "user", content: "me dá um exercício", at: 0 },
+        { role: "assistant", content: first, at: 1 },
+        { role: "user", content: "tenho uma duvida, pode me ajudar?", at: 2 }
+      ],
+      system: "x"
+    });
+    expect(out).not.toMatch(/Quase|Bravo|Sem problema/);
+    expect(out.length).toBeGreaterThan(10);
   });
 
   it("mock detecta pedido de correção e diferenciais", async () => {

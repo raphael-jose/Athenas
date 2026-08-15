@@ -1,11 +1,11 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Fala: síntese + reconhecimento
 //
-// 🎀 VOZ DA LULU (regra única em todo o app):
-//   1. VOZ NATURAL FEMININA (ElevenLabs) quando o usuário conecta a
-//      chave em Perfil → Configurações → Voz — o padrão Rachel
-//      (feminina, multilíngue) fala francês e português com
-//      naturalidade. A chave fica só no navegador dele.
+// 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
+//   1. VOZ NATURAL FEMININA — modelos abertos do HuggingFace rodando
+//      no próprio navegador (transformers.js), grátis e sem chave.
+//      O modelo (≈36 MB) é baixado uma vez do CDN público e fica no
+//      cache — depois funciona até offline.
 //   2. FALLBACK: a melhor voz FEMININA do dispositivo (Web Speech
 //      API) — cache global + retry + seleção estrita, nunca a voz
 //      padrão masculina genérica do navegador.
@@ -15,21 +15,16 @@
 // cruzado.
 // ══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useMemo } from "react";
-import { ELEVENLABS_API_BASE, ELEVENLABS_DEFAULT_VOICE_ID, ELEVENLABS_MODEL } from "@/lib/constants";
-
-export interface NaturalVoiceConfig {
-  key: string;
-  voiceId: string;
-}
+import { isNaturalReady, langToModel, synthesizeNaturalVoice } from "@/services/naturalVoice";
 
 export interface SpeechResult {
   supported: boolean;
   /**
-   * Fala o texto com voz FEMININA NATURAL (ElevenLabs, se configurada)
-   * ou com a melhor voz feminina do dispositivo. `lang` força um idioma;
-   * `voice` testa uma configuração sem salvar.
+   * Fala o texto com voz FEMININA NATURAL (HuggingFace no navegador)
+   * ou, se falhar, com a melhor voz feminina do dispositivo.
+   * `lang` força um idioma.
    */
-  speak: (text: string, opts?: { rate?: number; lang?: string; onEnd?: () => void; voice?: NaturalVoiceConfig }) => boolean;
+  speak: (text: string, opts?: { rate?: number; lang?: string; onEnd?: () => void }) => boolean;
   stop: () => void;
   /** Escuta o usuário e devolve a transcrição. Retorna false se o navegador não suportar. */
   listen: (opts: { onResult: (transcript: string) => void; onError?: (code: string) => void; lang?: string }) => boolean;
@@ -143,68 +138,77 @@ export function pickVoice(lang: string, voices: SpeechSynthesisVoice[]): SpeechS
   return bestOf(matches);
 }
 
-// ── Voz natural (ElevenLabs) ──────────────────────────────────
-// Configuração global alimentada pelo AppProvider (settings). A
-// chave vive só no navegador do usuário — nunca no código, nunca no
-// bundle público.
-let naturalVoiceConfig: NaturalVoiceConfig | null = null;
-
-/** Define a voz natural do app (chamada quando as settings mudam). Vazio desativa. */
-export function configureNaturalVoice(key: string, voiceId: string): NaturalVoiceConfig | null {
-  naturalVoiceConfig = key.trim()
-    ? { key: key.trim(), voiceId: voiceId.trim() || ELEVENLABS_DEFAULT_VOICE_ID }
-    : null;
-  return naturalVoiceConfig;
-}
-
-/** Monta a requisição de síntese (pura — testável). */
-export function elevenLabsRequest(text: string, cfg: NaturalVoiceConfig) {
-  const url = `${ELEVENLABS_API_BASE}/${encodeURIComponent(cfg.voiceId)}`;
-  const init: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "xi-api-key": cfg.key
-    },
-    body: JSON.stringify({
-      text,
-      model_id: ELEVENLABS_MODEL,
-      voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true }
-    })
-  };
-  return { url, init };
-}
-
+// ── Voz natural (HuggingFace no navegador) ────────────────────
 // Áudio natural em reprodução (para o stop() silenciar de qualquer tela).
 let currentAudio: HTMLAudioElement | null = null;
 
-/** Sintetiza no ElevenLabs e toca. Devolve false se falhar (fallback p/ voz do dispositivo). */
-async function elevenLabsSpeak(text: string, cfg: NaturalVoiceConfig, onEnd?: () => void): Promise<boolean> {
+// Proteção contra chamadas simultâneas (o pipeline sintetiza em série)
+// e contra resultados atrasados após o fallback já ter falado.
+let naturalBusy = false;
+let naturalToken = 0;
+
+// Primeira fala baixa o modelo (≈36 MB) — dá tempo; depois é rápido.
+const NATURAL_FIRST_TIMEOUT_MS = 45000;
+const NATURAL_FAST_TIMEOUT_MS = 12000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = window.setTimeout(() => reject(new Error("timeout")), ms);
+    p.then(
+      (v) => {
+        window.clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        window.clearTimeout(t);
+        reject(e);
+      }
+    );
+  });
+}
+
+/** Toca um blob de áudio e avisa quando terminar. */
+function playAudioBlob(blob: Blob, onEnd?: () => void) {
+  const objectUrl = URL.createObjectURL(blob);
+  const audio = new Audio(objectUrl);
+  currentAudio = audio;
+  const cleanup = () => {
+    if (currentAudio === audio) currentAudio = null;
+    URL.revokeObjectURL(objectUrl);
+  };
+  audio.onended = () => {
+    cleanup();
+    onEnd?.();
+  };
+  audio.onerror = () => {
+    cleanup();
+    onEnd?.();
+  };
+  audio.play().catch(() => {
+    cleanup();
+    onEnd?.();
+  });
+}
+
+/**
+ * Tenta a voz natural; se falhar ou demorar demais, fala com a
+ * melhor voz feminina do dispositivo (sem duplicar o áudio).
+ */
+async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  let fellBack = false;
+  const timeoutMs = isNaturalReady() ? NATURAL_FAST_TIMEOUT_MS : NATURAL_FIRST_TIMEOUT_MS;
   try {
-    const { url, init } = elevenLabsRequest(text, cfg);
-    const res = await fetch(url, init);
-    if (!res.ok) return false;
-    const blob = await res.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    const audio = new Audio(objectUrl);
-    currentAudio = audio;
-    const cleanup = () => {
-      if (currentAudio === audio) currentAudio = null;
-      URL.revokeObjectURL(objectUrl);
-    };
-    audio.onended = () => {
-      cleanup();
-      onEnd?.();
-    };
-    audio.onerror = () => {
-      cleanup();
-      onEnd?.();
-    };
-    await audio.play();
-    return true;
+    const audio = await withTimeout(synthesizeNaturalVoice(text, lang), timeoutMs);
+    // outra fala assumiu ou o fallback já falou — não duplica áudio
+    if (token !== naturalToken || fellBack) return;
+    playAudioBlob(audio.blob, opts?.onEnd);
+    return;
   } catch {
-    return false;
+    if (token !== naturalToken) return;
   }
+  fellBack = true;
+  webSpeak(text, lang, opts);
 }
 
 // Cache global: as vozes chegam de forma assíncrona (voiceschanged).
@@ -227,8 +231,6 @@ interface SpeakOpts {
   rate?: number;
   lang?: string;
   onEnd?: () => void;
-  /** Testa uma configuração de voz natural sem salvar (ex.: botão "Testar"). */
-  voice?: NaturalVoiceConfig;
 }
 
 /** Fala imediatamente com a voz escolhida (ou sem voz se não houver nenhuma). */
@@ -316,13 +318,14 @@ export function useSpeech(): SpeechResult {
     (text: string, opts?: SpeakOpts) => {
       if (!supported) return false;
       const lang = opts?.lang ?? detectLang(text);
-      // 1. Voz natural feminina (ElevenLabs) — se falhar (offline, chave
-      //    inválida…), cai automaticamente na voz do dispositivo.
-      const cfg = opts?.voice ?? naturalVoiceConfig;
-      if (cfg) {
+      // 1. Voz natural feminina (HuggingFace no navegador) — grátis,
+      //    sem chave. Se falhar (sem internet, CDN fora do ar…), cai
+      //    automaticamente na melhor voz feminina do dispositivo.
+      if (langToModel(lang) && !naturalBusy) {
+        naturalBusy = true;
         stop();
-        elevenLabsSpeak(text, cfg, opts?.onEnd).then((ok) => {
-          if (!ok) webSpeak(text, lang, opts);
+        speakNatural(text, lang, opts).finally(() => {
+          naturalBusy = false;
         });
         return true;
       }

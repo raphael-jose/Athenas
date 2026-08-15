@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Persistência (localStorage) + estado inicial
 // ══════════════════════════════════════════════════════════════
-import { APP_VERSION, AI_DEFAULTS, AI_ENV, ELEVENLABS_DEFAULT_VOICE_ID, LEGACY_STORAGE_KEY, STORAGE_KEY } from "@/lib/constants";
+import { APP_VERSION, AI_DEFAULTS, AI_ENV, STORAGE_KEY, THEMES } from "@/lib/constants";
 import { embeddedKey } from "@/lib/embeddedKey";
 import { dayKey } from "@/lib/utils";
 import type { Settings, StudentState } from "@/types";
@@ -12,25 +12,31 @@ export function defaultSettings(): Settings {
   const embedded = embeddedKey() ?? "";
   // o "mock" do AI_ENV é o fallback de build (não uma escolha explícita)
   const envProvider = AI_ENV.provider as Settings["aiProvider"];
+  // PADRÃO: cloud (Ollama). O navegador não fala direto com o ollama.com
+  // (sem CORS), então com um proxy configurado o padrão vira o proxy;
+  // sem proxy, fica o modo direto e o chat cai no offline com um aviso.
+  const defaultProvider: Settings["aiProvider"] =
+    envProvider && envProvider !== "mock"
+      ? envProvider
+      : AI_ENV.proxyUrl
+        ? "proxy"
+        : embedded
+          ? "ollama"
+          : "mock";
   return {
     theme: "rose",
     fontScale: 1,
     animations: true,
     sound: true,
     tts: true,
-    // PADRÃO: Ollama Cloud (online) quando há chave; offline só sem chave
-    // (MockProvider), que funciona 100% sem internet.
-    aiProvider: envProvider && envProvider !== "mock" ? envProvider : embedded ? "ollama" : "mock",
+    aiProvider: defaultProvider,
     // no proxy, a URL padrão é a do Worker (chave vive no servidor)
     aiBaseUrl:
-      AI_ENV.provider === "proxy" && AI_ENV.proxyUrl
+      defaultProvider === "proxy" && AI_ENV.proxyUrl
         ? AI_ENV.proxyUrl
         : AI_ENV.baseUrl || AI_DEFAULTS.baseUrl,
     aiModel: AI_ENV.model || AI_DEFAULTS.model,
-    aiKey: embedded,
-    // voz natural feminina: sem chave, a Lulu usa a melhor voz do dispositivo
-    elevenlabsKey: "",
-    elevenlabsVoiceId: ELEVENLABS_DEFAULT_VOICE_ID
+    aiKey: embedded
   };
 }
 
@@ -79,14 +85,6 @@ export function defaultState(): StudentState {
 export function loadState(): StudentState {
   try {
     let raw = localStorage.getItem(STORAGE_KEY);
-    // Migração do rebranding: progresso salvo na chave antiga é reaproveitado.
-    if (!raw) {
-      raw = localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (raw) {
-        localStorage.setItem(STORAGE_KEY, raw);
-        localStorage.removeItem(LEGACY_STORAGE_KEY);
-      }
-    }
     if (!raw) return defaultState();
     const parsed = JSON.parse(raw) as Partial<StudentState>;
     const base = defaultState();
@@ -99,6 +97,11 @@ export function loadState(): StudentState {
     // se a chave salva está vazia (ex.: perfil criado antes da chave embutida),
     // cai de volta para a embutida — o app continua funcionando de cara.
     if (!state.settings.aiKey.trim()) state.settings.aiKey = embeddedKey() ?? "";
+    // tema que a pessoa não tem (ex.: bug antigo que liberava tudo) volta ao
+    // padrão — os temas só ficam disponíveis depois de comprados na Loja.
+    if (!THEMES.some((t) => (t.price === 0 || (state.boughtThemes ?? []).includes(t.id)) && t.id === state.settings.theme)) {
+      state.settings.theme = THEMES[0].id;
+    }
     state.version = APP_VERSION;
     if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
     if (!Array.isArray(state.conversationLogs)) state.conversationLogs = [];

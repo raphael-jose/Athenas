@@ -45,6 +45,18 @@ export function Onboarding() {
     setStep("diag");
   };
 
+  // Quem nunca estudou não precisa de teste: começa do zero, com carinho.
+  // E qualquer pessoa pode pular o diagnóstico — sem pressão.
+  const skipDiagnostic = (b: CefrBand) => {
+    // Sem finishDiagnostic de propósito: a conquista "Diagnostiquée" é só
+    // para quem faz o teste de verdade (e o desbloqueio de mundos quem
+    // cuida é o finishOnboarding).
+    const res = { band: b, correct: 0, total: 0, history: [] as number[] };
+    setBand(b);
+    setResult(res);
+    setStep("result");
+  };
+
   const answer = (i: number) => {
     if (!q) return;
     const isRight = i === q.answer;
@@ -107,7 +119,11 @@ export function Onboarding() {
           <h2 style={{ fontSize: "1.5rem" }}>Você já fala francês ?</h2>
           <div className="stack" style={{ width: "100%", maxWidth: 430 }}>
             {SELF_ASSESSMENT.map((opt) => (
-              <button key={opt.id} className="choice-btn" onClick={() => startDiagnostic(opt.startBand)}>
+              <button
+                key={opt.id}
+                className="choice-btn"
+                onClick={() => (opt.id === "zero" ? skipDiagnostic(opt.startBand) : startDiagnostic(opt.startBand))}
+              >
                 <span className="cb-emoji" style={{ color: "var(--c-accent-deep)" }}>
                   <Icon name={opt.icon} size={22} />
                 </span>
@@ -140,21 +156,28 @@ export function Onboarding() {
               ))}
             </div>
           </div>
+          <Button variant="ghost" size="sm" onClick={() => skipDiagnostic(band)}>
+            Prefiro começar sem o teste
+          </Button>
         </>
       )}
 
       {step === "result" && result && (
         <>
-          <Mascot mood={result.correct / result.total >= 0.7 ? "proud" : "happy"} size={105} />
+          <Mascot mood={result.correct / result.total >= 0.7 || result.total === 0 ? "proud" : "happy"} size={105} />
           <h2>Seu ponto de partida :</h2>
           <div className="chip chip-rose" style={{ fontSize: "1rem", padding: "8px 18px" }}>
             Nível estimado <strong>{CEFR_LABELS[result.band]}</strong> — {CEFR_BAND_NAMES[result.band]}
           </div>
-          <p className="muted small">Acertou {result.correct} de {result.total} ({Math.round((result.correct / result.total) * 100)}%)</p>
+          {result.total > 0 ? (
+            <p className="muted small">Acertou {result.correct} de {result.total} ({Math.round((result.correct / result.total) * 100)}%)</p>
+          ) : (
+            <p className="muted small">Sem teste, sem pressa — começamos do zero, com todo carinho ! 🌸</p>
+          )}
           <p className="small" style={{ maxWidth: 380 }}>
             Seu caminho recomendado começa no mundo{" "}
             <strong>{WORLDS.find((w) => w.lessons.length > 0 && w.unlockCefr <= result.band)?.title}</strong>
-            . Sem pressa: cada passo conta !
+            . A primeira aula ensina o básico antes de qualquer exercício.
           </p>
           <Button size="lg" onClick={() => setStep("name")}>
             Continuar →

@@ -15,7 +15,7 @@ compatibility_date = "2024-11-01"
 #   https://SEU-USUARIO.github.io
 # Você pode definir isso também pelo dashboard (Settings → Variables).
 ALLOWED_ORIGINS = ""
-OLLAMA_BASE_URL = "https://ollama.com/api"
-OLLAMA_MODEL = "qwen3:8b"
+OLLAMA_BASE_URL = "https://ollama.com"
+OLLAMA_MODEL = "gpt-oss:20b"
 RATE_LIMIT_MAX = "30"
 RATE_LIMIT_WINDOW = "60"

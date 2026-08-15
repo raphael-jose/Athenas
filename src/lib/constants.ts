@@ -3,10 +3,10 @@
 // ══════════════════════════════════════════════════════════════
 import type { CefrBand, IconName } from "@/types";
 
-export const STORAGE_KEY = "athenas:state:v1";
-/** Chave antiga (antes do rebranding) — lida apenas para migrar o progresso. */
-export const LEGACY_STORAGE_KEY = "antenas:state:v1";
-export const APP_VERSION = 1;
+// v2: reset geral — todos os usuários começam do zero nesta versão.
+// O progresso antigo (athenas:state:v1) fica para trás de propósito.
+export const STORAGE_KEY = "athenas:state:v2";
+export const APP_VERSION = 2;
 
 // ── XP ────────────────────────────────────────────────────────
 export const XP = {
@@ -45,9 +45,13 @@ export const CEFR_BAND_NAMES = [
 export const MAX_BAND: CefrBand = 7;
 
 // ── IA ────────────────────────────────────────────────────────
+// Ollama Cloud: o endpoint OpenAI-compatível vive em https://ollama.com
+// (NÃO em /api — esse prefixo é a API nativa). E o navegador não pode
+// chamar o ollama.com direto (sem CORS): o caminho online real é o proxy
+// (Cloudflare Worker), que fala com a nuvem pelo servidor.
 export const AI_DEFAULTS = {
-  baseUrl: "https://ollama.com/api",
-  model: "qwen3:8b"
+  baseUrl: "https://ollama.com",
+  model: "gpt-oss:20b"
 } as const;
 
 // ATENÇÃO: NÃO existe VITE_OLLAMA_API_KEY de propósito. Toda variável
@@ -60,14 +64,6 @@ export const AI_ENV = {
   model: (import.meta.env.VITE_OLLAMA_MODEL as string) || AI_DEFAULTS.model,
   proxyUrl: (import.meta.env.VITE_AI_PROXY_URL as string) || ""
 };
-
-// ── Voz natural (TTS) ─────────────────────────────────────────
-// Voz FEMININA natural da Lulu em todo o app. A voz padrão é a Rachel
-// (feminina, multilíngue — fala francês e português com naturalidade).
-// O usuário pode trocar pelo ID de qualquer voz feminina da conta dele.
-export const ELEVENLABS_API_BASE = "https://api.elevenlabs.io/v1/text-to-speech";
-export const ELEVENLABS_MODEL = "eleven_multilingual_v2";
-export const ELEVENLABS_DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
 
 // ── Níveis ────────────────────────────────────────────────────
 export const LEVEL_NAMES: Record<number, string> = {

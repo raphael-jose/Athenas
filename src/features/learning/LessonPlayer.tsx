@@ -125,6 +125,9 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
       {phase === "examples" && (
         <Card>
           <h3 className="row" style={{ gap: 8 }}><Icon name="chat" size={20} /> Exemplos de verdade</h3>
+          <p className="muted small row" style={{ gap: 6 }}>
+            <Icon name="speaker" size={15} /> Toque no alto-falante ao lado de cada frase para ouvir a pronúncia
+          </p>
           <div className="stack">
             {lesson.examples.map((e, i) => (
               <div key={i} className="card-soft">

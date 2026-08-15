@@ -4,27 +4,20 @@
 import { useState } from "react";
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
-import { AVATARS, CEFR_LABELS, THEMES, ELEVENLABS_DEFAULT_VOICE_ID } from "@/lib/constants";
+import { AVATARS, CEFR_LABELS, THEMES } from "@/lib/constants";
 import { levelFromXp, levelName, ACHIEVEMENTS } from "@/services/gamification";
 import { formatDuration, percent } from "@/lib/utils";
 import { Button, Card, Chip, Modal, PageHeader, Segmented, SettingRow, StatCard, Switch } from "@/components/ui";
-import { TextInput } from "@/components/ai-ui";
 import { Icon } from "@/components/Icons";
 import type { IconName } from "@/types";
 import { Mascot } from "@/components/Mascot";
-import { useSpeech } from "@/hooks/useSpeech";
 
 export function ProfilePage() {
   const { state, setSettings, resetProgress, toast, updateProfile } = useApp();
-  const { speak } = useSpeech();
   const { navigate } = useRouter();
   const [editName, setEditName] = useState(false);
   const [name, setName] = useState(state.name);
   const [resetOpen, setResetOpen] = useState(false);
-  const [voiceOpen, setVoiceOpen] = useState(false);
-  const [vkey, setVkey] = useState(state.settings.elevenlabsKey);
-  const [vvoice, setVvoice] = useState(state.settings.elevenlabsVoiceId);
-  const [testingVoice, setTestingVoice] = useState(false);
 
   const acc = percent(state.exercisesCorrect, state.exercisesTotal);
   const level = levelFromXp(state.xp);
@@ -37,23 +30,6 @@ export function ProfilePage() {
     updateProfile({ name });
     toast("Perfil atualizado!", "flower");
     setEditName(false);
-  };
-
-  const voiceCfg = { key: vkey.trim(), voiceId: vvoice.trim() || ELEVENLABS_DEFAULT_VOICE_ID };
-  const testVoice = () => {
-    setTestingVoice(true);
-    speak("Bonjour ! Je suis Lulu, ta professeure de français. On commence ?", {
-      lang: "fr-FR",
-      voice: voiceCfg,
-      onEnd: () => setTestingVoice(false)
-    });
-    // trava de segurança: nunca deixa o botão preso em "Testando…"
-    window.setTimeout(() => setTestingVoice(false), 12000);
-  };
-  const saveVoice = () => {
-    setSettings({ elevenlabsKey: vkey.trim(), elevenlabsVoiceId: voiceCfg.voiceId });
-    toast("Voz da Lulu salva! 🎀", "speaker");
-    setVoiceOpen(false);
   };
 
   return (
@@ -139,12 +115,18 @@ export function ProfilePage() {
       </div>
       <Card>
         <SettingRow icon="palette" title="Tema" desc="Escolha sua vibe">
-          <Segmented
-            label="Tema"
+          <select
+            className="text-input theme-select"
+            aria-label="Tema"
             value={state.settings.theme}
-            onChange={(v) => setSettings({ theme: v })}
-            options={THEMES.map((t) => ({ value: t.id, label: t.name.split(" ")[0] }))}
-          />
+            onChange={(e) => setSettings({ theme: e.target.value })}
+          >
+            {/* Só os temas que a pessoa tem (grátis ou comprados na Loja) —
+                os demais ficam trancados até serem desbloqueados com étoiles. */}
+            {THEMES.filter((t) => t.price === 0 || state.boughtThemes.includes(t.id)).map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
         </SettingRow>
         <SettingRow icon="textAa" title="Tamanho da fonte">
           <Segmented
@@ -167,35 +149,6 @@ export function ProfilePage() {
         </SettingRow>
         <SettingRow icon="speaker" title="Áudio (TTS)" desc="Voz nas aulas de listening">
           <Switch on={state.settings.tts} onChange={(v) => setSettings({ tts: v })} label="áudio" />
-        </SettingRow>
-        <SettingRow
-          icon="heart"
-          title="Voz da Lulu"
-          desc={state.settings.elevenlabsKey ? "Voz natural ativada 🎀" : "Voz natural feminina"}
-        >
-          <Button
-            variant="soft"
-            size="sm"
-            onClick={() => {
-              setVkey(state.settings.elevenlabsKey);
-              setVvoice(state.settings.elevenlabsVoiceId);
-              setVoiceOpen(true);
-            }}
-          >
-            {state.settings.elevenlabsKey ? "Configurada ✓" : "Configurar →"}
-          </Button>
-        </SettingRow>
-      </Card>
-
-      {/* IA */}
-      <div className="section-title">
-        <Icon name="robot" size={18} /> IA
-      </div>
-      <Card>
-        <SettingRow icon="radio" title="Provedor" desc={state.settings.aiProvider === "mock" ? "Offline (sem chave)" : `${state.settings.aiProvider} · ${state.settings.aiModel}`}>
-          <Button variant="soft" size="sm" onClick={() => navigate("/ai")}>
-            Configurar →
-          </Button>
         </SettingRow>
       </Card>
 
@@ -252,31 +205,6 @@ export function ProfilePage() {
         <Button className="mt-3" block onClick={saveName}>
           Salvar
         </Button>
-      </Modal>
-
-      {/* Modal voz da Lulu */}
-      <Modal open={voiceOpen} onClose={() => setVoiceOpen(false)} title="Voz da Lulu 🎀">
-        <p className="muted small">
-          Com uma chave do ElevenLabs, a Lulu fala com voz <b>feminina natural</b> em todo o app —
-          como uma francesa de verdade. A chave fica só no seu navegador. Sem chave, ela usa a
-          melhor voz feminina do seu dispositivo.
-        </p>
-        <label className="small bold" htmlFor="vkey">Chave (ElevenLabs)</label>
-        <TextInput id="vkey" value={vkey} onChange={setVkey} placeholder="sk_…" type="password" />
-        <label className="small bold" htmlFor="vvoice">ID da voz</label>
-        <TextInput id="vvoice" value={vvoice} onChange={setVvoice} placeholder={ELEVENLABS_DEFAULT_VOICE_ID} />
-        <p className="muted small">
-          Padrão: <b>Rachel</b> — feminina e multilíngue (francês e português naturais). Troque pelo
-          ID de qualquer voz feminina da sua conta.
-        </p>
-        <div className="row">
-          <Button variant="ghost" className="grow" onClick={testVoice} disabled={testingVoice}>
-            {testingVoice ? "Testando…" : "Testar voz"}
-          </Button>
-          <Button className="grow" onClick={saveVoice}>
-            Salvar
-          </Button>
-        </div>
       </Modal>
 
       {/* Modal reset */}
