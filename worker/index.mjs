@@ -14,7 +14,9 @@
 //   POST {worker}/v1/chat/completions  →  { "content": "…" }
 // ══════════════════════════════════════════════════════════════
 
-const DEFAULT_UPSTREAM = "https://ollama.com/api";
+// Endpoint OpenAI-compatível do Ollama Cloud. NÃO é "https://ollama.com/api"
+// (prefixo da API nativa — /v1/chat/completions ali dá 404).
+const DEFAULT_UPSTREAM = "https://ollama.com";
 
 /** Cabeçalhos CORS — origem permitida só se estiver na lista. */
 export function corsHeaders(origin, allowed) {
@@ -101,8 +103,10 @@ export async function handleRequest(request, env, fetchImpl = globalThis.fetch, 
     // corpo inválido → trata como vazio; mensagens ausentes viram []
   }
 
-  const model = body.model && body.model !== "default" ? String(body.model) : env.OLLAMA_MODEL || "qwen3:8b";
-  const upstream = (env.OLLAMA_BASE_URL || DEFAULT_UPSTREAM).replace(/\/+$/, "");
+  const model = body.model && body.model !== "default" ? String(body.model) : env.OLLAMA_MODEL || "gpt-oss:20b";
+  let upstream = (env.OLLAMA_BASE_URL || DEFAULT_UPSTREAM).replace(/\/+$/, "");
+  // mesma normalização do frontend: ".../api" é o prefixo da API nativa
+  if (upstream.endsWith("/api")) upstream = upstream.slice(0, -4);
   const upstreamUrl = upstream.endsWith("/v1") ? `${upstream}/chat/completions` : `${upstream}/v1/chat/completions`;
 
   let res;

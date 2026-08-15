@@ -96,7 +96,7 @@ A chave embutida existe como **fallback**; o modo blindado é o proxy (abaixo).
 
 **Modo Ollama (chave do usuário, BYOK):**
 1. Perfil → Configurações → IA → Provedor: **Ollama**
-2. Base URL: `https://ollama.com/api` · Modelo: `qwen3:8b` (ou seu modelo)
+2. Base URL: `https://ollama.com` · Modelo: `gpt-oss:20b` (ou seu modelo)
 3. Cole sua **API key** (fica só no seu navegador) → **Testar sinal** → Salvar
 
 **Modo Proxy (recomendado p/ produção — blindagem total):** o app já traz um
@@ -111,8 +111,8 @@ Copie `.env.example` → `.env`:
 
 ```env
 VITE_AI_PROVIDER=mock        # mock | ollama | proxy
-VITE_OLLAMA_BASE_URL=https://ollama.com/api
-VITE_OLLAMA_MODEL=qwen3:8b
+VITE_OLLAMA_BASE_URL=https://ollama.com
+VITE_OLLAMA_MODEL=gpt-oss:20b
 VITE_AI_PROXY_URL=           # URL do seu proxy serverless
 ```
 

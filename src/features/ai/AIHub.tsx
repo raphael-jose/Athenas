@@ -969,9 +969,9 @@ function ConfigModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         ) : (
           <>
             <label className="small bold" htmlFor="base">Base URL</label>
-            <TextInput id="base" value={base} onChange={setBase} placeholder="https://ollama.com/api" />
+            <TextInput id="base" value={base} onChange={setBase} placeholder="https://ollama.com" />
             <label className="small bold" htmlFor="model">Modelo</label>
-            <TextInput id="model" value={model} onChange={setModel} placeholder="qwen3:8b" />
+            <TextInput id="model" value={model} onChange={setModel} placeholder="gpt-oss:20b" />
             <label className="small bold" htmlFor="key">API Key</label>
             <TextInput id="key" value={key} onChange={setKey} placeholder="sk-…" type="password" />
             <p className="muted small row" style={{ gap: 6 }}>

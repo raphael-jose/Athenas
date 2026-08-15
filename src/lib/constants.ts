@@ -45,9 +45,14 @@ export const CEFR_BAND_NAMES = [
 export const MAX_BAND: CefrBand = 7;
 
 // ── IA ────────────────────────────────────────────────────────
+// Endpoint OpenAI-compatível do Ollama Cloud. ATENÇÃO: NÃO é
+// "https://ollama.com/api" — esse é o prefixo da API nativa (/api/chat,
+// /api/tags). O /v1/chat/completions vive direto em https://ollama.com.
+// Modelo: qwen3:8b é LOCAL (não existe no cloud); gpt-oss:20b é um dos
+// modelos cloud disponíveis na conta grátis.
 export const AI_DEFAULTS = {
-  baseUrl: "https://ollama.com/api",
-  model: "qwen3:8b"
+  baseUrl: "https://ollama.com",
+  model: "gpt-oss:20b"
 } as const;
 
 // ATENÇÃO: NÃO existe VITE_OLLAMA_API_KEY de propósito. Toda variável

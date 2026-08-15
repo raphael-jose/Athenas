@@ -14,9 +14,9 @@ describe("AIProvider (abstração)", () => {
   });
 
   it("ollama requer chave", () => {
-    const p = new OllamaProvider({ baseUrl: "https://ollama.com/api", model: "qwen3:8b", apiKey: "" });
+    const p = new OllamaProvider({ baseUrl: "https://ollama.com", model: "gpt-oss:20b", apiKey: "" });
     expect(p.ready()).toBe(false);
-    const p2 = new OllamaProvider({ baseUrl: "https://ollama.com/api", model: "qwen3:8b", apiKey: "sk-test" });
+    const p2 = new OllamaProvider({ baseUrl: "https://ollama.com", model: "gpt-oss:20b", apiKey: "sk-test" });
     expect(p2.ready()).toBe(true);
   });
 
@@ -45,8 +45,25 @@ describe("AIProvider (abstração)", () => {
   });
 
   it("chave ausente no ollama lança erro mapeável", async () => {
-    const p = new OllamaProvider({ baseUrl: "https://ollama.com/api", model: "qwen3:8b", apiKey: "" });
+    const p = new OllamaProvider({ baseUrl: "https://ollama.com", model: "gpt-oss:20b", apiKey: "" });
     await expect(p.chat({ messages: [], system: "x" })).rejects.toThrow("missing_api_key");
+  });
+
+  it("normaliza base URL do Ollama Cloud (remove /api)", async () => {
+    const p = new OllamaProvider({ baseUrl: "https://ollama.com/api", model: "gpt-oss:20b", apiKey: "k" });
+    // chat com fetch stub: verifica a URL montada
+    const calls: string[] = [];
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: any) => {
+      calls.push(String(url));
+      return new Response(JSON.stringify({ choices: [{ message: { content: "oi" } }] }));
+    }) as typeof fetch;
+    try {
+      await p.chat({ messages: [{ role: "user", content: "x", at: 0 }], system: "s" });
+    } finally {
+      globalThis.fetch = origFetch;
+    }
+    expect(calls[0]).toBe("https://ollama.com/v1/chat/completions");
   });
 });
 

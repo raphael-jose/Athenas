@@ -91,6 +91,16 @@ export function loadState(): StudentState {
     // se a chave salva está vazia (ex.: perfil criado antes da chave embutida),
     // cai de volta para a embutida — o app continua funcionando de cara.
     if (!state.settings.aiKey.trim()) state.settings.aiKey = embeddedKey() ?? "";
+
+    // Migração da IA: versões antigas apontavam para "https://ollama.com/api"
+    // (prefixo da API nativa — o /v1/chat/completions dá 404) com o modelo
+    // qwen3:8b (que NÃO existe no cloud, é local). Corrige silenciosamente.
+    if (state.settings.aiBaseUrl.trim().replace(/\/+$/, "") === AI_DEFAULTS.baseUrl + "/api") {
+      state.settings.aiBaseUrl = AI_DEFAULTS.baseUrl;
+    }
+    if (state.settings.aiModel.trim() === "qwen3:8b") {
+      state.settings.aiModel = AI_DEFAULTS.model;
+    }
     state.version = APP_VERSION;
     if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
     if (!Array.isArray(state.conversationLogs)) state.conversationLogs = [];
