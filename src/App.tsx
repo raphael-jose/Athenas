@@ -91,10 +91,23 @@ function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Aquece a voz natural em background (sem travar a tela na 1ª fala)
+  // Aquece a voz natural SEM travar a tela: o carregamento do modelo
+  // (WASM) roda na thread principal e pode congelar o app por alguns
+  // segundos. Por isso só aquecemos quando o usuário fica 30s sem
+  // tocar na tela — nunca no meio de uma digitação ou exercício.
   useEffect(() => {
-    const t = setTimeout(() => warmUpNaturalVoice(0), 4000);
-    return () => clearTimeout(t);
+    let t: number;
+    const schedule = () => {
+      window.clearTimeout(t);
+      t = window.setTimeout(() => warmUpNaturalVoice(0), 30000);
+    };
+    schedule();
+    const events: (keyof WindowEventMap)[] = ["pointerdown", "keydown", "touchstart", "scroll"];
+    events.forEach((e) => window.addEventListener(e, schedule, { passive: true }));
+    return () => {
+      window.clearTimeout(t);
+      events.forEach((e) => window.removeEventListener(e, schedule));
+    };
   }, []);
 
   if (!state.onboarded) {
