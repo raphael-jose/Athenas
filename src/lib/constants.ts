@@ -131,11 +131,10 @@ export const COSTUMES: CostumeDef[] = [
 
 export const STICKERS = ["🌹", "🥐", "🗼", "❤️", "✨", "😘", "🍷", "🐌"];
 
-// ── Contatos (Sobre) ──────────────────────────────────────────
-// ✏️ Troque pelos seus contatos reais aqui.
+// ── Contatos (Sobre + Feedback) ───────────────────────────────
 export const CONTACTS = {
-  email: "contato@athenas.app",
-  whatsapp: "5511999999999" // só números, com DDI (55) e DDD
+  email: "raphaeltaylor60@gmail.com",
+  whatsapp: "5521998097932" // só números, com DDI (55) e DDD
 } as const;
 
 export const APP_TAGLINE =
