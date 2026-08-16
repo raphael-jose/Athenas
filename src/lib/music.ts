@@ -1,38 +1,57 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Música de fundo (Web Audio, gerada no navegador)
 // Sem arquivos de áudio → funciona offline no PWA e não pesa nada.
-// Cada mundo tem um humor (escala + tempo), e o boss muda para uma
-// trilha TENSA (grave, rápida, dissonante de leve).
+//
+// Design sonoro: acordes-pad longos e suaves (triângulo), baixo em
+// seno e uma melodia curtinha por compasso — tudo em volume baixo e
+// com filtro passa-baixa. SEM ondas quadradas e SEM notas aleatórias
+// saltando, para não gerar ruído nem batimento (beating).
+//
+// Cada mundo tem um humor (tonalidade + andamento); o boss muda para
+// uma trilha TENSA (menor, mais rápida, com uma dissonância leve).
 // ══════════════════════════════════════════════════════════════
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let filter: BiquadFilterNode | null = null;
 let timer: number | null = null;
-let nextStart = 0;
 let currentId: string | null = null;
 let enabled = true;
+let nextBar = 0;
+let barIndex = 0;
 
-const MAJOR = [0, 2, 4, 7, 9]; // pentatônica maior (suave)
-const MINOR = [0, 3, 5, 7, 10]; // pentatônica menor (emotiva)
+// Progressões de acordes (tríades em semitons a partir da tônica)
+// I → IV → iii → V (calmo) e i → iv → v → III (emotivo)
+const CHORDS_MAJOR = [
+  [0, 4, 7],
+  [5, 9, 12],
+  [3, 7, 10],
+  [4, 7, 11]
+];
+const CHORDS_MINOR = [
+  [0, 3, 7],
+  [5, 8, 12],
+  [7, 10, 14],
+  [3, 7, 10]
+];
 
 interface Mood {
-  root: number; // frequência base (Hz)
-  scale: number[]; // intervalos em semitons
-  tempo: number; // segundos por passo
-  vol: number;
-  tense: boolean; // boss: dissonância + graves
+  root: number; // frequência da tônica (Hz)
+  chords: number[][];
+  bar: number; // segundos por compasso
+  vol: number; // volume das notas (master fica fixo)
+  tense: boolean;
 }
 
 const MOODS: Mood[] = [
-  { root: 261.63, scale: MAJOR, tempo: 0.9, vol: 0.05, tense: false }, // C — doce
-  { root: 220.0, scale: MINOR, tempo: 0.85, vol: 0.05, tense: false }, // A menor — emotiva
-  { root: 246.94, scale: MAJOR, tempo: 0.82, vol: 0.05, tense: false }, // B — alegre
-  { root: 196.0, scale: MINOR, tempo: 0.75, vol: 0.055, tense: false }, // G menor — contemplativa
-  { root: 293.66, scale: MAJOR, tempo: 0.8, vol: 0.05, tense: false }, // D — radiante
-  { root: 174.61, scale: MINOR, tempo: 0.7, vol: 0.055, tense: false } // F menor — profunda
+  { root: 261.63, chords: CHORDS_MAJOR, bar: 4.2, vol: 0.022, tense: false }, // C — doce
+  { root: 220.0, chords: CHORDS_MINOR, bar: 4.6, vol: 0.022, tense: false }, // A menor — emotiva
+  { root: 246.94, chords: CHORDS_MAJOR, bar: 4.0, vol: 0.022, tense: false }, // B — alegre
+  { root: 196.0, chords: CHORDS_MINOR, bar: 4.8, vol: 0.024, tense: false }, // G menor — contemplativa
+  { root: 293.66, chords: CHORDS_MAJOR, bar: 3.8, vol: 0.022, tense: false }, // D — radiante
+  { root: 174.61, chords: CHORDS_MINOR, bar: 5.0, vol: 0.024, tense: false } // F menor — profunda
 ];
 
-const BOSS_MOOD: Mood = { root: 130.81, scale: MINOR, tempo: 0.42, vol: 0.06, tense: true };
+const BOSS_MOOD: Mood = { root: 130.81, chords: CHORDS_MINOR, bar: 2.4, vol: 0.024, tense: true };
 
 /** Humor de um mundo (por ordem: 1..n). */
 export function worldMood(order: number): Mood {
@@ -47,62 +66,118 @@ function ac(): AudioContext | null {
     ctx = new AC();
     master = ctx.createGain();
     master.gain.value = 0;
+    // passa-baixa acolchoado + corta o ronco grave demais
     filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.value = 1400;
-    filter.Q.value = 0.6;
+    filter.frequency.value = 900;
+    filter.Q.value = 0.4;
+    const highpass = ctx.createBiquadFilter();
+    highpass.type = "highpass";
+    highpass.frequency.value = 55;
     master.connect(filter);
-    filter.connect(ctx.destination);
+    filter.connect(highpass);
+    highpass.connect(ctx.destination);
   }
   if (ctx.state === "suspended") void ctx.resume();
   return ctx;
 }
 
-function note(freq: number, t: number, dur: number, vol: number, type: OscillatorType) {
+function freq(root: number, semitone: number): number {
+  return Math.max(40, root * Math.pow(2, semitone / 12));
+}
+
+/** Pad longo e macio (triângulo). */
+function pad(f: number, t: number, dur: number, vol: number) {
   if (!ctx || !filter) return;
   const o = ctx.createOscillator();
   const g = ctx.createGain();
-  o.type = type;
-  o.frequency.value = Math.max(40, freq);
+  o.type = "triangle";
+  o.frequency.value = f;
+  const attack = Math.min(0.8, dur * 0.25);
+  const release = Math.min(1.6, dur * 0.35);
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(Math.max(0.001, vol), t + 0.06);
+  g.gain.linearRampToValueAtTime(vol, t + attack);
+  g.gain.setValueAtTime(vol, t + dur - release);
+  g.gain.linearRampToValueAtTime(0.0001, t + dur);
+  o.connect(g);
+  g.connect(filter);
+  o.start(t);
+  o.stop(t + dur + 0.05);
+}
+
+/** Baixo grave em seno (só fundamental — sem harmônicos que batem). */
+function bass(f: number, t: number, dur: number, vol: number) {
+  if (!ctx || !filter) return;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = "sine";
+  o.frequency.value = Math.max(40, f);
+  const attack = Math.min(0.6, dur * 0.2);
+  const release = Math.min(1.4, dur * 0.3);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + attack);
+  g.gain.setValueAtTime(vol, t + dur - release);
+  g.gain.linearRampToValueAtTime(0.0001, t + dur);
+  o.connect(g);
+  g.connect(filter);
+  o.start(t);
+  o.stop(t + dur + 0.05);
+}
+
+/** Nota de melodia curta (triângulo) — ataque rápido, cauda macia. */
+function pluck(f: number, t: number, vol: number, dur = 1.4) {
+  if (!ctx || !filter) return;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = "triangle";
+  o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.05);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g);
   g.connect(filter);
   o.start(t);
-  o.stop(t + dur + 0.15);
+  o.stop(t + dur + 0.05);
 }
 
-function scheduleAhead(mood: Mood, horizon = 9) {
+/** Agenda UM compasso (acorde-pad + baixo + melodia curta). */
+function scheduleBar(mood: Mood) {
   if (!ctx) return;
   const now = ctx.currentTime;
-  if (nextStart < now) nextStart = now + 0.1;
-  const end = nextStart + horizon;
-  let guard = 0;
-  while (nextStart < end && guard < 120) {
-    const t = nextStart;
-    const step = Math.round(t * 10) % 1000; // pseudo-passo estável
-    const deg = step % mood.scale.length;
-    const freq = mood.root * Math.pow(2, mood.scale[deg] / 12);
+  if (nextBar < now) nextBar = now + 0.05; // evita "corrida" após pausa
+  const t = nextBar;
+  const chord = mood.chords[barIndex % mood.chords.length];
+  const barDur = mood.bar;
+  const root = mood.root;
 
-    // melodia suave (triângulo) — no boss, mais aguda e saltitante
-    note(freq, t, mood.tempo * (mood.tense ? 1.1 : 1.7), mood.vol, mood.tense ? "square" : "triangle");
+  // pad do acorde (3 vozes em triângulo, bem macio)
+  chord.forEach((semi) => pad(freq(root, semi), t, barDur * 1.7, mood.vol));
 
-    // apoio (terça acima) — de leve
-    const third = mood.root * Math.pow(2, mood.scale[(deg + 2) % mood.scale.length] / 12);
-    note(third, t, mood.tempo * 1.4, mood.vol * 0.55, "sine");
+  // baixo: tônica do acorde uma oitava abaixo
+  bass(freq(root, chord[0]) / 2, t, barDur * 1.6, mood.vol * 1.5);
 
-    // baixo grave a cada 4 passos (a cada 2 no boss — pulsação tensa)
-    if (step % (mood.tense ? 2 : 4) === 0) {
-      note(mood.root / 2, t, mood.tempo * 3, mood.vol * 0.8, "sine");
-    }
-    // toque de tensão no boss: semitom fora da escala, bem de leve
-    if (mood.tense && step % 8 === 5) {
-      note(freq * Math.pow(2, 1 / 12), t, mood.tempo * 0.8, mood.vol * 0.35, "sine");
-    }
-    nextStart += mood.tempo;
-    guard++;
+  // melodia: uma nota do acorde, na segunda metade do compasso
+  const melSemi = chord[(barIndex * 2) % chord.length];
+  pluck(freq(root, melSemi) * 2, t + barDur * 0.62, mood.vol * 1.1);
+
+  // boss: pulsação de baixo mais presente + dissonância leve (b9) baixinha
+  if (mood.tense) {
+    bass(freq(root, chord[0]) / 2, t + barDur * 0.5, barDur * 0.6, mood.vol * 1.2);
+    const b9 = freq(root, chord[0] + 13);
+    pluck(b9, t + barDur * 0.92, mood.vol * 0.4, 0.8);
   }
+
+  nextBar += barDur;
+  barIndex += 1;
+}
+
+/** Loop com lookahead: agenda compassos com folga, sem lacunas nem duplicatas. */
+function loop(mood: Mood, id: string) {
+  if (timer !== null) window.clearInterval(timer);
+  timer = window.setInterval(() => {
+    if (currentId !== id || !ctx) return;
+    if (nextBar < ctx.currentTime + 2.5) scheduleBar(mood);
+  }, 500);
 }
 
 function rampVolume(target: number, seconds = 1.2) {
@@ -116,18 +191,15 @@ function start(mood: Mood, id: string) {
   const c = ac();
   if (!c || !master) return;
   if (currentId === id && timer !== null) {
-    rampVolume(mood.vol * 0.9); // já está tocando — só dá o volume
+    rampVolume(0.5 * mood.vol); // já tocando — só ajusta o volume
     return;
   }
   stopMusic();
   currentId = id;
-  nextStart = 0;
-  rampVolume(mood.vol * 0.9);
-  scheduleAhead(mood);
-  timer = window.setInterval(() => {
-    if (currentId !== id) return;
-    scheduleAhead(mood);
-  }, 2500);
+  nextBar = 0;
+  barIndex = 0;
+  rampVolume(0.5 * mood.vol);
+  loop(mood, id);
 }
 
 /** Toca o humor do mundo (por ordem). */
