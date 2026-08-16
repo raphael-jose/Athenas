@@ -403,7 +403,36 @@ export const WORDS: WordEntry[] = [
   { id: "w-meuf", fr: "meuf", pt: "mina / mulher (verlan)", gender: "f", cls: "native", diff: 5 },
   { id: "w-ouf-nat", fr: "ouf", pt: "louco / doido (verlan de fou)", cls: "native", diff: 5 },
   { id: "w-relou", fr: "relou", pt: "chato (verlan de lourd)", cls: "native", diff: 5 },
-  { id: "w-voila", fr: "voilà", pt: "pronto / aí está (tique de fala)", cls: "expressão", diff: 3, exampleFr: "Voilà, c'est tout !", examplePt: "Pronto, é só isso!" }
+  { id: "w-voila", fr: "voilà", pt: "pronto / aí está (tique de fala)", cls: "expressão", diff: 3, exampleFr: "Voilà, c'est tout !", examplePt: "Pronto, é só isso!" },
+  // ── Avançado extra (mundo 13) ───────────────────────────────
+  { id: "w-enonce", fr: "énoncé", pt: "enunciado / afirmação", gender: "m", cls: "avançado", diff: 5, exampleFr: "Cet énoncé est ambigu.", examplePt: "Esse enunciado é ambíguo." },
+  { id: "w-ironie", fr: "ironie", pt: "ironia", gender: "f", cls: "avançado", diff: 5, exampleFr: "Elle a dit ça avec ironie.", examplePt: "Ela disse isso com ironia." },
+  { id: "w-sarcasme", fr: "sarcasme", pt: "sarcasmo", gender: "m", cls: "avançado", diff: 5, exampleFr: "Il parle avec sarcasme.", examplePt: "Ele fala com sarcasmo." },
+  { id: "w-euphemisme", fr: "euphémisme", pt: "eufemismo", gender: "m", cls: "avançado", diff: 5, exampleFr: "'Il nous a quittés' est un euphémisme.", examplePt: "'Ele nos deixou' é um eufemismo." },
+  { id: "w-ton", fr: "ton", pt: "tom (de voz / de texto)", gender: "m", cls: "avançado", diff: 4, exampleFr: "Attention à ton ton !", examplePt: "Cuidado com o seu tom!" },
+  { id: "w-contexte", fr: "contexte", pt: "contexto", gender: "m", cls: "avançado", diff: 4, exampleFr: "Tout dépend du contexte.", examplePt: "Tudo depende do contexto." },
+  { id: "w-litteral", fr: "littéral", pt: "literal", cls: "adjetivo", diff: 5, exampleFr: "C'est le sens littéral.", examplePt: "É o sentido literal." },
+  { id: "w-figuratif", fr: "figuré", pt: "figurado", cls: "adjetivo", diff: 5, exampleFr: "Au sens figuré, il a la tête dans les nuages.", examplePt: "No sentido figurado, ele está com a cabeça nas nuvens." },
+  // ── Mastery extra (mundo 14) ────────────────────────────────
+  { id: "w-convaincre", fr: "convaincre", pt: "convencer", cls: "verbo", diff: 5, exampleFr: "Il faut convaincre le jury.", examplePt: "É preciso convencer o júri." },
+  { id: "w-prouver", fr: "prouver", pt: "provar", cls: "verbo", diff: 5, exampleFr: "Tu dois prouver ton point.", examplePt: "Você precisa provar seu ponto." },
+  { id: "w-preuve", fr: "preuve", pt: "prova / evidência", gender: "f", cls: "mastery", diff: 5, exampleFr: "Où sont les preuves ?", examplePt: "Onde estão as provas?" },
+  { id: "w-argument", fr: "argument", pt: "argumento", gender: "m", cls: "mastery", diff: 5, exampleFr: "C'est un bon argument.", examplePt: "Esse é um bom argumento." },
+  { id: "w-these", fr: "thèse", pt: "tese", gender: "f", cls: "mastery", diff: 5, exampleFr: "Ma thèse est claire.", examplePt: "Minha tese é clara." },
+  { id: "w-refuter", fr: "réfuter", pt: "refutar", cls: "verbo", diff: 5, exampleFr: "Je réfute cette idée.", examplePt: "Eu refuto essa ideia." },
+  { id: "w-accord", fr: "accord", pt: "acordo / concordância", gender: "m", cls: "mastery", diff: 4, exampleFr: "On est d'accord !", examplePt: "Estamos de acordo!" },
+  { id: "w-desaccord", fr: "désaccord", pt: "desacordo", gender: "m", cls: "mastery", diff: 5, exampleFr: "Je suis en désaccord total.", examplePt: "Estou em total desacordo." },
+  { id: "w-opinion", fr: "opinion", pt: "opinião", gender: "f", cls: "mastery", diff: 4, exampleFr: "À mon avis…", examplePt: "Na minha opinião…" },
+  { id: "w-debat", fr: "débat", pt: "debate", gender: "m", cls: "mastery", diff: 5, exampleFr: "Le débat commence.", examplePt: "O debate começa." },
+  // ── Native extra (mundo 15) ─────────────────────────────────
+  { id: "w-argot", fr: "argot", pt: "gíria", gender: "m", cls: "native", diff: 5, exampleFr: "L'argot change tout le temps.", examplePt: "A gíria muda o tempo todo." },
+  { id: "w-liaison", fr: "liaison", pt: "ligação (som entre palavras)", gender: "f", cls: "native", diff: 5, exampleFr: "Les liaisons sont importantes.", examplePt: "As ligações (sons) são importantes." },
+  { id: "w-zarbi", fr: "zarbi", pt: "estranho (verlan de bizarre)", cls: "native", diff: 5, exampleFr: "Ce film est zarbi.", examplePt: "Esse filme é estranho." },
+  { id: "w-teuf", fr: "teuf", pt: "festa (verlan de fête)", gender: "f", cls: "native", diff: 5, exampleFr: "On va en teuf ce soir ?", examplePt: "Vamos pra festa hoje à noite?" },
+  { id: "w-chelou", fr: "chelou", pt: "esquisito (verlan de louche)", cls: "native", diff: 5, exampleFr: "Ce type est chelou.", examplePt: "Esse cara é esquisito." },
+  { id: "w-belek", fr: "belek", pt: "ligado / atento (argot)", cls: "native", diff: 5, exampleFr: "Sois belek, ils arrivent !", examplePt: "Fica ligado, eles estão chegando!" },
+  { id: "w-ouais", fr: "ouais", pt: "sim (informal)", cls: "native", diff: 4, exampleFr: "Ouais, carrément !", examplePt: "Sim, com certeza!" },
+  { id: "w-grave-nat", fr: "grave", pt: "demais / super (informal)", cls: "native", diff: 4, exampleFr: "C'est grave bien !", examplePt: "É super bom!" }
 ];
 
 export const WORDS_BY_ID: Record<string, WordEntry> = Object.fromEntries(WORDS.map((w) => [w.id, w]));

@@ -13,6 +13,7 @@ import type {
   WordMatchExercise,
   World
 } from "@/types";
+import { generatePracticeLessons } from "./practice";
 
 // ── Construtores compactos ────────────────────────────────────
 const choice = (prompt: string, options: string[], answer: number, explanation?: string): ChoiceExercise => ({
@@ -3160,6 +3161,37 @@ const world15Boss: World["boss"] = {
   ]
 };
 
+// ── Aulas de prática geradas (reforço: 13 a 20 aulas por mundo) ──
+// O gerador fica em practice.ts; aqui só ligamos cada mundo à sua
+// quantidade extra. O mundo 1 já tem 16 aulas manuais.
+const world1Extra: Lesson[] = [];
+const world2Extra: Lesson[] = generatePracticeLessons(world2Lessons, { worldId: "world-2", topic: "a vida cotidiana" }, 4);
+const world3Extra: Lesson[] = generatePracticeLessons(world3Lessons, { worldId: "world-3", topic: "a cidade" }, 6);
+const world4Extra: Lesson[] = generatePracticeLessons(world4Lessons, { worldId: "world-4", topic: "as conversas" }, 6);
+const world5Extra: Lesson[] = generatePracticeLessons(world5Lessons, { worldId: "world-5", topic: "as viagens" }, 6);
+const world6Extra: Lesson[] = generatePracticeLessons(world6Lessons, { worldId: "world-6", topic: "os relacionamentos" }, 6);
+const world7Extra: Lesson[] = generatePracticeLessons(world7Lessons, { worldId: "world-7", topic: "os estudos" }, 6);
+const world8Extra: Lesson[] = generatePracticeLessons(world8Lessons, { worldId: "world-8", topic: "o trabalho" }, 3);
+const world9Extra: Lesson[] = generatePracticeLessons(world9Lessons, { worldId: "world-9", topic: "o pensamento em francês" }, 6);
+const world10Extra: Lesson[] = generatePracticeLessons(world10Lessons, { worldId: "world-10", topic: "a cultura francesa" }, 6);
+const world11Extra: Lesson[] = generatePracticeLessons(world11Lessons, { worldId: "world-11", topic: "as expressões" }, 6);
+const world12Extra: Lesson[] = generatePracticeLessons(world12Lessons, { worldId: "world-12", topic: "a imersão" }, 6);
+const world13Extra: Lesson[] = generatePracticeLessons(
+  world13Lessons,
+  { worldId: "world-13", topic: "o francês avançado", extraWordIds: ["w-enonce", "w-ironie", "w-sarcasme", "w-euphemisme", "w-ton", "w-contexte", "w-litteral", "w-figuratif"] },
+  11
+);
+const world14Extra: Lesson[] = generatePracticeLessons(
+  world14Lessons,
+  { worldId: "world-14", topic: "o domínio da língua", extraWordIds: ["w-convaincre", "w-prouver", "w-preuve", "w-argument", "w-these", "w-refuter", "w-accord", "w-desaccord", "w-opinion", "w-debat"] },
+  11
+);
+const world15Extra: Lesson[] = generatePracticeLessons(
+  world15Lessons,
+  { worldId: "world-15", topic: "o modo nativo", extraWordIds: ["w-argot", "w-liaison", "w-zarbi", "w-teuf", "w-chelou", "w-belek", "w-ouais", "w-grave-nat"] },
+  11
+);
+
 export const WORLDS: World[] = [
   {
     id: "world-1",
@@ -3170,7 +3202,7 @@ export const WORLDS: World[] = [
     description: "Primeiros passos: saudações, apresentações, números e o básico do básico.",
     color: "world-mint",
     unlockCefr: 0,
-    lessons: world1Lessons.map((l) => l.id),
+    lessons: [...world1Lessons, ...world1Extra].map((l) => l.id),
     boss: world1Boss
   },
   {
@@ -3182,7 +3214,7 @@ export const WORLDS: World[] = [
     description: "Família, comida, rotina, horas, negação e o passado simples.",
     color: "world-rose",
     unlockCefr: 1,
-    lessons: world2Lessons.map((l) => l.id),
+    lessons: [...world2Lessons, ...world2Extra].map((l) => l.id),
     boss: world2Boss
   },
   {
@@ -3194,7 +3226,7 @@ export const WORLDS: World[] = [
     description: "Cidade, direções, transportes e o futuro próximo.",
     color: "world-blue",
     unlockCefr: 1,
-    lessons: world3Lessons.map((l) => l.id),
+    lessons: [...world3Lessons, ...world3Extra].map((l) => l.id),
     boss: world3Boss
   },
   {
@@ -3206,7 +3238,7 @@ export const WORLDS: World[] = [
     description: "Diálogos reais: perguntar, reagir, marcar encontros, gostos e telefonemas.",
     color: "world-lilac",
     unlockCefr: 2,
-    lessons: world4Lessons.map((l) => l.id),
+    lessons: [...world4Lessons, ...world4Extra].map((l) => l.id),
     boss: world4Boss
   },
   {
@@ -3218,7 +3250,7 @@ export const WORLDS: World[] = [
     description: "Aeroporto, hotel, restaurante, imprevistos — sobreviva à França!",
     color: "world-gold",
     unlockCefr: 3,
-    lessons: world5Lessons.map((l) => l.id),
+    lessons: [...world5Lessons, ...world5Extra].map((l) => l.id),
     boss: world5Boss
   },
   {
@@ -3230,7 +3262,7 @@ export const WORLDS: World[] = [
     description: "Sentimentos, amizade, amor, planos e convites.",
     color: "world-blush",
     unlockCefr: 3,
-    lessons: world6Lessons.map((l) => l.id),
+    lessons: [...world6Lessons, ...world6Extra].map((l) => l.id),
     boss: world6Boss
   },
   {
@@ -3242,7 +3274,7 @@ export const WORLDS: World[] = [
     description: "Escola, universidade, opiniões, argumentação e o subjonctif.",
     color: "world-blue",
     unlockCefr: 3,
-    lessons: world7Lessons.map((l) => l.id),
+    lessons: [...world7Lessons, ...world7Extra].map((l) => l.id),
     boss: world7Boss
   },
   {
@@ -3254,7 +3286,7 @@ export const WORLDS: World[] = [
     description: "Entrevistas, e-mails, reuniões, home office e negociação.",
     color: "world-rose",
     unlockCefr: 4,
-    lessons: world8Lessons.map((l) => l.id),
+    lessons: [...world8Lessons, ...world8Extra].map((l) => l.id),
     boss: world8Boss
   },
   {
@@ -3266,7 +3298,7 @@ export const WORLDS: World[] = [
     description: "Hipóteses, conditionnel, plus-que-parfait, subjonctif passé, debate e dúvida — pensar em francês.",
     color: "world-lilac",
     unlockCefr: 4,
-    lessons: world9Lessons.map((l) => l.id),
+    lessons: [...world9Lessons, ...world9Extra].map((l) => l.id),
     boss: world9Boss
   },
   {
@@ -3278,7 +3310,7 @@ export const WORLDS: World[] = [
     description: "Literatura, cinema, música, arte, história e gastronomia — a alma francesa.",
     color: "world-gold",
     unlockCefr: 5,
-    lessons: world10Lessons.map((l) => l.id),
+    lessons: [...world10Lessons, ...world10Extra].map((l) => l.id),
     boss: world10Boss
   },
   {
@@ -3290,7 +3322,7 @@ export const WORLDS: World[] = [
     description: "Expressões idiomáticas, ironia, duplo sentido e o subtexto do francês real.",
     color: "world-mint",
     unlockCefr: 5,
-    lessons: world11Lessons.map((l) => l.id),
+    lessons: [...world11Lessons, ...world11Extra].map((l) => l.id),
     boss: world11Boss
   },
   {
@@ -3302,7 +3334,7 @@ export const WORLDS: World[] = [
     description: "Francês de verdade: mídia, imprensa, redes sociais, gírias e a francofonia.",
     color: "world-blush",
     unlockCefr: 5,
-    lessons: world12Lessons.map((l) => l.id),
+    lessons: [...world12Lessons, ...world12Extra].map((l) => l.id),
     boss: world12Boss
   },
   {
@@ -3314,7 +3346,7 @@ export const WORLDS: World[] = [
     description: "Registros, estilo, subtexto e nuances avançadas.",
     color: "world-rose",
     unlockCefr: 7,
-    lessons: world13Lessons.map((l) => l.id),
+    lessons: [...world13Lessons, ...world13Extra].map((l) => l.id),
     boss: world13Boss
   },
   {
@@ -3326,7 +3358,7 @@ export const WORLDS: World[] = [
     description: "Linguística, retórica e domínio absoluto.",
     color: "world-gold",
     unlockCefr: 7,
-    lessons: world14Lessons.map((l) => l.id),
+    lessons: [...world14Lessons, ...world14Extra].map((l) => l.id),
     boss: world14Boss
   },
   {
@@ -3338,13 +3370,13 @@ export const WORLDS: World[] = [
     description: "O Modo Deus Supremo: a língua como um francês nativo a vive.",
     color: "world-lilac",
     unlockCefr: 7,
-    lessons: world15Lessons.map((l) => l.id),
+    lessons: [...world15Lessons, ...world15Extra].map((l) => l.id),
     boss: world15Boss
   }
 ];
 
 export const LESSONS: Record<string, Lesson> = Object.fromEntries(
-  [...world1Lessons, ...world2Lessons, ...world3Lessons, ...world4Lessons, ...world5Lessons, ...world6Lessons, ...world7Lessons, ...world8Lessons, ...world9Lessons, ...world10Lessons, ...world11Lessons, ...world12Lessons, ...world13Lessons, ...world14Lessons, ...world15Lessons].map((l) => [l.id, l])
+  [...world1Lessons, ...world2Lessons, ...world3Lessons, ...world4Lessons, ...world5Lessons, ...world6Lessons, ...world7Lessons, ...world8Lessons, ...world9Lessons, ...world10Lessons, ...world11Lessons, ...world12Lessons, ...world13Lessons, ...world14Lessons, ...world15Lessons, ...world1Extra, ...world2Extra, ...world3Extra, ...world4Extra, ...world5Extra, ...world6Extra, ...world7Extra, ...world8Extra, ...world9Extra, ...world10Extra, ...world11Extra, ...world12Extra, ...world13Extra, ...world14Extra, ...world15Extra].map((l) => [l.id, l])
 );
 
 export const BOSSES: Record<string, World["boss"]> = {

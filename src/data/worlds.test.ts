@@ -25,6 +25,18 @@ describe("Conteúdo do curso", () => {
     expect(WORLDS[14].title).toContain("Native");
   });
 
+  it("ids de lições são únicos em todo o curso", () => {
+    const ids = WORLDS.flatMap((w) => w.lessons);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("cada mundo tem de 13 a 20 aulas", () => {
+    for (const w of WORLDS) {
+      expect(w.lessons.length, `mundo ${w.id} com ${w.lessons.length} aulas (precisa 13-20)`).toBeGreaterThanOrEqual(13);
+      expect(w.lessons.length, `mundo ${w.id} com ${w.lessons.length} aulas (precisa 13-20)`).toBeLessThanOrEqual(20);
+    }
+  });
+
   it("mundos jogáveis têm 10+ lições no total e todas as referências existem", () => {
     const playable = WORLDS.filter((w) => w.lessons.length > 0);
     const total = playable.reduce((a, w) => a + w.lessons.length, 0);
