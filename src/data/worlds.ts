@@ -309,7 +309,7 @@ const world1Lessons: Lesson[] = [
     exercises: [
       fill("Je ___ (être) étudiante.", "suis", { hint: "je suis" }),
       fill("Tu ___ (avoir) un chat.", "as", { hint: "tu as" }),
-      choice("Complete: Elle ___ brésilienne.", ["est", "es", "ai"], 0),
+      choice("Complete a frase: Elle ___ brésilienne.", ["est", "es", "ai"], 0),
       build("Monte: 'Eu tenho um gato.'", ["J'ai", "un", "chat", "."], ["J'ai", "un", "chat", "."]),
       choice("Como se diz 'estou com fome'?", ["Je suis faim", "J'ai faim", "Je suis faim!"], 1, "Fome usa AVOIR!"),
       trans("Ela é francesa.", "Elle est française.", { accept: ["Elle est française."] })
@@ -485,11 +485,11 @@ const world1Boss: World["boss"] = {
   exercises: [
     choice("Como você cumprimenta à noite?", ["Bonsoir", "Bonjour", "Salut"], 0),
     choice("'Une table' — o artigo certo é…", ["un", "une", "le"], 1),
-    fill("Complete: Je ___ (chamo-me) Léa.", "m'appelle", { hint: "m'a…" }),
+    fill("Complete a frase: Je ___ (chamo-me) Léa.", "m'appelle", { hint: "m'a…" }),
     choice("Qual número é 'sept'?", ["6", "7", "8"], 1),
     match([["merci", "obrigado"], ["au revoir", "tchau"], ["bleu", "azul"], ["dimanche", "domingo"]]),
     build("Monte: 'Eu estou com fome.'", ["J'ai", "faim", "."], ["J'ai", "faim", "."]),
-    choice("Complete: Elle ___ contente.", ["es", "est", "ai"], 1),
+    choice("Complete a frase: Elle ___ contente.", ["es", "est", "ai"], 1),
     trans("Oi! Tudo bem?", "Salut ! Ça va ?", { accept: ["Salut, ça va ?", "Salut ! Ça va !"] }),
     listen("O que você ouviu?", "Bonjour madame !", ["Bonjour madame", "Bonsoir monsieur", "Au revoir madame"], 0)
   ]
@@ -567,7 +567,7 @@ const world2Lessons: Lesson[] = [
     ],
     exercises: [
       fill("Je ___ (manger) une pomme.", "mange", { hint: "je mange" }),
-      choice("Complete: Tu ___ (aimer) le chocolat ?", ["aime", "aimes", "aimez"], 1, "com tu: -es"),
+      choice("Complete a frase: Tu ___ (aimer) le chocolat ?", ["aime", "aimes", "aimez"], 1, "com tu: -es"),
       choice("'Je vais à l'école' significa…", ["eu vou à escola", "eu comi na escola", "eu moro na escola"], 0),
       match([["manger", "comer"], ["boire", "beber"], ["dormir", "dormir"], ["habiter", "morar"]]),
       trans("Eu moro em Paris.", "J'habite à Paris.", { accept: ["J'habite à Paris."] })
@@ -641,7 +641,7 @@ const world2Lessons: Lesson[] = [
     ],
     exercises: [
       fill("Hier, j'___ mangé une pizza.", "ai", { hint: "avoir no presente" }),
-      choice("Complete: Tu ___ parlé avec Marie.", ["as", "es", "est"], 0),
+      choice("Complete a frase: Tu ___ parlé avec Marie.", ["as", "es", "est"], 0),
       match([["mangé", "comido"], ["parlé", "falado"], ["fini", "terminado"]]),
       choice("'J'ai fini' significa…", ["eu terminei", "eu comecei", "eu vou terminar"], 0),
       trans("Ontem, eu comi uma pizza.", "Hier, j'ai mangé une pizza.", { accept: ["Hier j'ai mangé une pizza"] })
@@ -1675,7 +1675,7 @@ const world7Lessons: Lesson[] = [
     ],
     exercises: [
       fill("Il faut que tu r___ (réviser) tes leçons.", "révises", { accept: ["revises"], hint: "subjonctif de réviser" }),
-      choice("Complete: Bien qu'il ___ tard…", ["soit", "est", "sera"], 0, "bien que + subjonctif: qu'il soit"),
+      choice("Complete a frase: Bien qu'il ___ tard…", ["soit", "est", "sera"], 0, "bien que + subjonctif: qu'il soit"),
       trans("É preciso que você revise suas lições.", "Il faut que tu révises tes leçons.", { accept: ["Il faut que tu revises tes leçons"] }),
       choice("Depois de 'il faut que' usamos…", ["o subjonctif", "o futuro", "o imperativo"], 0),
       fill("Avant que tu p___ (partir), vérifie tout.", "partes", { hint: "subjonctif de partir" })
@@ -1775,7 +1775,7 @@ const world7Boss: World["boss"] = {
     trans("Espero passar na prova!", "J'espère réussir mon examen !", { accept: ["J'espère réussir à mon examen !"] }),
     choice("'Par conséquent' introduz…", ["uma consequência", "um exemplo", "uma pergunta"], 0),
     fill("Il faut que tu r___ tes leçons.", "révises", { accept: ["revises"], hint: "subjonctif" }),
-    choice("Complete: Bien qu'il ___ tard…", ["soit", "est", "sera"], 0),
+    choice("Complete a frase: Bien qu'il ___ tard…", ["soit", "est", "sera"], 0),
     build("Monte: 'Na minha opinião, é uma boa ideia.'", ["À", "mon", "avis", ",", "c'est", "une", "bonne", "idée", "."], ["À", "mon", "avis", ",", "c'est", "une", "bonne", "idée", "."]),
     choice("Informalmente, 'se planter' é…", ["ir mal", "ir bem", "estudar muito"], 0),
     listen("O que você ouviu?", "Il faut que tu révises tes leçons.", ["Il faut que tu révises tes leçons", "Il faut que tu dormes", "Il faut que tu sortes"], 0)
@@ -2152,7 +2152,7 @@ const world9Lessons: Lesson[] = [
       choice("O plus-que-parfait expressa…", ["o passado do passado", "o futuro", "uma ordem"], 0),
       fill("Quand je suis arrivé, elle était déjà ___ (partir, feminino).", "partie", { hint: "elle était partie" }),
       trans("Eu tinha esquecido minhas chaves em casa.", "J'avais oublié mes clés à la maison.", { accept: ["J'avais oublié mes clés à la maison"] }),
-      choice("Complete: Ils n'avaient ___ visité Paris.", ["jamais", "déjà", "encore"], 0, "n'avait jamais = nunca tinha")
+      choice("Complete a frase: Ils n'avaient ___ visité Paris.", ["jamais", "déjà", "encore"], 0, "n'avait jamais = nunca tinha")
     ],
     words: ["w-souvenir", "w-oublier"]
   },
@@ -2176,7 +2176,7 @@ const world9Lessons: Lesson[] = [
     ],
     exercises: [
       fill("Je suis contente qu'elle ___ (être) venue.", "soit", { hint: "subjonctif de être" }),
-      choice("Complete: Bien qu'il ___ plu…", ["ait", "a", "avait"], 0, "bien que + subjonctif passé: qu'il ait plu"),
+      choice("Complete a frase: Bien qu'il ___ plu…", ["ait", "a", "avait"], 0, "bien que + subjonctif passé: qu'il ait plu"),
       trans("Duvido que eles tenham entendido.", "Je doute qu'ils aient compris.", { accept: ["Je doute qu'ils aient compris"] }),
       choice("O subjonctif passé é formado com…", ["subjonctif de avoir/être + particípio", "imparfait + infinitivo", "futur + particípio"], 0),
       build("Monte: 'Embora tenha chovido, caminhamos.'", ["Bien", "qu'il", "ait", "plu", ",", "on", "a", "marché", "."], ["Bien", "qu'il", "ait", "plu", ",", "on", "a", "marché", "."])
@@ -3340,7 +3340,7 @@ export const WORLDS: World[] = [
   {
     id: "world-13",
     order: 13,
-    title: "Advanced French",
+    title: "Français Avancé",
     icon: "fire",
     cefr: 7,
     description: "Registros, estilo, subtexto e nuances avançadas.",
@@ -3352,7 +3352,7 @@ export const WORLDS: World[] = [
   {
     id: "world-14",
     order: 14,
-    title: "Mastery",
+    title: "Maîtrise",
     icon: "crown",
     cefr: 7,
     description: "Linguística, retórica e domínio absoluto.",
@@ -3364,7 +3364,7 @@ export const WORLDS: World[] = [
   {
     id: "world-15",
     order: 15,
-    title: "Native Mode",
+    title: "Mode Natif",
     icon: "moon",
     cefr: 7,
     description: "O Modo Deus Supremo: a língua como um francês nativo a vive.",

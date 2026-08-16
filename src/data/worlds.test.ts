@@ -22,7 +22,7 @@ describe("Conteúdo do curso", () => {
   it("15 mundos definidos (até o Modo Deus Supremo)", () => {
     expect(WORLDS).toHaveLength(15);
     expect(WORLDS[0].id).toBe("world-1");
-    expect(WORLDS[14].title).toContain("Native");
+    expect(WORLDS[14].title).toContain("Natif");
   });
 
   it("ids de lições são únicos em todo o curso", () => {
@@ -104,7 +104,7 @@ describe("Desbloqueio", () => {
     expect(isWorldUnlocked(w, 1, [])).toBe(true);
   });
 
-  it("mundos 13-15 (Advanced French, Mastery, Native Mode) têm conteúdo endgame liberado só no NATIF", () => {
+  it("mundos 13-15 (Français Avancé, Maîtrise, Mode Natif) têm conteúdo endgame liberado só no NATIF", () => {
     const [w13, w14, w15] = WORLDS.slice(12, 15);
     expect(w13.id).toBe("world-13");
     expect(w14.id).toBe("world-14");

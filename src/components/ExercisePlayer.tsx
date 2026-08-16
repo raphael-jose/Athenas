@@ -27,6 +27,17 @@ interface Props {
 
 const LETTERS = ["A", "B", "C", "D", "E"];
 
+// Nome dos tipos de exercício em português (exibido no subtítulo).
+const EXERCISE_LABEL: Record<string, string> = {
+  choice: "escolha",
+  fillBlank: "complete",
+  translation: "tradução",
+  wordMatch: "associe",
+  sentenceBuilder: "monte a frase",
+  listening: "ouvir",
+  speedRound: "velocidade"
+};
+
 export function ExercisePlayer({ exercise, onResult, onNext, index, total, showProgress = true }: Props) {
   // Sons de acerto/erro centralizados para todos os tipos de exercício
   const handleResult = (r: ExerciseResult) => {
@@ -42,7 +53,7 @@ export function ExercisePlayer({ exercise, onResult, onNext, index, total, showP
           <span>
             Exercício {index + 1} de {total}
           </span>
-          <span>{exercise.kind.replace(/([A-Z])/g, " $1").toLowerCase()}</span>
+          <span>{EXERCISE_LABEL[exercise.kind] ?? exercise.kind}</span>
         </div>
       )}
       <ExerciseBody exercise={exercise} onResult={handleResult} onNext={onNext} />

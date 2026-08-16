@@ -25,20 +25,20 @@ export const GRAMMAR_PRACTICE: Record<string, Exercise[]> = {
   ],
   "g-etre": [
     { kind: "fillBlank", prompt: "Je ___ (être) étudiante.", answer: "suis", explanation: "je suis." },
-    { kind: "choice", prompt: "Complete: Elle ___ française.", options: ["est", "es", "sont"], answer: 0 },
+    { kind: "choice", prompt: "Complete a frase: Elle ___ française.", options: ["est", "es", "sont"], answer: 0 },
     { kind: "fillBlank", prompt: "Nous ___ (être) contents.", answer: "sommes", accept: ["sommes"], explanation: "nous sommes." },
-    { kind: "choice", prompt: "Complete: Ils ___ à Paris.", options: ["sont", "sommes", "est"], answer: 0 }
+    { kind: "choice", prompt: "Complete a frase: Ils ___ à Paris.", options: ["sont", "sommes", "est"], answer: 0 }
   ],
   "g-avoir": [
     { kind: "fillBlank", prompt: "J'___ (avoir) un chat.", answer: "ai", accept: ["ai"], explanation: "j'ai." },
-    { kind: "choice", prompt: "Complete: Tu ___ 20 ans.", options: ["as", "es", "a"], answer: 0 },
+    { kind: "choice", prompt: "Complete a frase: Tu ___ 20 ans.", options: ["as", "es", "a"], answer: 0 },
     { kind: "fillBlank", prompt: "Elle ___ (avoir) soif.", answer: "a", accept: ["a"], explanation: "il/elle a." },
     { kind: "choice", prompt: "Como se diz 'estou com fome'?", options: ["J'ai faim", "Je suis faim", "Je suis faim"], answer: 0, explanation: "Fome/sede usam AVOIR." }
   ],
   "g-present": [
     { kind: "fillBlank", prompt: "Je ___ (manger) une pomme.", answer: "mange", explanation: "je mange (verbo -er)." },
-    { kind: "choice", prompt: "Complete: Tu ___ (parler) bien.", options: ["parles", "parle", "parlez"], answer: 0, explanation: "com tu: -es." },
-    { kind: "choice", prompt: "Complete: Elle ___ (aimer) le chocolat.", options: ["aime", "aimes", "aimons"], answer: 0 },
+    { kind: "choice", prompt: "Complete a frase: Tu ___ (parler) bien.", options: ["parles", "parle", "parlez"], answer: 0, explanation: "com tu: -es." },
+    { kind: "choice", prompt: "Complete a frase: Elle ___ (aimer) le chocolat.", options: ["aime", "aimes", "aimons"], answer: 0 },
     { kind: "fillBlank", prompt: "Nous ___ (habiter) à Paris.", answer: "habitons", accept: ["habitons"], explanation: "nous habitons." }
   ],
   "g-negation": [
@@ -49,7 +49,7 @@ export const GRAMMAR_PRACTICE: Record<string, Exercise[]> = {
   ],
   "g-passe-compose": [
     { kind: "fillBlank", prompt: "Hier, j'___ mangé une pizza.", answer: "ai", accept: ["ai"], explanation: "passé composé = avoir + particípio." },
-    { kind: "choice", prompt: "Complete: Tu ___ parlé avec Marie.", options: ["as", "es", "a"], answer: 0 },
+    { kind: "choice", prompt: "Complete a frase: Tu ___ parlé avec Marie.", options: ["as", "es", "a"], answer: 0 },
     { kind: "fillBlank", prompt: "Elle a ___ (finir) son travail.", answer: "fini", accept: ["fini"], explanation: "verbo -ir → -i." },
     { kind: "translation", prompt: "Ontem, eu comi uma pizza.", answer: "Hier, j'ai mangé une pizza.", accept: ["Hier j'ai mangé une pizza"], explanation: "Hier + passé composé." }
   ],
@@ -65,7 +65,7 @@ export const GRAMMAR_PRACTICE: Record<string, Exercise[]> = {
   ],
   "g-conditionnel": [
     { kind: "fillBlank", prompt: "Je ___ (voudrais) un café.", answer: "voudrais", accept: ["voudrais"], explanation: "je voudrais = eu gostaria (educado)." },
-    { kind: "choice", prompt: "Complete: Si j'avais le temps, je ___ voyager.", options: ["pourrais", "peux", "pourrai"], answer: 0, explanation: "condicional: je pourrais." },
+    { kind: "choice", prompt: "Complete a frase: Si j'avais le temps, je ___ voyager.", options: ["pourrais", "peux", "pourrai"], answer: 0, explanation: "condicional: je pourrais." },
     { kind: "fillBlank", prompt: "Tu ___ (devrais) étudier plus.", answer: "devrais", accept: ["devrais"], explanation: "tu devrais = você deveria." },
     { kind: "choice", prompt: "O conditionnel de 'aller' (eu iria) é…", options: ["j'irais", "j'allais", "j'irai"], answer: 0, explanation: "aller é irregular no conditionnel: j'irais." },
     { kind: "fillBlank", prompt: "Je ___ (être, conditionnel) très content.", answer: "serais", accept: ["serais"], explanation: "je serais = eu seria/estaria." },
@@ -74,15 +74,15 @@ export const GRAMMAR_PRACTICE: Record<string, Exercise[]> = {
   ],
   "g-subjonctif": [
     { kind: "fillBlank", prompt: "Il faut que tu ___ (partir) tôt.", answer: "partes", accept: ["partes"], explanation: "subjonctif de partir: que tu partes." },
-    { kind: "choice", prompt: "Complete: Bien qu'il ___ tard…", options: ["soit", "est", "sera"], answer: 0, explanation: "bien que + subjonctif: qu'il soit." },
+    { kind: "choice", prompt: "Complete a frase: Bien qu'il ___ tard…", options: ["soit", "est", "sera"], answer: 0, explanation: "bien que + subjonctif: qu'il soit." },
     { kind: "fillBlank", prompt: "Il faut que nous ___ (finir).", answer: "finissions", accept: ["finissions"], explanation: "que nous finissions." }
   ],
   "g-plus-que-parfait": [
     { kind: "choice", prompt: "O plus-que-parfait expressa…", options: ["ação anterior a outra no passado", "ação futura", "hábito presente"], answer: 0 },
     { kind: "fillBlank", prompt: "J'___ (avoir) mangé avant de partir.", answer: "avais", accept: ["avais"], explanation: "j'avais mangé." },
-    { kind: "choice", prompt: "Complete: Elle ___ déjà fini quand je suis arrivé.", options: ["avait", "a", "avais"], answer: 0 },
+    { kind: "choice", prompt: "Complete a frase: Elle ___ déjà fini quand je suis arrivé.", options: ["avait", "a", "avais"], answer: 0 },
     { kind: "fillBlank", prompt: "J'___ (avoir) oublié mes clés à la maison.", answer: "avais", accept: ["avais"], explanation: "j'avais oublié = eu tinha esquecido." },
-    { kind: "choice", prompt: "Complete: Ils étaient ___ (partir) avant la pluie.", options: ["partis", "parti", "partie"], answer: 0, explanation: "être + particípio concorda: ils étaient partis." },
+    { kind: "choice", prompt: "Complete a frase: Ils étaient ___ (partir) avant la pluie.", options: ["partis", "parti", "partie"], answer: 0, explanation: "être + particípio concorda: ils étaient partis." },
     { kind: "fillBlank", prompt: "Elle n'___ jamais visité Paris avant.", answer: "avait", accept: ["avait"], explanation: "elle n'avait jamais visité." }
   ],
   "g-hypotheses": [
@@ -94,9 +94,9 @@ export const GRAMMAR_PRACTICE: Record<string, Exercise[]> = {
     { kind: "fillBlank", prompt: "Si j'avais pu, je ___ (venir, cond. passé) plus tôt.", answer: "serais venu", accept: ["serais venu"], explanation: "serais venu = eu teria vindo." }
   ],
   "g-subjonctif-passe": [
-    { kind: "choice", prompt: "Complete: Bien qu'il ___ plu, on a marché.", options: ["ait", "a", "avait"], answer: 0, explanation: "bien que + subjonctif passé: qu'il ait plu." },
+    { kind: "choice", prompt: "Complete a frase: Bien qu'il ___ plu, on a marché.", options: ["ait", "a", "avait"], answer: 0, explanation: "bien que + subjonctif passé: qu'il ait plu." },
     { kind: "fillBlank", prompt: "Je suis contente qu'elle ___ (être) venue.", answer: "soit", accept: ["soit"], explanation: "subjonctif passé de être: qu'elle soit venue." },
-    { kind: "choice", prompt: "Complete: Je doute qu'ils ___ compris.", options: ["aient", "ont", "avaient"], answer: 0, explanation: "doute + subjonctif passé: qu'ils aient compris." },
+    { kind: "choice", prompt: "Complete a frase: Je doute qu'ils ___ compris.", options: ["aient", "ont", "avaient"], answer: 0, explanation: "doute + subjonctif passé: qu'ils aient compris." },
     { kind: "fillBlank", prompt: "Il est possible qu'il ___ (avoir) oublié.", answer: "ait", accept: ["ait"], explanation: "qu'il ait oublié." },
     { kind: "choice", prompt: "Subjonctif passé é formado com…", options: ["subjonctif de avoir/être + particípio", "imparfait + infinitivo", "futur + particípio"], answer: 0 },
     { kind: "fillBlank", prompt: "Je suis triste qu'elles ___ (partir) si tôt.", answer: "soient parties", accept: ["soient parties"], explanation: "qu'elles soient parties." }

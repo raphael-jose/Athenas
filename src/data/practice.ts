@@ -141,7 +141,7 @@ function vocabLesson(opts: PracticeOpts, idN: number, n: number, grp: WordEntry[
     genChoice(`O que significa "${grp[0].fr}"?`, grp[0].pt, others.map((w) => w.pt), rnd),
     genChoice(`Como se diz "${grp[1].pt}" em francês?`, grp[1].fr, others.map((w) => w.fr), rnd),
     ...(fillable
-      ? [fill(`Complete: "${fillable.fr}" = ___`, fillable.pt, { hint: `começa com ${fillable.pt[0].toUpperCase()}...` })]
+      ? [fill(`Complete a frase: "${fillable.fr}" = ___`, fillable.pt, { hint: `começa com ${fillable.pt[0].toUpperCase()}...` })]
       : []),
     trans(`Como se diz "${grp[2].pt}"?`, grp[2].fr)
   ];
@@ -179,7 +179,7 @@ function mixedLesson(opts: PracticeOpts, idN: number, n: number, grp: WordEntry[
     match(grp.slice(0, 4).map((w) => [w.fr, w.pt])),
     genChoice(`O que significa "${grp[1].fr}"?`, grp[1].pt, others.map((w) => w.pt), rnd),
     ...(fillable
-      ? [fill(`Complete: "${fillable.fr}" = ___`, fillable.pt, { hint: `começa com ${fillable.pt[0].toUpperCase()}...` })]
+      ? [fill(`Complete a frase: "${fillable.fr}" = ___`, fillable.pt, { hint: `começa com ${fillable.pt[0].toUpperCase()}...` })]
       : []),
     ...(sf && sp ? [build(`Monte a frase: "${sp}"`, sf.split(/\s+/), sf.split(/\s+/))] : []),
     trans(`Como se diz "${sp ?? core.pt}"?`, sf ?? core.fr)

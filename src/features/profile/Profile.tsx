@@ -226,7 +226,7 @@ export function ProfilePage() {
         <SettingRow icon="radio" title="Música de fundo" desc="Cada mundo tem sua trilha; o boss fica tenso">
           <Switch on={state.settings.music} onChange={(v) => setSettings({ music: v })} label="música" />
         </SettingRow>
-        <SettingRow icon="speaker" title="Áudio (TTS)" desc="Voz nas aulas de listening">
+        <SettingRow icon="speaker" title="Áudio (TTS)" desc="Voz nas aulas de áudio">
           <Switch on={state.settings.tts} onChange={(v) => setSettings({ tts: v })} label="áudio" />
         </SettingRow>
       </Card>
