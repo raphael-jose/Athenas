@@ -32,12 +32,15 @@ export interface SpeechResult {
   canListen: boolean;
 }
 
+type SpeechRecogAlt = { transcript: string; confidence?: number };
+type SpeechRecogResult = ArrayLike<SpeechRecogAlt> & { isFinal?: boolean };
+
 interface SpeechRecogLike {
   lang: string;
   interimResults: boolean;
   maxAlternatives: number;
   continuous: boolean;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onresult: ((e: { results: ArrayLike<SpeechRecogResult> }) => void) | null;
   onerror: ((e: { error?: string }) => void) | null;
   onend: (() => void) | null;
   start: () => void;
@@ -383,14 +386,69 @@ export function useSpeech(): SpeechResult {
       const rec = new Ctor();
       rec.lang = opts.lang ?? "fr-FR";
       rec.interimResults = false;
-      rec.maxAlternatives = 3;
+      rec.maxAlternatives = 5;
       rec.continuous = false;
-      rec.onresult = (e) => {
-        const alts = e.results[0];
-        const transcript = alts && alts.length > 0 ? alts[0].transcript : "";
-        opts.onResult(transcript.trim());
+
+      // Antes, qualquer resultado era aceito — o microfone pegava ruído de
+      // fundo, a própria voz do celular tocando a frase, e até frases que o
+      // usuário não disse. Agora: só resultados FINAIS, com texto de verdade
+      // e (quando o motor informa) confiança mínima. Sem nada útil em ~9s,
+      // reporta "no-speech" em vez de inventar uma frase.
+      const CONFIDENCE_MIN = 0.2;
+      let accepted: { text: string; confidence: number } | null = null;
+      let done = false;
+
+      const finish = (text: string | null) => {
+        if (done) return;
+        done = true;
+        window.clearTimeout(guard);
+        try {
+          rec.stop();
+        } catch {
+          // já parou
+        }
+        if (text) opts.onResult(text);
+        else opts.onError?.("no-speech");
       };
-      rec.onerror = (e) => opts.onError?.(e.error ?? "error");
+
+      rec.onresult = (e) => {
+        for (let i = 0; i < e.results.length; i++) {
+          const res = e.results[i];
+          if (!res.isFinal) continue; // só resultado final (nada de palavra solta)
+          const alt = res[0];
+          const raw = alt?.transcript ?? "";
+          const text = raw.trim().replace(/[.,!?;:…]+$/, "").trim();
+          if (!text) continue; // silêncio ou só pontuação — ignora
+          const confidence = typeof alt?.confidence === "number" ? alt.confidence : -1;
+          // Confiança real e baixa = ruído/frase que o usuário não disse.
+          // (confiança 0/ausente é o Chrome — não tem como distinguir, aceita.)
+          if (confidence > 0 && confidence < CONFIDENCE_MIN) continue;
+          if (!accepted || confidence > accepted.confidence) accepted = { text, confidence };
+        }
+        if (accepted) finish(accepted.text);
+      };
+
+      rec.onerror = (e) => {
+        if (done) return;
+        const code = e.error ?? "error";
+        if (code === "not-allowed" || code === "service-not-allowed") {
+          done = true;
+          window.clearTimeout(guard);
+          opts.onError?.(code);
+          return;
+        }
+        // no-speech / aborted / audio-capture / network: sem frase útil
+        finish(accepted?.text ?? null);
+      };
+
+      rec.onend = () => {
+        if (done) return;
+        finish(accepted?.text ?? null);
+      };
+
+      // Rede de segurança: não fica preso em "ouvindo…" para sempre.
+      const guard = window.setTimeout(() => finish(accepted?.text ?? null), 9000);
+
       rec.start();
       return true;
     },

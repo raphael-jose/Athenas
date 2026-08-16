@@ -17,7 +17,7 @@ import { fireSparkle } from "@/lib/confetti";
 export function PronunciationPage() {
   const { addXp, addStars, toast } = useApp();
   const { navigate } = useRouter();
-  const { speak, canListen, listen, supported } = useSpeech();
+  const { speak, stop, canListen, listen, supported } = useSpeech();
 
   const [deck, setDeck] = useState<PronItem[]>(() => shuffle(PRONUNCIATION_DECK));
   const [idx, setIdx] = useState(0);
@@ -85,6 +85,9 @@ export function PronunciationPage() {
   };
 
   const startListen = () => {
+    // Para qualquer áudio tocando (a frase que tocou sozinha!) — senão o
+    // microfone ouve o alto-falante e "captura" a frase que ninguém disse.
+    stop();
     setHeard(null);
     setListening(true);
     const ok = listen({
@@ -101,7 +104,11 @@ export function PronunciationPage() {
       onError: (code) => {
         setListening(false);
         toast(
-          code === "not-allowed" ? "Sem acesso ao microfone… mas pode ouvir e repetir mentalmente!" : "Não entendi… tenta de novo!",
+          code === "not-allowed"
+            ? "Sem acesso ao microfone… mas pode ouvir e repetir mentalmente!"
+            : code === "no-speech"
+              ? "Não ouvi nada… fala um pouco mais alto e mais perto do microfone!"
+              : "Não entendi… tenta de novo!",
           "mic"
         );
       }
