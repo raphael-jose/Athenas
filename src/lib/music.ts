@@ -16,6 +16,10 @@ let filter: BiquadFilterNode | null = null;
 let timer: number | null = null;
 let currentId: string | null = null;
 let enabled = true;
+// Volume atual da música em JS. Não dependemos de AudioParam.value para
+// os fades: alguns navegadores retornam o valor BASE (e não o computado
+// durante automações), o que fazia o mute não silenciar de verdade.
+let currentVol = 0;
 let nextBar = 0;
 let barIndex = 0;
 // Camadas da música: a trilha FICA MAIS RICA conforme o usuário avança
@@ -70,6 +74,7 @@ function ac(): AudioContext | null {
     ctx = new AC();
     master = ctx.createGain();
     master.gain.value = 0;
+    currentVol = 0;
     // passa-baixa acolchoado + corta o ronco grave demais
     filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
@@ -198,9 +203,11 @@ function loop(mood: Mood, id: string) {
 
 function rampVolume(target: number, seconds = 1.2) {
   if (!ctx || !master) return;
-  master.gain.cancelScheduledValues(ctx.currentTime);
-  master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
-  master.gain.linearRampToValueAtTime(target, ctx.currentTime + seconds);
+  const now = ctx.currentTime;
+  master.gain.cancelScheduledValues(now);
+  master.gain.setValueAtTime(currentVol, now);
+  master.gain.linearRampToValueAtTime(target, now + seconds);
+  currentVol = target;
 }
 
 function start(mood: Mood, id: string) {
@@ -250,5 +257,13 @@ export function stopMusic() {
 /** Liga/desliga a música (respeita a configuração do Perfil). */
 export function setMusicEnabled(v: boolean) {
   enabled = v;
-  if (!v) stopMusic();
+  if (!v) {
+    stopMusic();
+    // Garantia TOTAL de silêncio: suspende o contexto de áudio — nenhum
+    // navegador toca áudio de contexto suspenso, então não sobra nota
+    // agendada nem automação teimosa. Religar retoma via ac().
+    if (ctx && ctx.state === "running") void ctx.suspend();
+  } else if (ctx && ctx.state === "suspended") {
+    void ctx.resume();
+  }
 }

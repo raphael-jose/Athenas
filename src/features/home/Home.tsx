@@ -15,7 +15,7 @@ import type { IconName } from "@/types";
 import { percent } from "@/lib/utils";
 
 export function Home() {
-  const { state } = useApp();
+  const { state, setSettings } = useApp();
   const { navigate } = useRouter();
   const lvl = levelProgress(state.xp);
 
@@ -66,6 +66,15 @@ export function Home() {
           </span>
           <span className="lbl">étoiles</span>
         </div>
+        <button
+          className={`music-toggle ${state.settings.music ? "on" : "off"}`}
+          onClick={() => setSettings({ music: !state.settings.music })}
+          title={state.settings.music ? "Silenciar música" : "Ligar música"}
+          aria-label={state.settings.music ? "Silenciar música" : "Ligar música"}
+          aria-pressed={state.settings.music}
+        >
+          <Icon name="musicNote" size={17} filled={state.settings.music} />
+        </button>
       </header>
 
       {/* Saudação + mascote */}

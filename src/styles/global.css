@@ -508,6 +508,29 @@ input, textarea, select {
   gap: var(--sp-3);
 }
 
+.music-toggle {
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-2);
+  color: var(--c-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+  flex-shrink: 0;
+}
+.music-toggle:active { transform: scale(0.92); }
+.music-toggle.off {
+  color: var(--c-muted);
+  opacity: 0.45;
+  filter: grayscale(1);
+  border-color: var(--c-border);
+}
+
 .topbar .logo-img {
   width: 40px;
   height: 40px;
