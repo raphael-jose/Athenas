@@ -189,6 +189,10 @@ export interface Settings {
   theme: string;
   /** Roupinha da Lulu (id de COSTUMES — afeta a boina e a echarpe). */
   costume: string;
+  /** Moldura do avatar (id de FRAMES). */
+  frame: string;
+  /** Efeito de confete (id de CONFETTIS). */
+  confetti: string;
   fontScale: number; // 0.9 | 1 | 1.1 | 1.2
   animations: boolean;
   sound: boolean;
@@ -266,6 +270,10 @@ export interface StudentState {
   boughtThemes: string[];
   /** Roupinhas da Lulu compradas na Loja. */
   boughtCostumes: string[];
+  /** Molduras do avatar compradas na Loja. */
+  boughtFrames: string[];
+  /** Efeitos de confete comprados na Loja. */
+  boughtConfettis: string[];
   notificationsSeen: Record<string, number>;
   /** Sessão: último dia em que o usuário fez login (yyyy-mm-dd) — controla a tela de boas-vindas. */
   lastLoginDate: string;

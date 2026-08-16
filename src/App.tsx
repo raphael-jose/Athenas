@@ -33,6 +33,8 @@ import { AboutPage } from "@/features/profile/About";
 import { MentorPage } from "@/features/mentor/Mentor";
 import { lessonById, WORLDS, worldById, worldProgress } from "@/data/worlds";
 import { playBossMusic, playWorldMusic, setMusicEnabled, stopMusic } from "@/lib/music";
+import { CONFETTIS } from "@/lib/constants";
+import { setConfettiColors } from "@/lib/confetti";
 
 function Shell() {
   const { state, touchStreak, setLastRoute } = useApp();
@@ -47,13 +49,15 @@ function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, state.onboarded, showWelcomeBack]);
 
-  // Aplica tema + escala de fonte + roupinha da Lulu no <html>
+  // Aplica tema + escala de fonte + roupinha da Lulu no <html> e o
+  // efeito de confete ativo (paleta usada nas comemorações).
   useEffect(() => {
     document.documentElement.dataset.theme = state.settings.theme;
     document.documentElement.dataset.font = String(state.settings.fontScale);
     document.documentElement.dataset.costume = state.settings.costume;
     document.documentElement.style.colorScheme = state.settings.theme === "nuit" ? "dark" : "light";
-  }, [state.settings.theme, state.settings.fontScale, state.settings.costume]);
+    setConfettiColors(CONFETTIS.find((c) => c.id === state.settings.confetti)?.colors ?? null);
+  }, [state.settings.theme, state.settings.fontScale, state.settings.costume, state.settings.confetti]);
 
   // Música de fundo conforme o mapa: cada mundo tem sua trilha que
   // EVOLUI em camadas conforme as aulas concluídas (pad → baixo →

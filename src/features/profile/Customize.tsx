@@ -3,13 +3,14 @@
 // ══════════════════════════════════════════════════════════════
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
-import { COSTUMES, THEMES } from "@/lib/constants";
+import { CONFETTIS, COSTUMES, FRAMES, THEMES } from "@/lib/constants";
+import { AvatarFrame } from "@/components/AvatarFrame";
 import { Button, Card, Chip, PageHeader } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
 
 export function CustomizePage() {
-  const { state, buyTheme, buyCostume, setSettings } = useApp();
+  const { state, buyTheme, buyCostume, buyFrame, buyConfetti, setSettings } = useApp();
   const { navigate } = useRouter();
 
   return (
@@ -98,13 +99,85 @@ export function CustomizePage() {
       </div>
 
       <div className="section-title">
-        <Icon name="radio" size={18} /> Em breve
+        <Icon name="medal" size={18} /> Molduras do avatar
       </div>
-      <Card className="center">
-        <p className="muted small">
-          Molduras, efeitos de confete e mais surpresas chegam nas próximas fases. Continue estudando para juntar étoiles!
-        </p>
-      </Card>
+      <div className="stack">
+        {FRAMES.map((f) => {
+          const owned = state.boughtFrames.includes(f.id) || f.price === 0;
+          const active = state.settings.frame === f.id;
+          return (
+            <Card key={f.id} className="tap" onClick={() => owned && setSettings({ frame: f.id })}>
+              <div className="row-between">
+                <div className="row">
+                  <div
+                    className="cos-preview"
+                    style={{ width: 52, height: 52, borderRadius: 16, background: "var(--c-accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 0, position: "relative" }}
+                  >
+                    <div className="cos-preview-avatar" style={{ color: "var(--c-accent-deep)", display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+                      <Icon name={f.icon} size={22} />
+                    </div>
+                    <AvatarFrame id={f.id} />
+                  </div>
+                  <div>
+                    <div className="bold">{f.name}</div>
+                    <div className="muted small">{f.desc}</div>
+                  </div>
+                </div>
+                {!owned ? (
+                  <Button size="sm" variant={state.stars >= f.price ? "gold" : "ghost"} onClick={() => buyFrame(f.id)}>
+                    <Icon name="star" size={14} /> {f.price}
+                  </Button>
+                ) : active ? (
+                  <Chip variant="green"> ativa</Chip>
+                ) : (
+                  <Chip variant="rose">usar</Chip>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="section-title">
+        <Icon name="confetti" size={18} /> Efeitos de confete
+      </div>
+      <div className="stack">
+        {CONFETTIS.map((c) => {
+          const owned = state.boughtConfettis.includes(c.id) || c.price === 0;
+          const active = state.settings.confetti === c.id;
+          return (
+            <Card key={c.id} className="tap" onClick={() => owned && setSettings({ confetti: c.id })}>
+              <div className="row-between">
+                <div className="row">
+                  <div
+                    className="confetti-preview"
+                    style={{ width: 52, height: 52, borderRadius: 16, background: "var(--c-surface-2)", display: "flex", flexWrap: "wrap", gap: 3, alignItems: "center", justifyContent: "center", padding: 6, marginRight: 0 }}
+                  >
+                    {c.colors.slice(0, 6).map((col, i) => (
+                      <span key={i} style={{ background: col }} />
+                    ))}
+                  </div>
+                  <div>
+                    <div className="bold">{c.name}</div>
+                    <div className="muted small">{c.desc}</div>
+                  </div>
+                </div>
+                {!owned ? (
+                  <Button size="sm" variant={state.stars >= c.price ? "gold" : "ghost"} onClick={() => buyConfetti(c.id)}>
+                    <Icon name="star" size={14} /> {c.price}
+                  </Button>
+                ) : active ? (
+                  <Chip variant="green"> ativo</Chip>
+                ) : (
+                  <Chip variant="rose">usar</Chip>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <p className="small muted center mt-3">Mais surpresas chegam nas próximas fases 🌸</p>
     </div>
   );
 }

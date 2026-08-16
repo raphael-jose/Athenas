@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Persistência (localStorage) + estado inicial
 // ══════════════════════════════════════════════════════════════
-import { APP_VERSION, AI_DEFAULTS, AI_ENV, STORAGE_KEY, THEMES } from "@/lib/constants";
+import { APP_VERSION, AI_DEFAULTS, AI_ENV, CONFETTIS, FRAMES, STORAGE_KEY, THEMES } from "@/lib/constants";
 import { embeddedKey } from "@/lib/embeddedKey";
 import { dayKey } from "@/lib/utils";
 import type { Settings, StudentState } from "@/types";
@@ -26,6 +26,8 @@ export function defaultSettings(): Settings {
   return {
     theme: "rose",
     costume: "classic",
+    frame: "simples",
+    confetti: "classico",
     fontScale: 1,
     animations: true,
     sound: true,
@@ -81,6 +83,8 @@ export function defaultState(): StudentState {
     settings: defaultSettings(),
     boughtThemes: [],
     boughtCostumes: [],
+    boughtFrames: [],
+    boughtConfettis: [],
     notificationsSeen: {},
     lastLoginDate: "",
     lastRoute: "",
@@ -111,6 +115,14 @@ export function loadState(): StudentState {
     // padrão — os temas só ficam disponíveis depois de comprados na Loja.
     if (!THEMES.some((t) => (t.price === 0 || (state.boughtThemes ?? []).includes(t.id)) && t.id === state.settings.theme)) {
       state.settings.theme = THEMES[0].id;
+    }
+    // mesma regra para moldura e confete: só ficam ativos se forem grátis
+    // ou tiverem sido comprados na Loja.
+    if (!FRAMES.some((f) => (f.price === 0 || (state.boughtFrames ?? []).includes(f.id)) && f.id === state.settings.frame)) {
+      state.settings.frame = FRAMES[0].id;
+    }
+    if (!CONFETTIS.some((c) => (c.price === 0 || (state.boughtConfettis ?? []).includes(c.id)) && c.id === state.settings.confetti)) {
+      state.settings.confetti = CONFETTIS[0].id;
     }
     state.version = APP_VERSION;
     if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];

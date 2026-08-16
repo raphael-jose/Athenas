@@ -12,6 +12,7 @@ import { Button, Card, Chip, Modal, PageHeader, Segmented, SettingRow, StatCard,
 import { Icon } from "@/components/Icons";
 import type { IconName } from "@/types";
 import { Mascot } from "@/components/Mascot";
+import { AvatarFrame } from "@/components/AvatarFrame";
 import { AccountSection } from "./AccountSection";
 
 /** Redimensiona a foto para 256×256 (JPEG) — leve e cabe no armazenamento local. */
@@ -103,6 +104,7 @@ export function ProfilePage() {
       {/* Cabeçalho */}
       <Card className="center">
         <div className="profile-avatar-wrap" onClick={() => photoRef.current?.click()} role="button" aria-label="Trocar foto de perfil">
+          <AvatarFrame id={state.settings.frame} />
           {state.photo ? (
             <img src={state.photo} alt="Foto de perfil" className="profile-photo" />
           ) : (

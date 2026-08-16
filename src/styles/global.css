@@ -1380,6 +1380,26 @@ input, textarea, select {
   justify-content: center;
   border: 2px solid var(--c-bg);
   box-shadow: var(--card-shadow);
+  z-index: 3;
+}
+
+/* Moldura do avatar (loja — FRAMES): anel em volta da foto/avatar */
+.avatar-frame {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  pointer-events: none;
+  z-index: 2;
+  overflow: visible;
+}
+
+/* Preview do efeito de confete na loja */
+.confetti-preview span {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
 }
 
 /* Feedback: botões de humor + linha de contato */

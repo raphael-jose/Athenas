@@ -11,7 +11,7 @@ import {
   useState,
   type ReactNode
 } from "react";
-import { COSTUMES, STARS, XP } from "@/lib/constants";
+import { CONFETTIS, COSTUMES, FRAMES, STARS, XP } from "@/lib/constants";
 import { fireConfetti, fireSparkle } from "@/lib/confetti";
 import { setSfxEnabled, sfxAchievement, sfxLevelUp, sfxVictory } from "@/lib/sfx";
 import { dayKey, uid } from "@/lib/utils";
@@ -43,6 +43,10 @@ export interface AppApi {
   buyTheme: (themeId: string) => boolean;
   /** Compra uma roupinha da Lulu (desconta étoiles e aplica na hora). */
   buyCostume: (costumeId: string) => boolean;
+  /** Compra uma moldura de avatar (desconta étoiles e aplica na hora). */
+  buyFrame: (frameId: string) => boolean;
+  /** Compra um efeito de confete (desconta étoiles e aplica na hora). */
+  buyConfetti: (confettiId: string) => boolean;
   setSettings: (patch: Partial<Settings>) => void;
   finishOnboarding: (opts: { name: string; avatar: string; band: CefrBand }) => void;
   updateProfile: (opts: { name?: string; avatar?: string; photo?: string; email?: string; passwordHash?: string }) => void;
@@ -354,6 +358,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
           settings: { ...s0.settings, costume: costumeId }
         });
         toast("Roupinha desbloqueada!", "gift");
+        return true;
+      },
+      buyFrame: (frameId) => {
+        const s0 = stateRef.current;
+        if (s0.boughtFrames.includes(frameId)) return true;
+        const def = FRAMES.find((f) => f.id === frameId);
+        const price = def?.price ?? 0;
+        if (s0.stars < price) {
+          toast("Étoiles insuficientes… continue estudando!", "starFour");
+          return false;
+        }
+        commit({
+          ...s0,
+          stars: s0.stars - price,
+          boughtFrames: [...s0.boughtFrames, frameId],
+          settings: { ...s0.settings, frame: frameId }
+        });
+        toast("Moldura desbloqueada!", "gift");
+        return true;
+      },
+      buyConfetti: (confettiId) => {
+        const s0 = stateRef.current;
+        if (s0.boughtConfettis.includes(confettiId)) return true;
+        const def = CONFETTIS.find((c) => c.id === confettiId);
+        const price = def?.price ?? 0;
+        if (s0.stars < price) {
+          toast("Étoiles insuficientes… continue estudando!", "starFour");
+          return false;
+        }
+        commit({
+          ...s0,
+          stars: s0.stars - price,
+          boughtConfettis: [...s0.boughtConfettis, confettiId],
+          settings: { ...s0.settings, confetti: confettiId }
+        });
+        toast("Confete desbloqueado!", "gift");
         return true;
       },
       setSettings: (patch) => {

@@ -129,6 +129,42 @@ export const COSTUMES: CostumeDef[] = [
   { id: "emeraude", name: "Émeraude Parisienne", icon: "sparkle", price: 160, desc: "Verde esmeralda elegante, estilo museu." }
 ];
 
+// ── Molduras do avatar (loja) ─────────────────────────────────
+export interface FrameDef {
+  id: string;
+  name: string;
+  icon: IconName;
+  price: number;
+  desc: string;
+}
+
+export const FRAMES: FrameDef[] = [
+  { id: "simples", name: "Anel Rosé", icon: "heartStraight", price: 0, desc: "O anel delicado de sempre." },
+  { id: "ouro", name: "Étoile d'Or", icon: "starFour", price: 120, desc: "Dourado brilhante para você brilhar." },
+  { id: "galaxia", name: "Galaxie", icon: "moon", price: 140, desc: "Noite estrelada com estrelinhas." },
+  { id: "flor", name: "Jardin de Provence", icon: "flowerTulip", price: 130, desc: "Flores delicadas para emoldurar o sorriso." },
+  { id: "arcoiris", name: "Arc-en-ciel", icon: "sparkle", price: 150, desc: "Um arco-íris inteiro para você." },
+  { id: "coracao", name: "Cœur", icon: "heart", price: 160, desc: "Corações de carinho ao redor." }
+];
+
+// ── Efeitos de confete (loja) ─────────────────────────────────
+export interface ConfettiDef {
+  id: string;
+  name: string;
+  icon: IconName;
+  price: number;
+  desc: string;
+  colors: string[];
+}
+
+export const CONFETTIS: ConfettiDef[] = [
+  { id: "classico", name: "Confete Clássico", icon: "sparkle", price: 0, desc: "O mix rosé-lilás de sempre.", colors: ["#f28bb4", "#b9a5f0", "#f5c96b", "#8fd3c0", "#8fc3f0", "#ffffff"] },
+  { id: "ouro", name: "Pluie d'Or", icon: "starFour", price: 90, desc: "Chuva de ouro para comemorar em grande.", colors: ["#ffe28a", "#f5c96b", "#fff3c0", "#e9b44c", "#ffffff"] },
+  { id: "arcoiris", name: "Arc-en-ciel", icon: "maskHappy", price: 110, desc: "Todas as cores do arco-íris de uma vez.", colors: ["#f5484d", "#f5a623", "#f5c96b", "#6fbf73", "#4a90d9", "#8b5fc9"] },
+  { id: "festa", name: "Fête", icon: "confetti", price: 120, desc: "Cores de festa francesa.", colors: ["#ff6b9d", "#5fc9e8", "#c9a3ff", "#7ed6ab", "#ffd166", "#ffffff"] },
+  { id: "coracoes", name: "Cœurs", icon: "heart", price: 140, desc: "Confete de corações apaixonados.", colors: ["#e5484d", "#ff8fa3", "#ffb3c8", "#ffd3de", "#ffffff"] }
+];
+
 export const STICKERS = ["🌹", "🥐", "🗼", "❤️", "✨", "😘", "🍷", "🐌"];
 
 // ── Contatos (Sobre + Feedback) ───────────────────────────────

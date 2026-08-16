@@ -14,10 +14,19 @@ function ensureCanvas(): HTMLCanvasElement {
   return canvas;
 }
 
+// Paleta ativa (efeito de confete comprado na Loja — setConfettiColors
+// é chamado pelo App quando settings.confetti muda).
+let activeColors: string[] | null = null;
+
+/** Define a paleta do efeito de confete ativo (null = paleta clássica). */
+export function setConfettiColors(colors: string[] | null) {
+  activeColors = colors;
+}
+
 export function fireConfetti(big = false) {
   const c = ensureCanvas();
   const myConfetti = confetti.create(c, { resize: true, useWorker: true });
-  const colors = ["#f28bb4", "#b9a5f0", "#f5c96b", "#8fd3c0", "#8fc3f0", "#ffffff"];
+  const colors = activeColors ?? ["#f28bb4", "#b9a5f0", "#f5c96b", "#8fd3c0", "#8fc3f0", "#ffffff"];
   if (big) {
     myConfetti({ particleCount: 160, spread: 110, origin: { y: 0.6 }, colors, zIndex: 300 });
     setTimeout(() => myConfetti({ particleCount: 90, spread: 70, origin: { y: 0.4 }, colors, zIndex: 300 }), 250);
