@@ -18,6 +18,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["logo.png", "icons/icon-192.png", "icons/icon-512.png", "favicon.svg"],
       manifest: {
+        id: "./",
         name: "Athenas — Aprenda francês jogando",
         short_name: "Athenas",
         description: "O RPG mais fofo para aprender francês ",
@@ -25,6 +26,7 @@ export default defineConfig({
         theme_color: "#f7c9dd",
         background_color: "#fff7fa",
         display: "standalone",
+        display_override: ["standalone", "fullscreen", "minimal-ui", "browser"],
         start_url: "./",
         scope: "./",
         icons: [

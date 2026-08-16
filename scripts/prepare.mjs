@@ -25,21 +25,34 @@ function findLogo() {
   return candidates.length > 0 ? join(root, candidates[0]) : null;
 }
 
-function copyLogo() {
+async function copyLogo() {
   ensureDir(publicDir);
   ensureDir(iconsDir);
   const source = findLogo();
   if (source) {
-    copyFileSync(source, join(publicDir, "logo.png"));
-    copyFileSync(source, join(iconsDir, "icon-192.png"));
-    copyFileSync(source, join(iconsDir, "icon-512.png"));
-    console.log("✔  Logo copiado para public/ (logo.png + ícones PWA)");
+    // Logo do app (header/onboarding) — otimizado, sem precisar pesar 1MB+.
+    try {
+      const sharp = (await import("sharp")).default;
+      await sharp(source).resize(512, 512).png().toFile(join(publicDir, "logo.png"));
+      // Ícones PWA: o navegador exige as dimensões EXATAS do manifest
+      // (192 e 512). Copiar o PNG cru (ex.: 1254x1254) quebra a
+      // instalabilidade — o atalho vira aba do navegador em vez de app.
+      await sharp(source).resize(512, 512).png().toFile(join(iconsDir, "icon-512.png"));
+      await sharp(source).resize(192, 192).png().toFile(join(iconsDir, "icon-192.png"));
+      console.log("✔  Logo otimizado e ícones PWA gerados (192/512)");
+    } catch {
+      // Sem sharp instalado: copia como está (funciona, mas sem resize).
+      copyFileSync(source, join(publicDir, "logo.png"));
+      copyFileSync(source, join(iconsDir, "icon-192.png"));
+      copyFileSync(source, join(iconsDir, "icon-512.png"));
+      console.log("⚠  sharp indisponível — logo e ícones copiados sem otimizar");
+    }
   } else {
     console.log("ℹ  Nenhum PNG de logo encontrado — o app usará a marca padrão (emoji).");
   }
 }
 
-copyLogo();
+void copyLogo().then(() => rotateKeyPayload());
 
 /**
  * Rotaciona a chave embutida (se houver fonte: env ou secrets/ollama-key.txt).
