@@ -3,6 +3,7 @@
 // Expressões: feliz, empolgada, pensando, confusa, triste,
 // orgulhosa, surpresa, preocupada, apaixonada, explicando.
 // ══════════════════════════════════════════════════════════════
+import { useEffect, useRef, useState } from "react";
 export type Mood =
   | "happy"
   | "excited"
@@ -127,12 +128,30 @@ function Brows({ kind }: { kind?: BrowKind }) {
 
 export function Mascot({ mood = "happy", size = 120, className = "", speaking }: { mood?: Mood; size?: number; className?: string; speaking?: boolean }) {
   const m = MOODS[mood];
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  // Traje atual: lê o [data-costume] mais próximo (html global ou o wrapper
+  // de cada linha da loja). Um MutationObserver mantém a Lulu sincronizada
+  // quando o usuário troca de roupa nas configurações.
+  const [costume, setCostume] = useState<string>("classic");
+  useEffect(() => {
+    const read = () => {
+      const el = svgRef.current?.closest("[data-costume]");
+      setCostume(el?.getAttribute("data-costume") ?? "classic");
+    };
+    read();
+    const obs = new MutationObserver(read);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-costume"] });
+    return () => obs.disconnect();
+  }, []);
+  const cls = [`mc-costume-${costume}`];
+  if (className) cls.push(className);
   return (
     <svg
+      ref={svgRef}
       width={size}
       height={size}
       viewBox="0 0 140 140"
-      className={className}
+      className={cls.join(" ")}
       role="img"
       aria-label={`Lulu, a mascote do Athenas — expressão: ${mood}`}
     >
@@ -157,6 +176,45 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
         <ellipse cx={70} cy={30} rx={33} ry={13} fill="var(--c-beret, #e5484d)" />
         <path d="M55 34 q15 -14 30 0 l-4 6 q-11 -7 -22 0 z" fill="var(--c-beret-dark, #c93a3f)" />
         <circle cx={70} cy={26} r={3} fill="var(--c-beret-dot, #f28bb4)" />
+        {/* brilho da boina (qualidade) */}
+        <path d="M48 27 Q58 20 68 21 Q78 22 86 27" stroke="#ffffff" strokeWidth={3} strokeLinecap="round" fill="none" opacity={0.35} />
+        {/* detalhes da roupinha — cada traje mostra seu acessório via [data-costume] no CSS */}
+        <g className="mc-deco">
+          {/* Rosé Classique: rosê presa na boina */}
+          <g className="mc-rose">
+            <circle cx={86} cy={28} r={4.4} fill="#e56b9d" />
+            <circle cx={91} cy={30} r={3.6} fill="#e5484d" />
+            <circle cx={85} cy={32} r={3.8} fill="#e56b9d" />
+            <circle cx={88} cy={30} r={1.8} fill="#c93a3f" />
+            <path d="M81 33 q3 2 5 1" stroke="#6fbf73" strokeWidth={1.8} fill="none" strokeLinecap="round" />
+          </g>
+          {/* Mystère Lavande: raminhos de lavanda */}
+          <g className="mc-lavande">
+            <path d="M45 32 Q43 22 46 15" stroke="#7d5ec2" strokeWidth={2} fill="none" strokeLinecap="round" />
+            <path d="M50 32 Q51 21 54 14" stroke="#7d5ec2" strokeWidth={2} fill="none" strokeLinecap="round" />
+            <g fill="#b9a5f0">
+              <ellipse cx={46} cy={16} rx={2.4} ry={3} />
+              <ellipse cx={48} cy={20} rx={2.4} ry={3} />
+              <ellipse cx={45.5} cy={24} rx={2.4} ry={3} />
+              <ellipse cx={54} cy={15} rx={2.4} ry={3} />
+              <ellipse cx={52.5} cy={19} rx={2.4} ry={3} />
+              <ellipse cx={55} cy={23} rx={2.4} ry={3} />
+            </g>
+          </g>
+          {/* Bleuet Étoilé: estrelinhas na boina */}
+          <g className="mc-stars">
+            <path d="M50 18 l1.5 3.2 3.2 1.5 -3.2 1.5 -1.5 3.2 -1.5 -3.2 -3.2 -1.5 3.2 -1.5 z" fill="#ffe28a" />
+            <path d="M84 15 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#ffffff" />
+            <path d="M68 12 l1.2 2.5 2.5 1.2 -2.5 1.2 -1.2 2.5 -1.2 -2.5 -2.5 -1.2 2.5 -1.2 z" fill="#cfe6ff" />
+          </g>
+          {/* Chocolat Fondant: cobertura derretida */}
+          <g className="mc-choco">
+            <path d="M47 33 q23 -6 46 0 l-1.5 4 q-21.5 -4.5 -43 0 z" fill="#c98f5f" />
+            <ellipse cx={57} cy={40} rx={2.2} ry={4} fill="#c98f5f" />
+            <ellipse cx={85} cy={39} rx={2} ry={3.6} fill="#c98f5f" />
+            <ellipse cx={70} cy={41.5} rx={1.8} ry={3.2} fill="#c98f5f" />
+          </g>
+        </g>
       </g>
 
       {/* corpo / rostinho */}
@@ -176,6 +234,12 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       {/* echarpe (cores da roupinha) */}
       <path d="M44 112 q26 10 52 0 l-4 10 q-22 8 -44 0 z" fill="var(--c-scarf, #f28bb4)" />
       <path d="M88 112 l6 14 l-8 -3 z" fill="var(--c-scarf-dark, #e56b9d)" />
+      {/* Émeraude Parisienne: gema na echarpe */}
+      <g className="mc-gem">
+        <path d="M70 112 l6.5 5.5 -6.5 8 -6.5 -8 z" fill="#2e9e5b" stroke="#217a45" strokeWidth={1.6} strokeLinejoin="round" />
+        <path d="M70 112 l6.5 5.5 -3 2.2 -3.5 -3.4 z" fill="#5fc98a" />
+        <circle cx={67.5} cy={119} r={1.2} fill="#c6f0d8" />
+      </g>
 
       {/* ondas de fala */}
       {speaking && (

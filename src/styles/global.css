@@ -1312,6 +1312,22 @@ input, textarea, select {
   --c-scarf-dark: #2e9e5b;
 }
 
+/* Acessórios da roupinha: cada traje mostra o detalhe do título
+   (rosê, lavanda, estrelinhas, fondant, gema). A classe mc-costume-*
+   fica no próprio SVG da Lulu (lida do [data-costume] mais próximo),
+   então a prévia da loja mostra cada roupa certinha, sem vazar. */
+.mc-deco > g {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.mc-costume-classic .mc-rose,
+.mc-costume-lavande .mc-lavande,
+.mc-costume-bleuet .mc-stars,
+.mc-costume-chocolat .mc-choco,
+.mc-costume-emeraude .mc-gem {
+  opacity: 1;
+}
+
 /* Palavras da aula que falam ao toque */
 .word-audio-chip {
   display: inline-flex;
