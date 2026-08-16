@@ -9,7 +9,7 @@ import { ExercisePlayer, type ExerciseResult } from "@/components/ExercisePlayer
 import { Button, Card, Chip, EmptyState, PageHeader } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
-import { BossSprite } from "@/components/BossSprite";
+import { BossSprite, BOSS_ACCENTS } from "@/components/BossSprite";
 import { LuluBurst } from "@/components/LuluBurst";
 import { fireConfetti } from "@/lib/confetti";
 
@@ -61,7 +61,10 @@ export function BossBattle({ bossId }: { bossId: string }) {
 
       {phase === "intro" && (
         <Card className="center">
-          <div className="boss-arena">
+          <div
+            className="boss-arena"
+            style={{ background: `radial-gradient(circle at 50% 38%, ${BOSS_ACCENTS[boss.id] ?? "#ffe8ec"} 0%, transparent 72%)` }}
+          >
             <BossSprite bossId={boss.id} size={124} />
           </div>
           <h2>O chefe apareceu !</h2>

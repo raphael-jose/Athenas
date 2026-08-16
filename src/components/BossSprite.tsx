@@ -1,426 +1,844 @@
 // ══════════════════════════════════════════════════════════════
-// Athenas — Sprites exclusivos de cada chefe (SVG fofinho estilo mascote)
-// Cada chefe tem corpo, cores e acessórios próprios, com a mesma
-// "cara brava porém fofa" da Lulu. A animação de flutuação e a de
-// dano (hurt) ficam em global.css (.boss-sprite / .boss-hurt).
+// Athenas — Sprites exclusivos de cada chefe (SVG vetorial, arte
+// caprichada: gradientes, brilhos e expressões). Cada chefe tem
+// silhueta, cores e acessórios próprios. A aura de cada um fica
+// em BOSS_ACCENTS (usada na arena de batalha). Animações de
+// flutuação e dano ficam em global.css (.boss-sprite / .boss-hurt).
 // ══════════════════════════════════════════════════════════════
 import type { ReactNode } from "react";
+
+type Mouth = "shout" | "teeth" | "smug" | "grimace" | "o";
+type Eyes = "round" | "robot" | "hollow";
 
 type FaceProps = {
   eye?: string;
   cheek?: string;
+  mouth?: Mouth;
+  eyes?: Eyes;
   fangs?: boolean;
-  smug?: boolean;
+  blush?: boolean;
+  cx?: number;
 };
 
-/** Cara padrão: olhos bravos (pupila + sobrancelha inclinada) e boca aberta gritando. */
-function AngryFace({ eye = "#3d2f3a", cheek = "#ffb3c8", fangs = false, smug = false }: FaceProps) {
+/** Carinha brava porém fofa, usada por todos os chefes. */
+function Face({ eye = "#33232b", cheek = "#ffb3c8", mouth = "teeth", eyes = "round", fangs = false, blush = true, cx = 60 }: FaceProps) {
+  const ex = cx;
   return (
     <g>
       {/* sobrancelhas inclinadas */}
-      <g stroke={eye} strokeWidth={3} strokeLinecap="round" fill="none">
-        <path d="M40 56 L52 61" />
-        <path d="M80 56 L68 61" />
+      <g stroke={eye} strokeWidth={4} strokeLinecap="round" fill="none">
+        <path d={`M${ex - 22} ${54} L${ex - 8} ${60}`} />
+        <path d={`M${ex + 22} ${54} L${ex + 8} ${60}`} />
       </g>
       {/* olhos */}
-      <g fill={eye}>
-        <circle cx={46} cy={67} r={4.4} />
-        <circle cx={74} cy={67} r={4.4} />
-        <circle cx={47.4} cy={65.4} r={1.5} fill="#fff" />
-        <circle cx={75.4} cy={65.4} r={1.5} fill="#fff" />
-      </g>
-      {/* bochechas */}
-      <ellipse cx={33} cy={77} rx={5.5} ry={3.4} fill={cheek} opacity={0.85} />
-      <ellipse cx={87} cy={77} rx={5.5} ry={3.4} fill={cheek} opacity={0.85} />
-      {/* boca gritando (ou sorriso cínico) */}
-      {smug ? (
-        <path d="M50 82 Q60 76 70 82 Q60 86 50 82" fill={eye} />
-      ) : (
+      {eyes === "round" && (
         <g>
-          <ellipse cx={60} cy={84} rx={9.5} ry={8} fill={eye} />
-          {fangs && (
-            <g fill="#fff">
-              <path d="M54 77 L57 82 L60 77 z" />
-              <path d="M61 77 L63.5 81.5 L66 77 z" />
-            </g>
-          )}
+          <circle cx={ex - 14} cy={67} r={6.4} fill={eye} />
+          <circle cx={ex + 14} cy={67} r={6.4} fill={eye} />
+          <circle cx={ex - 11.8} cy={64.6} r={2.2} fill="#fff" />
+          <circle cx={ex + 16.2} cy={64.6} r={2.2} fill="#fff" />
+          <circle cx={ex - 16.2} cy={69} r={1.1} fill="#fff" opacity={0.7} />
+          <circle cx={ex + 11.8} cy={69} r={1.1} fill="#fff" opacity={0.7} />
         </g>
       )}
+      {eyes === "robot" && (
+        <g>
+          <rect x={ex - 19} y={62} width={11} height={9} rx={2.5} fill={eye} />
+          <rect x={ex + 8} y={62} width={11} height={9} rx={2.5} fill={eye} />
+          <rect x={ex - 16} y={65} width={5} height={3} rx={1} fill="#9fe8ff" />
+          <rect x={ex + 11} y={65} width={5} height={3} rx={1} fill="#9fe8ff" />
+        </g>
+      )}
+      {eyes === "hollow" && (
+        <g fill={eye}>
+          <ellipse cx={ex - 14} cy={68} rx={5.6} ry={7} />
+          <ellipse cx={ex + 14} cy={68} rx={5.6} ry={7} />
+        </g>
+      )}
+      {blush && eyes !== "hollow" && (
+        <g>
+          <ellipse cx={ex - 29} cy={77} rx={6} ry={3.6} fill={cheek} opacity={0.9} />
+          <ellipse cx={ex + 29} cy={77} rx={6} ry={3.6} fill={cheek} opacity={0.9} />
+        </g>
+      )}
+      {/* boca */}
+      {mouth === "shout" && (
+        <g>
+          <ellipse cx={ex} cy={87} rx={10} ry={9.5} fill={eye} />
+          <ellipse cx={ex} cy={91.5} rx={6} ry={4} fill="#ff8fa3" />
+        </g>
+      )}
+      {mouth === "teeth" && (
+        <g>
+          <ellipse cx={ex} cy={87} rx={11.5} ry={10} fill={eye} />
+          <path d={`M${ex - 10} ${79.5} q10 -5 20 0 l-2.5 4 q-7.5 -3 -15 0 z`} fill="#fff" />
+          {fangs && (
+            <g fill="#fff">
+              <path d={`M${ex - 7} ${78} L${ex - 4} ${84} L${ex - 1} ${78} z`} />
+              <path d={`M${ex + 1} ${78} L${ex + 3.5} ${83} L${ex + 6} ${78} z`} />
+            </g>
+          )}
+          <ellipse cx={ex} cy={93.5} rx={7} ry={4} fill="#ff8fa3" />
+        </g>
+      )}
+      {mouth === "smug" && <path d={`M${ex - 10} ${85} Q${ex} ${77} ${ex + 10} ${85} Q${ex} ${89} ${ex - 10} ${85}`} fill={eye} />}
+      {mouth === "grimace" && (
+        <path d={`M${ex - 8} ${87} q4 -4 8 0 q4 4 8 0 q4 -4 8 0`} stroke={eye} strokeWidth={3.4} strokeLinecap="round" fill="none" />
+      )}
+      {mouth === "o" && <ellipse cx={ex} cy={87} rx={5.5} ry={7.5} fill={eye} />}
     </g>
   );
 }
 
+/** Cor da aura de cada chefe (glow da arena de batalha). */
+export const BOSS_ACCENTS: Record<string, string> = {
+  "boss-1": "#8fe09a",
+  "boss-2": "#f7cb77",
+  "boss-3": "#7db9f0",
+  "boss-4": "#c3a6f5",
+  "boss-5": "#bcc8f2",
+  "boss-6": "#93dcf2",
+  "boss-7": "#d3acec",
+  "boss-8": "#93a6cc",
+  "boss-9": "#edcf8e",
+  "boss-10": "#eea3cd",
+  "boss-11": "#9ab8f5",
+  "boss-12": "#a2aec6",
+  "boss-13": "#b6c8d6",
+  "boss-14": "#f5969b",
+  "boss-15": "#c29ce8"
+};
+
 const SPRITES: Record<string, ReactNode> = {
-  // 1 — Le Dragon du Vocabulaire 🐉
+  // ── 1 · Le Dragon du Vocabulaire 🐉 ──────────────────────────
   "boss-1": (
     <g>
-      {/* asas */}
-      <path d="M14 62 Q4 50 12 34 Q20 46 24 40 Q18 56 26 60 z" fill="#4f9e54" />
-      <path d="M106 62 Q116 50 108 34 Q100 46 96 40 Q102 56 94 60 z" fill="#4f9e54" />
+      <defs>
+        <linearGradient id="bs-drag" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8ee39a" />
+          <stop offset="1" stopColor="#4fae5c" />
+        </linearGradient>
+        <linearGradient id="bs-dragw" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#bdf0c4" />
+          <stop offset="1" stopColor="#7fd18a" />
+        </linearGradient>
+        <linearGradient id="bs-dragh" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffc37a" />
+          <stop offset="1" stopColor="#f08a3c" />
+        </linearGradient>
+      </defs>
       {/* cauda */}
-      <path d="M96 92 Q116 96 108 112 L100 106 z" fill="#6fbf73" />
-      {/* corpo */}
-      <ellipse cx={60} cy={78} rx={44} ry={38} fill="#6fbf73" />
-      <ellipse cx={60} cy={92} rx={26} ry={18} fill="#cdeecf" />
+      <path d="M88 100 Q112 102 106 118 L98 110 Q104 104 94 104 z" fill="url(#bs-drag)" />
+      <path d="M106 118 L100 114 L102 108 z" fill="#f08a3c" />
+      {/* asas */}
+      <path d="M18 56 Q6 40 12 24 Q24 32 26 22 Q32 40 26 56 z" fill="url(#bs-dragw)" />
+      <path d="M102 56 Q114 40 108 24 Q96 32 94 22 Q88 40 94 56 z" fill="url(#bs-dragw)" />
+      {/* corpinho */}
+      <ellipse cx={60} cy={104} rx={26} ry={15} fill="url(#bs-drag)" />
+      <ellipse cx={60} cy={108} rx={16} ry={9} fill="#d8f4dc" />
+      {/* patinhas */}
+      <ellipse cx={44} cy={116} rx={8} ry={5} fill="#4fae5c" />
+      <ellipse cx={76} cy={116} rx={8} ry={5} fill="#4fae5c" />
+      {/* cabeça */}
+      <ellipse cx={60} cy={62} rx={42} ry={38} fill="url(#bs-drag)" />
+      <ellipse cx={60} cy={80} rx={24} ry={16} fill="#d8f4dc" />
       {/* chifres */}
-      <path d="M38 44 L32 24 L48 38 z" fill="#f2a65a" />
-      <path d="M82 44 L88 24 L72 38 z" fill="#f2a65a" />
-      {/* escamas */}
-      <path d="M22 92 Q28 86 34 92" stroke="#4f9e54" strokeWidth={3} fill="none" strokeLinecap="round" />
-      <path d="M86 92 Q92 86 98 92" stroke="#4f9e54" strokeWidth={3} fill="none" strokeLinecap="round" />
-      <AngryFace eye="#2c4a30" cheek="#a8e6a8" fangs />
+      <path d="M30 44 Q20 20 34 14 Q34 30 42 36 z" fill="url(#bs-dragh)" />
+      <path d="M90 44 Q100 20 86 14 Q86 30 78 36 z" fill="url(#bs-dragh)" />
+      {/* crista de espinhos */}
+      <path d="M46 26 l4 9 4 -9 z" fill="#2f7a3a" />
+      <path d="M56 23 l4 10 4 -10 z" fill="#3f914b" />
+      <path d="M66 23 l4 10 4 -10 z" fill="#2f7a3a" />
+      {/* narinas com fumaça */}
+      <circle cx={40} cy={66} r={2.4} fill="#2f7a3a" />
+      <circle cx={80} cy={66} r={2.4} fill="#2f7a3a" />
+      <path d="M36 60 q-4 -4 0 -8" stroke="#cfe9d4" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+      <path d="M84 60 q4 -4 0 -8" stroke="#cfe9d4" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+      <Face mouth="teeth" fangs eye="#2c4a30" cheek="#b9f0c1" />
     </g>
   ),
 
-  // 2 — Le Croissant Géant 🥐
+  // ── 2 · Le Croissant Géant 🥐 ────────────────────────────────
   "boss-2": (
     <g>
+      <defs>
+        <linearGradient id="bs-croi" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f8cd7c" />
+          <stop offset="1" stopColor="#e09a38" />
+        </linearGradient>
+        <linearGradient id="bs-croim" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffe9b8" />
+          <stop offset="1" stopColor="#f6c879" />
+        </linearGradient>
+      </defs>
+      {/* pratinho */}
+      <ellipse cx={60} cy={112} rx={46} ry={8} fill="#eef1f7" />
+      <ellipse cx={60} cy={110} rx={46} ry={8} fill="#f8fafd" />
       {/* crescentão */}
       <path
-        d="M18 70 Q24 30 60 26 Q96 30 102 70 Q96 46 60 44 Q24 46 18 70 z"
-        fill="#e8a33d"
-        stroke="#c9842b"
+        d="M20 74 Q26 32 60 28 Q94 32 100 74 Q96 44 60 42 Q24 44 20 74 z"
+        fill="url(#bs-croi)"
+        stroke="#cf8f30"
         strokeWidth={3}
       />
-      <path d="M28 66 Q36 42 60 39" stroke="#c9842b" strokeWidth={3} fill="none" strokeLinecap="round" />
-      <path d="M92 66 Q84 42 60 39" stroke="#c9842b" strokeWidth={3} fill="none" strokeLinecap="round" />
+      {/* camadas */}
+      <path d="M30 68 Q38 40 60 37" stroke="#cf8f30" strokeWidth={3.4} fill="none" strokeLinecap="round" />
+      <path d="M90 68 Q82 40 60 37" stroke="#cf8f30" strokeWidth={3.4} fill="none" strokeLinecap="round" />
+      <path d="M60 28 Q76 30 88 44" stroke="#eeb95f" strokeWidth={3} fill="none" strokeLinecap="round" />
+      {/* brilho */}
+      <path d="M34 50 Q44 40 58 38" stroke="#ffe9b8" strokeWidth={3.4} strokeLinecap="round" fill="none" />
+      {/* miolo com carinha */}
+      <ellipse cx={60} cy={76} rx={32} ry={25} fill="url(#bs-croim)" />
       {/* farinhas */}
-      <circle cx={34} cy={40} r={2} fill="#fff7e0" />
-      <circle cx={84} cy={36} r={2.4} fill="#fff7e0" />
-      <circle cx={104} cy={56} r={1.8} fill="#fff7e0" />
-      {/* carinha no miolo */}
-      <ellipse cx={60} cy={74} rx={30} ry={24} fill="#f6c879" />
-      <AngryFace eye="#6b4a1f" cheek="#ffd9a3" />
+      <circle cx={32} cy={38} r={2.2} fill="#fff3d6" />
+      <circle cx={84} cy={34} r={2.6} fill="#fff3d6" />
+      <circle cx={100} cy={54} r={2} fill="#fff3d6" />
+      <circle cx={22} cy={58} r={1.8} fill="#fff3d6" />
+      <Face mouth="smug" eye="#6b4a1f" cheek="#ffdfa8" cx={60} />
     </g>
   ),
 
-  // 3 — Le Métro Fou 🚇
+  // ── 3 · Le Métro Fou 🚇 ──────────────────────────────────────
   "boss-3": (
     <g>
+      <defs>
+        <linearGradient id="bs-metr" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6fb1ec" />
+          <stop offset="1" stopColor="#3f7fc4" />
+        </linearGradient>
+        <linearGradient id="bs-metrg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#eaf6ff" />
+          <stop offset="1" stopColor="#bfe0f8" />
+        </linearGradient>
+      </defs>
+      {/* trilhos */}
+      <line x1={14} y1={112} x2={106} y2={112} stroke="#9aa3b5" strokeWidth={3} />
+      <line x1={14} y1={102} x2={106} y2={102} stroke="#c3ccd9" strokeWidth={2} />
       {/* antena */}
-      <path d="M92 40 L100 24" stroke="#4a90d9" strokeWidth={3.5} strokeLinecap="round" />
-      <circle cx={101} cy={22} r={4.5} fill="#ffe28a" />
-      {/* corpo do vagão */}
-      <rect x={14} y={42} width={92} height={46} rx={12} fill="#4a90d9" />
-      {/* janela com o rosto */}
-      <rect x={26} y={52} width={68} height={26} rx={8} fill="#cfe6ff" />
-      {/* porta */}
-      <line x1={60} y1={52} x2={60} y2={78} stroke="#9cc6ee" strokeWidth={2.5} />
-      <AngryFace eye="#274e75" cheek="#b8d9f5" />
-      {/* farol */}
-      <circle cx={20} cy={84} r={5} fill="#ffe28a" />
+      <path d="M88 34 L98 16" stroke="#3f7fc4" strokeWidth={3.5} strokeLinecap="round" />
+      <circle cx={99} cy={14} r={5} fill="#ffe28a" />
+      <circle cx={99} cy={14} r={2} fill="#fff" opacity={0.8} />
       {/* rodas */}
-      <circle cx={34} cy={92} r={7} fill="#2f3b4d" />
-      <circle cx={86} cy={92} r={7} fill="#2f3b4d" />
-      <circle cx={34} cy={91} r={2.4} fill="#8a93a6" />
-      <circle cx={86} cy={91} r={2.4} fill="#8a93a6" />
+      <circle cx={32} cy={98} r={8} fill="#2b3544" />
+      <circle cx={88} cy={98} r={8} fill="#2b3544" />
+      <circle cx={32} cy={97} r={3} fill="#8fa0b5" />
+      <circle cx={88} cy={97} r={3} fill="#8fa0b5" />
+      {/* corpo do vagão */}
+      <rect x={16} y={38} width={88} height={58} rx={14} fill="url(#bs-metr)" />
+      {/* faixa */}
+      <rect x={16} y={58} width={88} height={10} fill="#2f6db0" opacity={0.55} />
+      {/* faróis */}
+      <circle cx={24} cy={92} r={5.5} fill="#ffe28a" />
+      <circle cx={24} cy={92} r={2.2} fill="#fff" opacity={0.85} />
+      <circle cx={96} cy={92} r={5.5} fill="#ffe28a" />
+      <path d="M10 92 L22 92" stroke="#ffe9ad" strokeWidth={4} strokeLinecap="round" opacity={0.7} />
+      {/* para-brisa com rosto */}
+      <rect x={28} y={48} width={64} height={34} rx={10} fill="url(#bs-metrg)" />
+      <line x1={60} y1={48} x2={60} y2={82} stroke="#9cc6ee" strokeWidth={2.5} />
+      <Face cx={60} mouth="shout" eye="#274e75" cheek="#b8d9f5" />
+      {/* placa */}
+      <rect x={34} y={84} width={52} height={9} rx={4} fill="#243d5e" />
+      <text x={60} y={91} fontSize={6.5} fontWeight={800} fill="#ffe28a" textAnchor="middle">GARE</text>
     </g>
   ),
 
-  // 4 — Le Grand Bavard 💬
+  // ── 4 · Le Grand Bavard 💬 ───────────────────────────────────
   "boss-4": (
     <g>
-      {/* bolhas de fala */}
-      <circle cx={98} cy={26} r={9} fill="#e9e4fb" stroke="#b79bf2" strokeWidth={2.5} />
-      <circle cx={12} cy={38} r={6} fill="#e9e4fb" stroke="#b79bf2" strokeWidth={2.5} />
-      <text x={94} y={30} fontSize={13} fontWeight={700} fill="#8b6fd0" textAnchor="middle">!</text>
+      <defs>
+        <linearGradient id="bs-bav" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#c9adf7" />
+          <stop offset="1" stopColor="#9672dd" />
+        </linearGradient>
+      </defs>
+      {/* ondas de som */}
+      <path d="M8 78 q-8 -10 0 -20" stroke="#b79bf2" strokeWidth={3} strokeLinecap="round" fill="none" opacity={0.8} />
+      <path d="M112 78 q8 -10 0 -20" stroke="#b79bf2" strokeWidth={3} strokeLinecap="round" fill="none" opacity={0.8} />
+      {/* bolhas */}
+      <circle cx={98} cy={24} r={11} fill="#efe9fd" stroke="#b79bf2" strokeWidth={2.6} />
+      <text x={98} y={28} fontSize={13} fontWeight={800} fill="#8b6fd0" textAnchor="middle">!</text>
+      <circle cx={14} cy={34} r={7} fill="#efe9fd" stroke="#b79bf2" strokeWidth={2.4} />
+      <text x={14} y={37.5} fontSize={8.5} fontWeight={800} fill="#8b6fd0" textAnchor="middle">…</text>
+      {/* braços */}
+      <path d="M22 84 q-10 -2 -10 -14 q10 4 14 0" stroke="#9672dd" strokeWidth={6} fill="none" strokeLinecap="round" />
+      <path d="M98 84 q10 -2 10 -14 q-10 4 -14 0" stroke="#9672dd" strokeWidth={6} fill="none" strokeLinecap="round" />
       {/* corpo */}
-      <ellipse cx={60} cy={76} rx={42} ry={40} fill="#b79bf2" />
-      <ellipse cx={60} cy={92} rx={24} ry={14} fill="#d6c8f8" />
-      {/* bocão aberto */}
-      <ellipse cx={60} cy={86} rx={18} ry={14} fill="#5b3a56" />
-      <ellipse cx={60} cy={92} rx={11} ry={6} fill="#ff8fa3" />
-      <path d="M44 76 Q60 70 76 76" stroke="#5b3a56" strokeWidth={3} fill="none" strokeLinecap="round" />
-      {/* olhos bravos */}
-      <g fill="#3d2f3a">
-        <circle cx={46} cy={62} r={4.6} />
-        <circle cx={74} cy={62} r={4.6} />
-        <circle cx={47.4} cy={60.4} r={1.5} fill="#fff" />
-        <circle cx={75.4} cy={60.4} r={1.5} fill="#fff" />
+      <ellipse cx={60} cy={78} rx={44} ry={42} fill="url(#bs-bav)" />
+      <ellipse cx={60} cy={94} rx={26} ry={16} fill="#d9c8f8" />
+      {/* bocão */}
+      <ellipse cx={60} cy={86} rx={20} ry={15} fill="#4a2d5c" />
+      <path d="M41 75 Q60 68 79 75" stroke="#4a2d5c" strokeWidth={4} fill="none" strokeLinecap="round" />
+      <path d="M42 76 q18 -6 36 0 l-3 5 q-15 -4 -30 0 z" fill="#fff" />
+      <ellipse cx={60} cy={93} rx={13} ry={7} fill="#ff8fa3" />
+      {/* olhos + sobrancelhas */}
+      <g>
+        <circle cx={46} cy={60} r={6} fill="#33232b" />
+        <circle cx={74} cy={60} r={6} fill="#33232b" />
+        <circle cx={48} cy={58} r={2} fill="#fff" />
+        <circle cx={76} cy={58} r={2} fill="#fff" />
       </g>
-      <g stroke="#3d2f3a" strokeWidth={3} strokeLinecap="round" fill="none">
-        <path d="M40 52 L52 57" />
-        <path d="M80 52 L68 57" />
+      <g stroke="#33232b" strokeWidth={4} strokeLinecap="round" fill="none">
+        <path d="M38 50 L50 56" />
+        <path d="M82 50 L70 56" />
       </g>
-      <ellipse cx={30} cy={72} rx={5.5} ry={3.4} fill="#ffb3c8" opacity={0.85} />
-      <ellipse cx={90} cy={72} rx={5.5} ry={3.4} fill="#ffb3c8" opacity={0.85} />
+      <ellipse cx={28} cy={70} rx={6} ry={3.6} fill="#ffb3c8" opacity={0.9} />
+      <ellipse cx={92} cy={70} rx={6} ry={3.6} fill="#ffb3c8" opacity={0.9} />
     </g>
   ),
 
-  // 5 — Le Train Fantôme 👻
+  // ── 5 · Le Train Fantôme 👻 ──────────────────────────────────
   "boss-5": (
     <g>
+      <defs>
+        <linearGradient id="bs-gho" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="1" stopColor="#dfe4ff" />
+        </linearGradient>
+      </defs>
+      {/* vapor */}
+      <circle cx={34} cy={16} r={7} fill="#e8edff" opacity={0.9} />
+      <circle cx={48} cy={10} r={5} fill="#e8edff" opacity={0.7} />
+      <circle cx={88} cy={14} r={6} fill="#e8edff" opacity={0.8} />
       {/* corpo-fantasma */}
       <path
-        d="M24 78 Q24 40 60 38 Q96 40 96 78 L96 108 Q88 100 80 108 Q72 100 64 108 Q56 100 48 108 Q40 100 32 108 L24 108 z"
-        fill="#f2f2ff"
-        stroke="#c9c9ec"
+        d="M22 82 Q22 38 60 36 Q98 38 98 82 L98 110 Q90 102 82 110 Q74 102 66 110 Q58 102 50 110 Q42 102 34 110 L22 110 z"
+        fill="url(#bs-gho)"
+        stroke="#c6cdf2"
         strokeWidth={3}
       />
       {/* quepe de maquinista */}
-      <path d="M40 40 Q60 26 80 40 L76 30 Q60 20 44 30 z" fill="#3b3b66" />
-      <rect x={38} y={38} width={44} height={8} rx={4} fill="#3b3b66" />
-      <circle cx={60} cy={41} r={3} fill="#e9b44c" />
-      {/* apito */}
-      <path d="M88 58 q10 -4 8 6 q-4 1 -7 1" fill="#d8a33d" stroke="#b9842b" strokeWidth={2} />
-      {/* olhos ocos */}
-      <g fill="#5b5b8f">
-        <ellipse cx={46} cy={68} rx={5} ry={6.5} />
-        <ellipse cx={74} cy={68} rx={5} ry={6.5} />
+      <path d="M38 40 Q60 24 82 40 L78 30 Q60 18 42 30 z" fill="#39406b" />
+      <rect x={36} y={38} width={48} height={9} rx={4.5} fill="#39406b" />
+      <circle cx={60} cy={42} r={3.4} fill="#e9b44c" />
+      <ellipse cx={60} cy={27} rx={14} ry={4} fill="#1f2440" opacity={0.5} />
+      {/* lanterna */}
+      <g transform="translate(88 66)">
+        <rect x={-2.5} y={6} width={5} height={12} rx={2} fill="#c6cdf2" />
+        <rect x={-7} y={16} width={14} height={9} rx={3} fill="#39406b" />
+        <circle cx={0} cy={20.5} r={3.4} fill="#ffe28a" />
+        <circle cx={0} cy={20.5} r={1.6} fill="#fff" />
       </g>
-      {/* boca */}
-      <ellipse cx={60} cy={84} rx={7.5} ry={6.5} fill="#5b5b8f" />
-      <ellipse cx={33} cy={80} rx={4.5} ry={3} fill="#ffb3c8" opacity={0.7} />
-      <ellipse cx={87} cy={80} rx={4.5} ry={3} fill="#ffb3c8" opacity={0.7} />
+      {/* apito */}
+      <path d="M76 56 q12 -6 10 8 q-5 1 -9 0" fill="#d8a33d" stroke="#b9842b" strokeWidth={2.4} />
+      <Face eyes="hollow" mouth="o" eye="#565f8f" cheek="#eef" blush={false} cx={58} />
     </g>
   ),
 
-  // 6 — Le Cœur de Verre 💔
+  // ── 6 · Le Cœur de Verre 💔 ──────────────────────────────────
   "boss-6": (
     <g>
+      <defs>
+        <linearGradient id="bs-heart" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#d8f4fd" />
+          <stop offset="1" stopColor="#8fd8f0" />
+        </linearGradient>
+      </defs>
       {/* brilhos */}
-      <path d="M22 30 l2.5 5 5 2.5 -5 2.5 -2.5 5 -2.5 -5 -5 -2.5 5 -2.5 z" fill="#bde8f7" />
-      <path d="M100 26 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2 z" fill="#bde8f7" />
-      {/* coração de vidro */}
+      <path d="M18 26 l2.6 5.4 5.4 2.6 -5.4 2.6 -2.6 5.4 -2.6 -5.4 -5.4 -2.6 5.4 -2.6 z" fill="#bfe9f7" />
+      <path d="M104 20 l2 4.2 4.2 2 -4.2 2 -2 4.2 -2 -4.2 -4.2 -2 4.2 -2 z" fill="#bfe9f7" />
+      <path d="M20 96 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2 z" fill="#cdeefb" opacity={0.8} />
+      {/* coração */}
       <path
-        d="M60 102 C38 84 20 70 20 50 C20 32 34 20 50 20 C58 20 60 24 60 30 C60 24 62 20 70 20 C86 20 100 32 100 50 C100 70 82 84 60 102 z"
-        fill="#bfe9f7"
+        d="M60 106 C38 88 18 72 18 50 C18 30 34 18 50 18 C58 18 60 22 60 28 C60 22 62 18 70 18 C86 18 102 30 102 50 C102 72 82 88 60 106 z"
+        fill="url(#bs-heart)"
         stroke="#7cc7e8"
         strokeWidth={3}
       />
+      {/* brilho */}
+      <path d="M34 34 Q42 24 52 22" stroke="#ffffff" strokeWidth={4} strokeLinecap="round" fill="none" opacity={0.9} />
       {/* trincas */}
-      <path d="M52 34 L60 48 L54 58 L62 70" stroke="#ffffff" strokeWidth={2.6} fill="none" strokeLinecap="round" />
-      <path d="M66 40 L72 52 L66 60" stroke="#ffffff" strokeWidth={2.2} fill="none" strokeLinecap="round" />
-      <AngryFace eye="#2e6b87" cheek="#cdeefb" />
+      <path d="M52 32 L60 48 L54 58 L63 72" stroke="#ffffff" strokeWidth={3} fill="none" strokeLinecap="round" opacity={0.95} />
+      <path d="M67 40 L73 54 L67 62" stroke="#ffffff" strokeWidth={2.4} fill="none" strokeLinecap="round" opacity={0.9} />
+      {/* cacos */}
+      <path d="M28 88 l5 4 l-2 6 l-5 -4 z" fill="#a8e2f5" stroke="#7cc7e8" strokeWidth={2} />
+      <path d="M86 94 l4 5 l-3 5 l-4 -5 z" fill="#bfe9f7" stroke="#7cc7e8" strokeWidth={2} />
+      <Face mouth="grimace" eye="#2e6b87" cheek="#cdeefb" cx={60} />
     </g>
   ),
 
-  // 7 — Le Professeur Exigeant 🦉
+  // ── 7 · Le Professeur Exigeant 🦉 ────────────────────────────
   "boss-7": (
     <g>
-      {/* livro na mão */}
-      <rect x={84} y={78} width={26} height={22} rx={3} fill="#e5484d" stroke="#c93a3f" strokeWidth={2.5} />
-      <line x1={97} y1={78} x2={97} y2={100} stroke="#fff" strokeWidth={2} />
-      {/* corpo-coruja */}
-      <ellipse cx={60} cy={78} rx={40} ry={38} fill="#c9b1e8" />
-      <ellipse cx={60} cy={90} rx={24} ry={18} fill="#e6d9f8" />
+      <defs>
+        <linearGradient id="bs-owl" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#d8c0f2" />
+          <stop offset="1" stopColor="#b18ade" />
+        </linearGradient>
+        <linearGradient id="bs-owlw" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#eef0ff" />
+          <stop offset="1" stopColor="#c9b0e8" />
+        </linearGradient>
+      </defs>
+      {/* asas */}
+      <path d="M14 70 Q4 58 10 42 Q20 52 22 46 Q22 60 26 68 z" fill="url(#bs-owlw)" />
+      <path d="M106 70 Q116 58 110 42 Q100 52 98 46 Q98 60 94 68 z" fill="url(#bs-owlw)" />
+      {/* corpo */}
+      <ellipse cx={60} cy={80} rx={40} ry={38} fill="url(#bs-owl)" />
+      <ellipse cx={60} cy={94} rx={24} ry={16} fill="#e6d9f8" />
+      {/* gravatinha */}
+      <path d="M60 92 l-8 6 8 3 8 -3 z" fill="#e5484d" />
       {/* tufos de pena */}
-      <path d="M34 44 L30 30 L44 40 z" fill="#a989d6" />
-      <path d="M86 44 L90 30 L76 40 z" fill="#a989d6" />
-      {/* óculos */}
-      <circle cx={44} cy={66} r={12} fill="none" stroke="#8b6fd0" strokeWidth={3} />
-      <circle cx={76} cy={66} r={12} fill="none" stroke="#8b6fd0" strokeWidth={3} />
-      <line x1={56} y1={66} x2={64} y2={66} stroke="#8b6fd0" strokeWidth={3} />
-      {/* olhos + sobrancelhas bravas */}
-      <g fill="#3d2f3a">
-        <circle cx={44} cy={67} r={4} />
-        <circle cx={76} cy={67} r={4} />
+      <path d="M34 46 L28 30 L44 42 z" fill="#a989d6" />
+      <path d="M86 46 L92 30 L76 42 z" fill="#a989d6" />
+      {/* capelo */}
+      <g transform="rotate(-8 60 30)">
+        <path d="M34 34 Q60 16 86 34 L86 30 Q60 14 34 30 z" fill="#39406b" />
+        <rect x={30} y={31} width={60} height={8} rx={4} fill="#39406b" />
+        <path d="M86 34 q16 2 14 10 q-4 -4 -14 -3" fill="#39406b" />
+        <circle cx={93} cy={42} r={2.6} fill="#e9b44c" />
       </g>
-      <g stroke="#3d2f3a" strokeWidth={3} strokeLinecap="round" fill="none">
-        <path d="M36 54 L46 60" />
-        <path d="M84 54 L74 60" />
+      {/* óculos */}
+      <circle cx={45} cy={68} r={13.5} fill="#eef0ff" opacity={0.35} />
+      <circle cx={75} cy={68} r={13.5} fill="#eef0ff" opacity={0.35} />
+      <circle cx={45} cy={68} r={13.5} fill="none" stroke="#7d5fb0" strokeWidth={3} />
+      <circle cx={75} cy={68} r={13.5} fill="none" stroke="#7d5fb0" strokeWidth={3} />
+      <line x1={58.5} y1={68} x2={61.5} y2={68} stroke="#7d5fb0" strokeWidth={3} />
+      {/* olhos + sobrancelhas */}
+      <circle cx={45} cy={69} r={4.6} fill="#3a2b45" />
+      <circle cx={75} cy={69} r={4.6} fill="#3a2b45" />
+      <circle cx={46.8} cy={67.2} r={1.6} fill="#fff" />
+      <circle cx={76.8} cy={67.2} r={1.6} fill="#fff" />
+      <g stroke="#3a2b45" strokeWidth={3.4} strokeLinecap="round" fill="none">
+        <path d="M36 55 L46 61" />
+        <path d="M84 55 L74 61" />
       </g>
       {/* bico */}
-      <path d="M56 76 L60 72 L64 76 z" fill="#e9b44c" />
-      {/* bochechas */}
-      <ellipse cx={32} cy={78} rx={4.5} ry={3} fill="#ffb3c8" opacity={0.8} />
-      <ellipse cx={88} cy={78} rx={4.5} ry={3} fill="#ffb3c8" opacity={0.8} />
+      <path d="M55 77 L60 72 L65 77 z" fill="#e9b44c" />
+      <ellipse cx={32} cy={80} rx={4.6} ry={3} fill="#ffb3c8" opacity={0.85} />
+      <ellipse cx={88} cy={80} rx={4.6} ry={3} fill="#ffb3c8" opacity={0.85} />
+      {/* livro */}
+      <g transform="translate(84 74) rotate(6)">
+        <rect x={0} y={0} width={26} height={22} rx={3} fill="#e5484d" />
+        <line x1={13} y1={0} x2={13} y2={22} stroke="#fff" strokeWidth={2} />
+        <line x1={4} y1={6} x2={10} y2={6} stroke="#ffd9d9" strokeWidth={1.6} />
+        <line x1={16} y1={6} x2={22} y2={6} stroke="#ffd9d9" strokeWidth={1.6} />
+        <line x1={4} y1={11} x2={10} y2={11} stroke="#ffd9d9" strokeWidth={1.6} />
+      </g>
     </g>
   ),
 
-  // 8 — Le Directeur Inflexible 💼
+  // ── 8 · Le Directeur Inflexible 💼 ───────────────────────────
   "boss-8": (
     <g>
+      <defs>
+        <linearGradient id="bs-suit" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#54658a" />
+          <stop offset="1" stopColor="#3d4a63" />
+        </linearGradient>
+      </defs>
+      {/* pasta */}
+      <g transform="translate(86 80)">
+        <rect x={0} y={4} width={24} height={20} rx={4} fill="#8a5a34" stroke="#6e4526" strokeWidth={2.4} />
+        <rect x={0} y={4} width={24} height={6} rx={3} fill="#a06c40" />
+        <path d="M8 0 h8 v4 h-8 z" fill="#6e4526" />
+        <circle cx={12} cy={8} r={2} fill="#e9b44c" />
+      </g>
       {/* terno */}
-      <rect x={24} y={62} width={72} height={46} rx={14} fill="#3d4a63" />
+      <rect x={24} y={64} width={72} height={46} rx={14} fill="url(#bs-suit)" />
       {/* lapelas */}
-      <path d="M44 66 L60 84 L76 66" fill="none" stroke="#2f3a4e" strokeWidth={3} />
-      {/* gravata */}
-      <path d="M58 74 L62 74 L62 100 L58 100 z" fill="#e5484d" />
-      {/* camisa */}
-      <path d="M50 62 L60 74 L70 62 z" fill="#f4f6fa" />
+      <path d="M46 68 L60 84 L74 68" fill="none" stroke="#2f3a4e" strokeWidth={3} />
+      {/* camisa + gravata */}
+      <path d="M50 64 L60 76 L70 64 z" fill="#f4f6fa" />
+      <path d="M58 74 L62 74 L62 102 L58 102 z" fill="#e5484d" />
+      <path d="M56 70 L64 70 L62 75 L58 75 z" fill="#c93a3f" />
+      {/* braço cruzado */}
+      <path d="M24 76 Q34 88 46 84" stroke="#3d4a63" strokeWidth={7} fill="none" strokeLinecap="round" />
       {/* cabeça */}
-      <ellipse cx={60} cy={44} rx={26} ry={26} fill="#e8c39a" />
+      <ellipse cx={60} cy={44} rx={27} ry={27} fill="#e8c39a" />
       {/* cabelo */}
-      <path d="M34 44 Q36 18 60 18 Q84 18 86 44 L86 36 Q84 14 60 14 Q36 14 34 36 z" fill="#4a4238" />
-      <AngryFace eye="#2e2a24" cheek="#f2d3ae" />
+      <path d="M33 46 Q35 18 60 16 Q85 18 87 46 L87 38 Q85 12 60 10 Q35 12 33 38 z" fill="#4a4238" />
+      <path d="M33 44 Q34 30 44 26 L46 22 Q34 26 34 42 z" fill="#4a4238" />
+      {/* olhos + sobrancelhas finas */}
+      <g>
+        <circle cx={46} cy={68} r={4.6} fill="#2e2a24" />
+        <circle cx={74} cy={68} r={4.6} fill="#2e2a24" />
+        <circle cx={47.6} cy={66.4} r={1.5} fill="#fff" />
+        <circle cx={75.6} cy={66.4} r={1.5} fill="#fff" />
+      </g>
+      <g stroke="#2e2a24" strokeWidth={3.4} strokeLinecap="round" fill="none">
+        <path d="M38 58 L48 62" />
+        <path d="M82 58 L72 62" />
+      </g>
       {/* bigode */}
-      <path d="M46 76 Q60 84 74 76" stroke="#4a4238" strokeWidth={3.5} fill="none" strokeLinecap="round" />
+      <path d="M44 80 Q60 88 76 80" stroke="#4a4238" strokeWidth={4} fill="none" strokeLinecap="round" />
+      {/* boca */}
+      <path d="M52 86 Q60 82 68 86 Q60 90 52 86" fill="#2e2a24" />
+      <ellipse cx={30} cy={78} rx={4.6} ry={3} fill="#f2d3ae" opacity={0.8} />
+      <ellipse cx={90} cy={78} rx={4.6} ry={3} fill="#f2d3ae" opacity={0.8} />
     </g>
   ),
 
-  // 9 — Le Sphinx de la Pensée 🦁
+  // ── 9 · Le Sphinx de la Pensée 🦁 ────────────────────────────
   "boss-9": (
     <g>
+      <defs>
+        <linearGradient id="bs-sph" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f0d6a2" />
+          <stop offset="1" stopColor="#d9a95f" />
+        </linearGradient>
+      </defs>
+      {/* ponto de interrogação */}
+      <g transform="translate(102 14)">
+        <path d="M0 -6 q6 -8 12 0 q0 5 -4 7 q-4 2 -4 5" stroke="#d9a95f" strokeWidth={3} fill="none" strokeLinecap="round" />
+        <circle cx={4} cy={12} r={2.4} fill="#d9a95f" />
+      </g>
       {/* corpo de leão */}
-      <ellipse cx={60} cy={88} rx={48} ry={26} fill="#e3c088" />
+      <ellipse cx={60} cy={92} rx={50} ry={26} fill="url(#bs-sph)" />
+      {/* coxas */}
+      <ellipse cx={26} cy={96} rx={12} ry={10} fill="#e3c088" />
+      <ellipse cx={94} cy={96} rx={12} ry={10} fill="#e3c088" />
       {/* patas */}
-      <ellipse cx={26} cy={102} rx={9} ry={7} fill="#d9a95f" />
-      <ellipse cx={94} cy={102} rx={9} ry={7} fill="#d9a95f" />
+      <ellipse cx={18} cy={106} rx={8} ry={5.5} fill="#d9a95f" />
+      <ellipse cx={36} cy={106} rx={8} ry={5.5} fill="#d9a95f" />
+      <ellipse cx={86} cy={106} rx={8} ry={5.5} fill="#d9a95f" />
+      {/* rabo */}
+      <path d="M106 92 q14 -4 12 -16" stroke="#d9a95f" strokeWidth={5} fill="none" strokeLinecap="round" />
+      <circle cx={118} cy={72} r={4} fill="#d9a95f" />
+      {/* papiro */}
+      <g transform="translate(72 84) rotate(8)">
+        <rect x={0} y={0} width={22} height={15} rx={2} fill="#fff7e0" stroke="#d9c9a0" strokeWidth={2} />
+        <line x1={5} y1={5} x2={17} y2={5} stroke="#b9a98a" strokeWidth={1.6} />
+        <line x1={5} y1={9} x2={17} y2={9} stroke="#b9a98a" strokeWidth={1.6} />
+      </g>
       {/* juba */}
-      <circle cx={60} cy={52} r={30} fill="#d9a95f" />
+      <circle cx={60} cy={52} r={32} fill="#d9a95f" />
+      <g fill="#c9944a">
+        <path d="M28 52 l-8 8 -2 -10 z" />
+        <path d="M92 52 l8 8 2 -10 z" />
+        <path d="M34 34 l-10 2 5 -9 z" />
+        <path d="M86 34 l10 2 -5 -9 z" />
+      </g>
       {/* cabeça */}
-      <circle cx={60} cy={50} r={24} fill="#e8cba0" />
+      <circle cx={60} cy={50} r={25} fill="#f0d6a2" />
+      {/* nemes (touca do faraó) */}
+      <path d="M35 52 Q36 24 60 22 Q84 24 85 52 L82 52 Q82 30 60 28 Q38 30 38 52 z" fill="#4a78c9" />
+      <path d="M36 40 Q60 30 84 40" stroke="#e9b44c" strokeWidth={3} fill="none" />
+      <path d="M38 52 L30 70 L44 66 L38 86 L52 70 L60 52 L68 70 L82 86 L76 66 L90 70 L82 52" fill="none" stroke="#e9b44c" strokeWidth={3.4} strokeLinejoin="round" />
+      <path d="M36 52 L44 66" stroke="#e9b44c" strokeWidth={3.4} />
+      <path d="M84 52 L76 66" stroke="#e9b44c" strokeWidth={3.4} />
       {/* orelhas */}
-      <path d="M38 34 L32 22 L46 30 z" fill="#d9a95f" />
-      <path d="M82 34 L88 22 L74 30 z" fill="#d9a95f" />
-      <AngryFace eye="#6b4a1f" cheek="#f2d3ae" fangs />
-      {/* papiro na pata */}
-      <rect x={78} y={78} width={20} height={14} rx={2} fill="#fff7e0" stroke="#d9c9a0" strokeWidth={2} />
-      <line x1={82} y1={83} x2={94} y2={83} stroke="#b9a98a" strokeWidth={1.6} />
-      <line x1={82} y1={87} x2={94} y2={87} stroke="#b9a98a" strokeWidth={1.6} />
+      <path d="M36 36 L28 22 L44 30 z" fill="#d9a95f" />
+      <path d="M84 36 L92 22 L76 30 z" fill="#d9a95f" />
+      <Face cx={60} mouth="teeth" fangs eye="#6b4a1f" cheek="#f5dcae" />
     </g>
   ),
 
-  // 10 — La Critique d'Art 🎨
+  // ── 10 · La Critique d'Art 🎨 ────────────────────────────────
   "boss-10": (
     <g>
+      <defs>
+        <linearGradient id="bs-art" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#eeb2d6" />
+          <stop offset="1" stopColor="#d98ab8" />
+        </linearGradient>
+      </defs>
+      {/* cavalete */}
+      <g transform="translate(6 96)" stroke="#a08068" strokeWidth={3} strokeLinecap="round">
+        <path d="M0 0 L10 -26" />
+        <path d="M24 0 L14 -26" />
+        <path d="M-4 0 L28 0" />
+      </g>
+      <rect x={4} y={64} width={22} height={30} rx={2} fill="#fdf6ea" stroke="#d8c9ae" strokeWidth={2} />
+      <path d="M8 70 q4 -6 8 0 q4 6 8 0 l0 6 q-8 -3 -16 0 z" fill="#e5484d" />
+      <circle cx={20} cy={82} r={2.6} fill="#4a90d9" />
       {/* paleta */}
-      <ellipse cx={94} cy={88} rx={18} ry={14} fill="#d9c9a0" stroke="#b9a98a" strokeWidth={2.5} />
-      <circle cx={88} cy={82} r={3} fill="#e5484d" />
-      <circle cx={100} cy={82} r={3} fill="#4a90d9" />
-      <circle cx={94} cy={92} r={3} fill="#6fbf73" />
-      <circle cx={84} cy={92} r={3} fill="#e9b44c" />
-      {/* corpo */}
-      <ellipse cx={58} cy={78} rx={40} ry={38} fill="#d9a4c4" />
-      {/* gola de pintor */}
-      <path d="M34 58 L58 66 L82 58 L82 66 L58 76 L34 66 z" fill="#f4f0e6" />
+      <g transform="translate(92 76)">
+        <ellipse cx={0} cy={0} rx={20} ry={15} fill="#d9c9a0" stroke="#b9a98a" strokeWidth={2.6} />
+        <circle cx={-11} cy={-4} r={3.2} fill="#e5484d" />
+        <circle cx={-2} cy={-8} r={3.2} fill="#e9b44c" />
+        <circle cx={7} cy={-6} r={3.2} fill="#4a90d9" />
+        <circle cx={12} cy={4} r={3.2} fill="#6fbf73" />
+        <circle cx={-6} cy={7} r={3.2} fill="#8b5fc9" />
+      </g>
+      {/* pincel */}
+      <g transform="translate(88 26) rotate(38)">
+        <rect x={0} y={0} width={4} height={26} rx={2} fill="#a08068" />
+        <path d="M-1 -2 q2 -7 6 -2 q-1 4 -6 2 z" fill="#8b5fc9" />
+      </g>
+      {/* corpo (smoking de pintor) */}
+      <ellipse cx={56} cy={80} rx={38} ry={38} fill="url(#bs-art)" />
+      {/* gola */}
+      <path d="M32 58 L56 66 L80 58 L80 66 L56 78 L32 66 z" fill="#f4f0e6" />
+      <path d="M42 56 L56 62 L70 56" stroke="#c06a9f" strokeWidth={2.6} fill="none" strokeLinecap="round" />
       {/* boina */}
-      <path d="M32 42 Q36 26 60 24 Q84 26 88 42 Q70 34 60 36 Q48 34 32 42 z" fill="#5b3a56" />
-      <circle cx={60} cy={24} r={3.5} fill="#e9b44c" />
-      <AngryFace eye="#4a3043" cheek="#f6c3d8" smug />
+      <path d="M30 44 Q34 26 60 24 Q86 26 90 44 Q70 34 60 36 Q48 34 30 44 z" fill="#5b3a56" />
+      <circle cx={60} cy={24} r={3.6} fill="#e9b44c" />
+      <Face cx={60} mouth="smug" eye="#4a3043" cheek="#f6c3d8" />
       {/* bigode fino */}
-      <path d="M46 78 Q60 84 74 78" stroke="#4a3043" strokeWidth={3} fill="none" strokeLinecap="round" />
+      <path d="M46 80 Q60 87 74 80" stroke="#4a3043" strokeWidth={3.2} fill="none" strokeLinecap="round" />
+      {/* respingos */}
+      <circle cx={26} cy={108} r={3} fill="#e5484d" opacity={0.8} />
+      <circle cx={44} cy={112} r={2.4} fill="#4a90d9" opacity={0.8} />
+      <circle cx={70} cy={110} r={2.8} fill="#e9b44c" opacity={0.8} />
     </g>
   ),
 
-  // 11 — Le Génie des Mots 🧞
+  // ── 11 · Le Génie des Mots 🧞 ────────────────────────────────
   "boss-11": (
     <g>
+      <defs>
+        <linearGradient id="bs-gen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#9dbcf8" />
+          <stop offset="1" stopColor="#5f86d4" />
+        </linearGradient>
+        <linearGradient id="bs-lamp" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffd98a" />
+          <stop offset="1" stopColor="#d8a33d" />
+        </linearGradient>
+      </defs>
+      {/* varinha */}
+      <g transform="translate(98 30)">
+        <path d="M-4 14 L8 2" stroke="#e9b44c" strokeWidth={3.6} strokeLinecap="round" />
+        <path d="M9 -1 l2.2 4.6 4.6 2.2 -4.6 2.2 -2.2 4.6 -2.2 -4.6 -4.6 -2.2 4.6 -2.2 z" fill="#ffe28a" />
+      </g>
+      {/* estrelinhas */}
+      <path d="M18 22 l1.8 3.8 3.8 1.8 -3.8 1.8 -1.8 3.8 -1.8 -3.8 -3.8 -1.8 3.8 -1.8 z" fill="#ffe28a" />
+      <path d="M108 66 l1.6 3.4 3.4 1.6 -3.4 1.6 -1.6 3.4 -1.6 -3.4 -3.4 -1.6 3.4 -1.6 z" fill="#ffe28a" />
       {/* lâmpada */}
-      <path d="M84 100 q12 -2 14 -14 q-4 4 -10 4 q-6 0 -8 -6 q-4 10 4 16 z" fill="#e9b44c" stroke="#c9842b" strokeWidth={2.5} />
-      {/* cauda de gênio */}
-      <path d="M20 84 Q6 76 14 62 Q22 72 30 70 Q24 80 20 84 z" fill="#7fa8f2" />
+      <g transform="translate(16 92)">
+        <path d="M10 0 q14 -3 18 -16 q-6 5 -13 5 q-8 0 -11 -7 q-5 12 6 18 z" fill="url(#bs-lamp)" stroke="#b9842b" strokeWidth={2.6} />
+        <path d="M4 0 q12 3 24 0" stroke="#b9842b" strokeWidth={2.6} fill="none" />
+        <path d="M14 -16 q-2 -6 2 -10" stroke="#c9d4f2" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+      </g>
+      {/* cauda */}
+      <path d="M28 90 Q12 84 18 66 Q28 76 38 74 Q34 84 28 90 z" fill="#5f86d4" />
       {/* corpo */}
-      <path d="M28 86 Q20 60 40 46 Q60 36 80 46 Q100 60 92 86 Q60 100 28 86 z" fill="#7fa8f2" />
-      {/* braços cruzados */}
-      <path d="M34 68 Q42 74 46 68" stroke="#5f86d4" strokeWidth={4} fill="none" strokeLinecap="round" />
-      <path d="M86 68 Q78 74 74 68" stroke="#5f86d4" strokeWidth={4} fill="none" strokeLinecap="round" />
+      <path d="M32 92 Q22 60 42 46 Q62 36 82 46 Q102 60 92 92 Q62 106 32 92 z" fill="url(#bs-gen)" />
+      {/* peitoral */}
+      <path d="M42 62 Q62 52 82 62" stroke="#4a6cb8" strokeWidth={3} fill="none" strokeLinecap="round" />
+      {/* braços cruzados + braceletes */}
+      <path d="M36 68 Q46 76 50 68" stroke="#4a6cb8" strokeWidth={6} fill="none" strokeLinecap="round" />
+      <path d="M88 68 Q78 76 74 68" stroke="#4a6cb8" strokeWidth={6} fill="none" strokeLinecap="round" />
+      <rect x={30} y={76} width={7} height={4} rx={2} fill="#e9b44c" />
+      <rect x={87} y={76} width={7} height={4} rx={2} fill="#e9b44c" />
       {/* turbante */}
-      <path d="M38 44 Q42 30 60 30 Q78 30 82 44 Q60 38 38 44 z" fill="#f4f0e6" />
-      <path d="M40 42 Q60 34 80 42" stroke="#d9d0c0" strokeWidth={3} fill="none" />
-      <circle cx={60} cy={40} r={4.5} fill="#e5484d" />
-      <AngryFace eye="#2c4a7a" cheek="#bfd3f7" />
-      {/* varinha estrela */}
-      <path d="M96 40 L108 24" stroke="#e9b44c" strokeWidth={3.5} strokeLinecap="round" />
-      <path d="M108 20 l2 4.5 4.5 2 -4.5 2 -2 4.5 -2 -4.5 -4.5 -2 4.5 -2 z" fill="#e9b44c" />
+      <path d="M38 46 Q42 30 60 30 Q78 30 82 46 Q60 38 38 46 z" fill="#f4f0e6" />
+      <path d="M40 44 Q60 34 80 44" stroke="#d9d0c0" strokeWidth={3} fill="none" />
+      <circle cx={60} cy={41} r={5} fill="#e5484d" />
+      <circle cx={60} cy={41} r={1.8} fill="#fff" opacity={0.8} />
+      {/* pluma */}
+      <path d="M66 32 Q72 20 80 18 Q74 26 76 32 z" fill="#e5484d" />
+      {/* orelhas pontudas */}
+      <path d="M30 52 L20 44 L28 58 z" fill="#9dbcf8" />
+      <path d="M90 52 L100 44 L92 58 z" fill="#9dbcf8" />
+      <Face cx={60} mouth="smug" eye="#2c4a7a" cheek="#bfd3f7" />
     </g>
   ),
 
-  // 12 — L'Animatrice du JT 📺
+  // ── 12 · L'Animatrice du JT 📺 ───────────────────────────────
   "boss-12": (
     <g>
+      <defs>
+        <linearGradient id="bs-tv" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#a6b0c2" />
+          <stop offset="1" stopColor="#6f7789" />
+        </linearGradient>
+        <linearGradient id="bs-scr" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#eef3fb" />
+          <stop offset="1" stopColor="#c4d4ea" />
+        </linearGradient>
+      </defs>
+      {/* ondas de transmissão */}
+      <path d="M8 56 q-8 -8 0 -16" stroke="#a2aec6" strokeWidth={3} strokeLinecap="round" fill="none" opacity={0.8} />
+      <path d="M112 56 q8 -8 0 -16" stroke="#a2aec6" strokeWidth={3} strokeLinecap="round" fill="none" opacity={0.8} />
       {/* antena */}
-      <path d="M92 30 L100 14" stroke="#8a93a6" strokeWidth={3.5} strokeLinecap="round" />
-      <circle cx={101} cy={12} r={4} fill="#e5484d" />
-      {/* caixa de TV */}
-      <rect x={16} y={32} width={88} height={58} rx={10} fill="#8a93a6" stroke="#6f7789" strokeWidth={3} />
+      <path d="M88 30 L98 12" stroke="#6f7789" strokeWidth={3.5} strokeLinecap="round" />
+      <circle cx={99} cy={10} r={4.4} fill="#e5484d" />
+      <circle cx={99} cy={10} r={1.8} fill="#fff" opacity={0.85} />
+      {/* caixa */}
+      <rect x={16} y={32} width={88} height={58} rx={10} fill="url(#bs-tv)" stroke="#59616f" strokeWidth={3} />
+      <rect x={48} y={90} width={24} height={12} rx={3} fill="#59616f" />
+      <rect x={42} y={100} width={36} height={5} rx={2.5} fill="#59616f" />
       {/* tela */}
-      <rect x={26} y={42} width={68} height={40} rx={6} fill="#dbe4f0" />
-      {/* pé */}
-      <rect x={48} y={90} width={24} height={10} rx={3} fill="#6f7789" />
+      <rect x={26} y={42} width={68} height={40} rx={6} fill="url(#bs-scr)" />
+      {/* vinheta LIVE */}
+      <rect x={60} y={34} width={26} height={10} rx={3} fill="#e5484d" />
+      <text x={73} y={41.5} fontSize={7.5} fontWeight={800} fill="#fff" textAnchor="middle">LIVE</text>
       {/* rosto na tela */}
-      <ellipse cx={60} cy={62} rx={24} ry={18} fill="#e8c39a" />
-      <path d="M40 56 Q46 40 60 40 Q74 40 80 56 L80 52 Q74 36 60 36 Q46 36 40 52 z" fill="#8b5a3c" />
-      <AngryFace eye="#3a2c20" cheek="#f2d3ae" />
-      {/* selo LIVE */}
-      <rect x={60} y={36} width={26} height={10} rx={3} fill="#e5484d" />
-      <text x={73} y={44} fontSize={8} fontWeight={800} fill="#fff" textAnchor="middle">LIVE</text>
+      <ellipse cx={60} cy={64} rx={23} ry={17} fill="#e8c39a" />
+      <path d="M40 58 Q46 42 60 42 Q74 42 80 58 L80 52 Q74 36 60 36 Q46 36 40 52 z" fill="#8b5a3c" />
+      <g>
+        <circle cx={51} cy={66} r={4} fill="#3a2c20" />
+        <circle cx={69} cy={66} r={4} fill="#3a2c20" />
+        <circle cx={52.4} cy={64.6} r={1.4} fill="#fff" />
+        <circle cx={70.4} cy={64.6} r={1.4} fill="#fff" />
+      </g>
+      <g stroke="#3a2c20" strokeWidth={3} strokeLinecap="round" fill="none">
+        <path d="M44 58 L51 62" />
+        <path d="M76 58 L69 62" />
+      </g>
+      <path d="M54 74 Q60 70 66 74" stroke="#3a2c20" strokeWidth={2.6} fill="none" strokeLinecap="round" />
       {/* microfone */}
-      <line x1={14} y1={74} x2={14} y2={100} stroke="#6f7789" strokeWidth={3} />
-      <ellipse cx={14} cy={72} rx={5} ry={7} fill="#3d4a63" />
-      <rect x={9} y={78} width={10} height={4} rx={2} fill="#8a93a6" />
+      <g transform="translate(14 74)">
+        <line x1={0} y1={6} x2={0} y2={28} stroke="#59616f" strokeWidth={3.2} />
+        <ellipse cx={0} cy={4} rx={5.5} ry={7.5} fill="#39406b" />
+        <rect x={-6} y={10} width={12} height={4.5} rx={2.2} fill="#a2aec6" />
+        <path d="M-5 2 q-4 -3 -6 0" stroke="#39406b" strokeWidth={2} fill="none" strokeLinecap="round" />
+      </g>
     </g>
   ),
 
-  // 13 — Le Censeur des Registres ⚖️
+  // ── 13 · Le Censeur des Registres ⚖️ ─────────────────────────
   "boss-13": (
     <g>
-      {/* balança no topo */}
-      <line x1={20} y1={34} x2={100} y2={34} stroke="#9aa6b3" strokeWidth={4} strokeLinecap="round" />
-      <path d="M56 34 L64 34 L60 40 z" fill="#9aa6b3" />
-      <line x1={34} y1={34} x2={34} y2={52} stroke="#9aa6b3" strokeWidth={3} />
-      <path d="M24 52 h20 l-6 10 h-8 z" fill="#c3ccd6" />
-      <line x1={86} y1={34} x2={86} y2={52} stroke="#9aa6b3" strokeWidth={3} />
-      <path d="M76 52 h20 l-6 10 h-8 z" fill="#c3ccd6" />
-      {/* robô */}
-      <ellipse cx={60} cy={86} rx={40} ry={24} fill="#b8c2cc" />
-      <rect x={32} y={60} width={56} height={26} rx={8} fill="#c3ccd6" />
-      {/* antena do robô */}
-      <path d="M60 52 L60 44" stroke="#9aa6b3" strokeWidth={3} />
-      <circle cx={60} cy={42} r={3.5} fill="#e5484d" />
-      {/* olhos de robô + sobrancelhas */}
-      <g fill="#2f3b4d">
-        <rect x={42} y={66} width={10} height={7} rx={2} />
-        <rect x={68} y={66} width={10} height={7} rx={2} />
+      <defs>
+        <linearGradient id="bs-rob" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#cdd7e0" />
+          <stop offset="1" stopColor="#9aa9b8" />
+        </linearGradient>
+      </defs>
+      {/* balança */}
+      <g stroke="#8f9dad" strokeWidth={3} strokeLinecap="round">
+        <line x1={20} y1={30} x2={100} y2={30} strokeWidth={4.5} />
+        <path d="M54 30 L66 30 L60 36 z" fill="#8f9dad" stroke="none" />
+        <line x1={33} y1={30} x2={33} y2={48} />
+        <line x1={87} y1={30} x2={87} y2={48} />
+        <path d="M22 48 h22 l-7 12 h-8 z" fill="#e9c15c" stroke="none" />
+        <path d="M76 48 h22 l-7 12 h-8 z" fill="#e9c15c" stroke="none" />
       </g>
-      <g stroke="#2f3b4d" strokeWidth={3} strokeLinecap="round" fill="none">
-        <path d="M40 60 L52 64" />
-        <path d="M80 60 L68 64" />
+      {/* antena */}
+      <path d="M60 52 L60 42" stroke="#9aa9b8" strokeWidth={3.4} strokeLinecap="round" />
+      <circle cx={60} cy={40} r={4.2} fill="#e5484d" />
+      <circle cx={60} cy={40} r={1.6} fill="#fff" opacity={0.85} />
+      {/* corpo do robô */}
+      <ellipse cx={60} cy={92} rx={42} ry={24} fill="url(#bs-rob)" />
+      {/* cabeça */}
+      <rect x={30} y={56} width={60} height={28} rx={10} fill="url(#bs-rob)" stroke="#8493a4" strokeWidth={2.6} />
+      {/* viseira */}
+      <rect x={38} y={62} width={44} height={14} rx={6} fill="#2f3b4d" />
+      <g fill="#9fe8ff">
+        <rect x={44} y={66} width={10} height={6} rx={2} />
+        <rect x={66} y={66} width={10} height={6} rx={2} />
       </g>
-      {/* boca de grade */}
-      <line x1={52} y1={80} x2={68} y2={80} stroke="#2f3b4d" strokeWidth={3} strokeLinecap="round" />
-      <ellipse cx={34} cy={72} rx={4.5} ry={3} fill="#ffb3c8" opacity={0.7} />
-      <ellipse cx={86} cy={72} rx={4.5} ry={3} fill="#ffb3c8" opacity={0.7} />
+      {/* parafusos */}
+      <circle cx={34} cy={70} r={1.8} fill="#8493a4" />
+      <circle cx={86} cy={70} r={1.8} fill="#8493a4" />
+      {/* boca-grade */}
+      <g stroke="#2f3b4d" strokeWidth={2.6} strokeLinecap="round">
+        <line x1={48} y1={84} x2={72} y2={84} />
+        <line x1={52} y1={88} x2={68} y2={88} />
+      </g>
+      {/* gola de juiz */}
+      <path d="M44 84 L60 92 L76 84 L76 88 L60 96 L44 88 z" fill="#f4f0e6" />
+      <circle cx={60} cy={92} r={2.2} fill="#e5484d" />
+      {/* braços */}
+      <path d="M20 90 q-6 10 -2 18" stroke="#9aa9b8" strokeWidth={6} fill="none" strokeLinecap="round" />
+      <path d="M100 90 q6 10 2 18" stroke="#9aa9b8" strokeWidth={6} fill="none" strokeLinecap="round" />
+      {/* peitoral */}
+      <rect x={50} y={98} width={20} height={10} rx={4} fill="#8493a4" />
+      <rect x={54} y={101} width={12} height={4} rx={2} fill="#5f86d4" />
     </g>
   ),
 
-  // 14 — Le Débatteur Sans Pitié 🥊
+  // ── 14 · Le Débatteur Sans Pitié 🥊 ──────────────────────────
   "boss-14": (
     <g>
-      {/* punho erguido */}
-      <circle cx={98} cy={40} r={15} fill="#d7a05f" stroke="#b9842b" strokeWidth={3} />
-      <path d="M88 50 q-6 10 -12 8" stroke="#b9842b" strokeWidth={4} fill="none" strokeLinecap="round" />
-      <path d="M92 32 q10 0 12 8" stroke="#8a93a6" strokeWidth={3.5} fill="none" strokeLinecap="round" />
-      {/* corpo */}
-      <ellipse cx={56} cy={80} rx={42} ry={38} fill="#e5484d" />
-      <ellipse cx={56} cy={94} rx={26} ry={16} fill="#f08488" />
-      {/* faixa de lutador */}
-      <rect x={18} y={64} width={76} height={10} rx={5} fill="#c93a3f" />
-      {/* braço no corpo */}
-      <path d="M22 76 Q34 84 42 78" stroke="#c93a3f" strokeWidth={5} fill="none" strokeLinecap="round" />
-      {/* estrela no peito */}
-      <path d="M56 58 l2.5 5 5 2.5 -5 2.5 -2.5 5 -2.5 -5 -5 -2.5 5 -2.5 z" fill="#ffd9a3" />
-      <AngryFace eye="#5e1f22" cheek="#ffc9cc" fangs />
+      <defs>
+        <linearGradient id="bs-box" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f58b90" />
+          <stop offset="1" stopColor="#e5484d" />
+        </linearGradient>
+      </defs>
+      {/* linhas de velocidade */}
+      <path d="M6 40 L18 44" stroke="#f0a0a4" strokeWidth={3} strokeLinecap="round" opacity={0.7} />
+      <path d="M6 52 L16 55" stroke="#f0a0a4" strokeWidth={3} strokeLinecap="round" opacity={0.7} />
       {/* bolha de raiva */}
-      <circle cx={16} cy={26} r={8} fill="#ffd9a3" />
-      <text x={16} y={30} fontSize={13} fontWeight={800} fill="#c93a3f" textAnchor="middle">!</text>
+      <circle cx={16} cy={22} r={9} fill="#ffe0a8" />
+      <text x={16} y={26} fontSize={13} fontWeight={800} fill="#c93a3f" textAnchor="middle">!</text>
+      {/* luva de trás */}
+      <circle cx={82} cy={52} r={14} fill="#e5484d" stroke="#c93a3f" strokeWidth={3} />
+      {/* braço de trás */}
+      <path d="M74 58 q-8 8 -18 6" stroke="#e5484d" strokeWidth={8} fill="none" strokeLinecap="round" />
+      {/* corpo */}
+      <ellipse cx={56} cy={84} rx={40} ry={36} fill="url(#bs-box)" />
+      <ellipse cx={56} cy={96} rx={26} ry={16} fill="#f5969b" />
+      {/* faixa */}
+      <rect x={20} y={68} width={72} height={10} rx={5} fill="#c93a3f" />
+      {/* estrela */}
+      <path d="M56 56 l2.6 5.2 5.2 2.6 -5.2 2.6 -2.6 5.2 -2.6 -5.2 -5.2 -2.6 5.2 -2.6 z" fill="#ffe0a8" />
+      {/* calção */}
+      <path d="M30 104 l8 10 h36 l8 -10 q-26 8 -52 0 z" fill="#c93a3f" />
+      <rect x={42} y={102} width={28} height={6} rx={3} fill="#a83337" />
+      {/* cabeça */}
+      <ellipse cx={56} cy={38} rx={26} ry={24} fill="#e8b48c" />
+      {/* bandana */}
+      <path d="M32 32 Q56 20 80 32 L80 28 Q56 16 32 28 z" fill="#3d4a63" />
+      <path d="M80 28 q10 -2 14 -8 q-8 2 -10 8 z" fill="#3d4a63" />
+      {/* olhos + sobrancelhas bravas */}
+      <g>
+        <circle cx={46} cy={40} r={5} fill="#3a2320" />
+        <circle cx={66} cy={40} r={5} fill="#3a2320" />
+        <circle cx={47.6} cy={38.4} r={1.6} fill="#fff" />
+        <circle cx={67.6} cy={38.4} r={1.6} fill="#fff" />
+      </g>
+      <g stroke="#3a2320" strokeWidth={3.6} strokeLinecap="round" fill="none">
+        <path d="M38 30 L48 36" />
+        <path d="M74 30 L64 36" />
+      </g>
+      {/* boca gritando */}
+      <ellipse cx={56} cy={52} rx={8} ry={7} fill="#3a2320" />
+      <path d="M49 47 q7 -3 14 0 l-2 3 q-5 -2 -10 0 z" fill="#fff" />
+      <ellipse cx={30} cy={48} rx={4.4} ry={2.8} fill="#ffc9cc" opacity={0.9} />
+      <ellipse cx={82} cy={48} rx={4.4} ry={2.8} fill="#ffc9cc" opacity={0.9} />
+      {/* luva da frente */}
+      <circle cx={94} cy={76} r={16} fill="#fff" stroke="#d8dde6" strokeWidth={3} />
+      <path d="M84 84 q-4 8 2 14" stroke="#d8dde6" strokeWidth={5} fill="none" strokeLinecap="round" />
+      <path d="M88 66 q10 2 13 8" stroke="#e5484d" strokeWidth={4} fill="none" strokeLinecap="round" />
+      <path d="M86 72 h16" stroke="#e5484d" strokeWidth={3} strokeLinecap="round" />
     </g>
   ),
 
-  // 15 — Le Roi du Verlan 👑
+  // ── 15 · Le Roi du Verlan 👑 ─────────────────────────────────
   "boss-15": (
     <g>
-      {/* capa real */}
-      <path d="M20 86 Q34 120 60 120 Q86 120 100 86 Q60 104 20 86 z" fill="#8b5fc9" />
-      {/* manto */}
-      <ellipse cx={60} cy={82} rx={42} ry={38} fill="#a989d6" />
-      {/* gola de arminho */}
-      <path d="M30 60 Q60 74 90 60 L90 70 Q60 84 30 70 z" fill="#f4f0e6" />
+      <defs>
+        <linearGradient id="bs-robe" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#b18fe0" />
+          <stop offset="1" stopColor="#8b5fc9" />
+        </linearGradient>
+        <linearGradient id="bs-crown" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffe28a" />
+          <stop offset="1" stopColor="#e9b44c" />
+        </linearGradient>
+      </defs>
+      {/* bolha de fala */}
+      <g transform="translate(96 18)">
+        <rect x={-18} y={-9} width={36} height={16} rx={8} fill="#fff" stroke="#c9c3f0" strokeWidth={2.4} />
+        <path d="M-6 7 l-3 6 8 -6 z" fill="#fff" stroke="#c9c3f0" strokeWidth={2.4} strokeLinejoin="round" />
+        <text x={0} y={3.5} fontSize={9} fontWeight={800} fill="#8b5fc9" textAnchor="middle">ouf</text>
+      </g>
+      {/* capa */}
+      <path d="M18 88 Q32 122 60 122 Q88 122 102 88 Q60 106 18 88 z" fill="url(#bs-robe)" />
       {/* ceptro */}
-      <line x1={94} y1={58} x2={94} y2={104} stroke="#e9b44c" strokeWidth={4} strokeLinecap="round" />
-      <circle cx={94} cy={54} r={7} fill="#e9b44c" />
-      <path d="M94 46 l2.5 4 4.5 1.5 -4 2.5 -1 4.5 -2.5 -3.5 -4 -1 4 -2.5 z" fill="#fff" opacity={0.9} />
+      <g transform="translate(96 56)">
+        <line x1={0} y1={8} x2={0} y2={56} stroke="#e9b44c" strokeWidth={4.4} strokeLinecap="round" />
+        <circle cx={0} cy={2} r={7.5} fill="url(#bs-crown)" stroke="#c9842b" strokeWidth={2.4} />
+        <path d="M0 -7 l2.6 4.6 4.6 2.2 -4.6 2.2 -2.6 4.6 -2.6 -4.6 -4.6 -2.2 4.6 -2.2 z" fill="#fff" opacity={0.95} />
+      </g>
+      {/* manto */}
+      <ellipse cx={60} cy={84} rx={42} ry={38} fill="url(#bs-robe)" />
+      {/* gola de arminho */}
+      <path d="M28 60 Q60 76 92 60 L92 72 Q60 88 28 72 z" fill="#f4f0e6" />
+      <circle cx={40} cy={70} r={2} fill="#8f8fa0" />
+      <circle cx={60} cy={77} r={2} fill="#8f8fa0" />
+      <circle cx={80} cy={70} r={2} fill="#8f8fa0" />
+      {/* brasão */}
+      <path d="M56 92 l4 -4 4 4 -4 4 z" fill="#ffe28a" />
       {/* cabeça */}
       <ellipse cx={60} cy={40} rx={26} ry={24} fill="#e8c39a" />
+      {/* cabelo */}
+      <path d="M34 40 Q36 18 60 18 Q84 18 86 40 L86 36 Q84 14 60 14 Q36 14 34 36 z" fill="#4a4238" />
       {/* coroa */}
-      <path d="M34 34 L34 22 L42 30 L50 18 L58 28 L66 18 L74 30 L82 22 L82 34 z" fill="#e9b44c" stroke="#c9842b" strokeWidth={2.5} />
-      <circle cx={42} cy={27} r={2.5} fill="#e5484d" />
-      <circle cx={60} cy={24} r={2.5} fill="#4a90d9" />
-      <circle cx={78} cy={27} r={2.5} fill="#6fbf73" />
-      <AngryFace eye="#4a3043" cheek="#f2d3ae" smug />
-      {/* sorriso de lado */}
-      <path d="M52 84 Q60 90 70 84" stroke="#4a3043" strokeWidth={3} fill="none" strokeLinecap="round" />
+      <g>
+        <path d="M34 34 L34 22 L42 30 L50 18 L58 28 L66 18 L74 30 L82 22 L82 34 z" fill="url(#bs-crown)" stroke="#c9842b" strokeWidth={2.6} />
+        <rect x={32} y={32} width={52} height={8} rx={3.5} fill="url(#bs-crown)" stroke="#c9842b" strokeWidth={2.4} />
+        <circle cx={42} cy={27} r={2.8} fill="#e5484d" />
+        <circle cx={60} cy={25} r={3.2} fill="#4a90d9" />
+        <circle cx={78} cy={27} r={2.8} fill="#6fbf73" />
+      </g>
+      <Face cx={60} mouth="smug" eye="#4a3043" cheek="#f2d3ae" />
+      <ellipse cx={34} cy={46} rx={4.4} ry={2.8} fill="#f2d3ae" opacity={0.9} />
+      <ellipse cx={86} cy={46} rx={4.4} ry={2.8} fill="#f2d3ae" opacity={0.9} />
     </g>
   )
 };
