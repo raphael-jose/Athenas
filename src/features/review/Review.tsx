@@ -13,12 +13,14 @@ import { Mascot, type Mood } from "@/components/Mascot";
 import { AudioButton } from "@/components/AudioButton";
 import { useSpeech } from "@/hooks/useSpeech";
 import { STORAGE_KEY } from "@/lib/constants";
+import { fuzzyMatch } from "@/lib/utils";
+import { fireSparkle } from "@/lib/confetti";
 import type { ReviewItem } from "@/types";
 
 export function ReviewPage() {
-  const { state, reviewWords } = useApp();
+  const { state, reviewWords, addStars, toast } = useApp();
   const { navigate } = useRouter();
-  const { speak, supported } = useSpeech();
+  const { speak, supported, stop, listen, canListen } = useSpeech();
 
   const due = useMemo(() => dueItems(state.reviewQueue), [state.reviewQueue]);
   const [queue, setQueue] = useState<ReviewItem[]>(() => due);
@@ -29,6 +31,12 @@ export function ReviewPage() {
   // com a pronúncia tocando sozinha para gravar o som na memória. 
   const [missed, setMissed] = useState<string[]>([]);
   const [reinfIdx, setReinfIdx] = useState(-1); // -1 = não está reforçando
+  // Pronúncia validada pelo microfone: +1 étoile por palavra correta.
+  const [listening, setListening] = useState(false);
+  const [heard, setHeard] = useState<string | null>(null);
+  const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
+  const [starsEarned, setStarsEarned] = useState(0);
+  const [pronounced, setPronounced] = useState<Set<string>>(new Set());
 
   const items = queue.length > 0 ? queue : mode === "practice" ? practiceItems() : [];
 
@@ -53,6 +61,54 @@ export function ReviewPage() {
   };
 
   const current = items[0];
+
+  // ── Validação de pronúncia (repete a palavra → +1 étoile) ────
+  const checkPronunciation = (item: ReviewItem) => {
+    const w = wordById(item.wordId);
+    if (!w) return;
+    if (pronounced.has(item.wordId)) {
+      toast("Você já ganhou a étoile dessa palavra ⭐", "mic");
+      return;
+    }
+    // Para qualquer áudio tocando — senão o microfone ouve o alto-falante.
+    stop();
+    setHeard(null);
+    setVerdict(null);
+    setListening(true);
+    const ok = listen({
+      onResult: (transcript) => {
+        setListening(false);
+        setHeard(transcript);
+        const clean = transcript.replace(/[?.!]$/, "");
+        const perfect = fuzzyMatch(clean, w.fr.replace(/[?!.]/g, ""), [w.fr]);
+        if (perfect) {
+          setVerdict("correct");
+          setPronounced((p) => new Set(p).add(item.wordId));
+          setStarsEarned((n) => n + 1);
+          addStars(1);
+          fireSparkle();
+          toast("Parfait ! +1 étoile ⭐", "mic");
+        } else {
+          setVerdict("wrong");
+        }
+      },
+      onError: (code) => {
+        setListening(false);
+        toast(
+          code === "not-allowed"
+            ? "Sem acesso ao microfone… pode repetir mentalmente!"
+            : code === "no-speech"
+              ? "Não ouvi nada… fala um pouco mais alto e mais perto do microfone!"
+              : "Não entendi… tenta de novo!",
+          "mic"
+        );
+      }
+    });
+    if (!ok) {
+      setListening(false);
+      toast("Seu navegador não tem reconhecimento de voz… ouvir já ajuda muito!", "mic");
+    }
+  };
 
   // ── Reforço das palavras erradas (toca o áudio sozinho) ──────
   const reinforcing = reinfIdx >= 0 && reinfIdx < missed.length;
@@ -121,7 +177,10 @@ export function ReviewPage() {
           <Mascot mood="proud" size={120} />
           <h2>Memória afiada !</h2>
           <p className="muted small">Você revisou {done} palavras. Seu cérebro agradece.</p>
-          <Chip variant="gold">+{done * 3 + 10} XP</Chip>
+          <div className="row center mt-2" style={{ justifyContent: "center", gap: 6 }}>
+            <Chip variant="gold">+{done * 3 + 10} XP</Chip>
+            {starsEarned > 0 && <Chip variant="accent">+{starsEarned} étoile{starsEarned > 1 ? "s" : ""} ⭐</Chip>}
+          </div>
           <div className="stack mt-4">
             <Button block onClick={() => navigate("/")}>
               Voltar pra casa
@@ -186,7 +245,28 @@ export function ReviewPage() {
             {word.gender && <Chip variant="accent">{word.gender === "m" ? "masculino" : "feminino"}</Chip>}
             <div className="row center mt-2" style={{ justifyContent: "center" }}>
               <AudioButton text={word.fr} label={`Ouvir ${word.fr}`} />
+              {canListen && (
+                <Button
+                  size="sm"
+                  variant={listening ? "accent" : "soft"}
+                  onClick={() => checkPronunciation(current)}
+                  disabled={listening}
+                >
+                  <Icon name="mic" size={15} /> {listening ? "Ouvindo…" : "Repetir · +1 ⭐"}
+                </Button>
+              )}
             </div>
+            {heard && verdict === "wrong" && !listening && (
+              <div className="feedback bad mt-3">
+                <strong>Ouvi:</strong> «{heard}»
+                <div className="small mt-1">Quase ! Tenta de novo — ouça bem e repita a palavra.</div>
+              </div>
+            )}
+            {verdict === "correct" && !listening && (
+              <div className="feedback good mt-3">
+                <strong>Parfait !</strong> +1 étoile ⭐
+              </div>
+            )}
             <p className="muted small mt-2">Toque para revelar a tradução</p>
             <Button variant="ghost" block onClick={() => setFlipped(true)}>
               Mostrar tradução

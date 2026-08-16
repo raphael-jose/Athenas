@@ -17,7 +17,7 @@ import { sfxCorrect, sfxWrong } from "@/lib/sfx";
 type Status = "start" | "playing" | "over";
 
 export function ChallengePage() {
-  const { addXp, toast } = useApp();
+  const { addXp, addStars, toast } = useApp();
   const { navigate } = useRouter();
   const [status, setStatus] = useState<Status>("start");
   const [questions, setQuestions] = useState<ChallengeQuestion[]>([]);
@@ -27,6 +27,7 @@ export function ChallengePage() {
   const [picked, setPicked] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(CHALLENGE_DEFAULTS.seconds);
   const [best, setBest] = useState<number>(0);
+  const [completed, setCompleted] = useState(false);
   const timeRef = useRef(timeLeft);
   const heartsRef = useRef(hearts);
   const scoreRef = useRef(score);
@@ -50,6 +51,7 @@ export function ChallengePage() {
     scoreRef.current = 0;
     setPicked(null);
     setTimeLeft(CHALLENGE_DEFAULTS.seconds);
+    setCompleted(false);
     setStatus("playing");
   };
 
@@ -71,7 +73,7 @@ export function ChallengePage() {
         setTimeout(() => {
           loseHeart();
           if (heartsRef.current <= 0) {
-            finish();
+            finish(false);
             return;
           }
           next();
@@ -107,14 +109,14 @@ export function ChallengePage() {
     }
     setTimeout(() => {
       if (heartsRef.current <= 0 || idx + 1 >= questions.length) {
-        finish();
+        finish(idx + 1 >= questions.length);
       } else {
         next();
       }
     }, 500);
   };
 
-  const finish = () => {
+  const finish = (finishedAll: boolean) => {
     const s = scoreRef.current;
     if (s > best) {
       setBest(s);
@@ -126,8 +128,15 @@ export function ChallengePage() {
     }
     const gained = Math.max(1, s * XP.EXERCISE_CORRECT);
     addXp(gained);
+    setCompleted(finishedAll);
+    if (finishedAll) {
+      // Completou o desafio: prêmio de 30 étoiles.
+      addStars(30);
+      toast("Desafio completo ! +30 étoiles ⚡", "lightning");
+    } else if (s >= questions.length * 0.6) {
+      toast("Desafio Relâmpago arrasado! ⚡", "lightning");
+    }
     if (s >= questions.length * 0.8) fireConfetti(true);
-    if (s >= questions.length * 0.6) toast("Desafio Relâmpago arrasado! ⚡", "lightning");
     setStatus("over");
   };
 
@@ -176,6 +185,7 @@ export function ChallengePage() {
             <ChipVariant label={`${score} ⭐`} />
             <ChipVariant label={`${hearts} ❤`} />
             {best > 0 && <ChipVariant label={`Recorde: ${best}`} />}
+            {completed && <ChipVariant label="+30 ⭐ de prêmio" />}
           </div>
           <div className="stack mt-4">
             <Button block onClick={start}>
