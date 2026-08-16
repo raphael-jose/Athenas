@@ -9,7 +9,7 @@ import type { IconName } from "@/types";
 import { sfxClick } from "@/lib/sfx";
 
 const ITEMS: { path: string; label: string; icon: IconName }[] = [
-  { path: "/", label: "Home", icon: "home" },
+  { path: "/", label: "Início", icon: "home" },
   { path: "/map", label: "Aventura", icon: "map" },
   { path: "/review", label: "Revisar", icon: "brain" },
   { path: "/ai", label: "Lulu", icon: "chat" },

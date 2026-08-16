@@ -70,7 +70,7 @@ export function AIHub() {
         <Segmented
           label="Modos da Lulu"
           options={[
-            { value: "chat", label: <><Icon name="chat" size={15} /> Chat</> },
+            { value: "chat", label: <><Icon name="chat" size={15} /> Bate-papo</> },
             { value: "conversa", label: <><Icon name="maskHappy" size={15} /> Conversa</> },
             { value: "sonne", label: <><Icon name="magicWand" size={15} /> Sonne?</> }
           ]}

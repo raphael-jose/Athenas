@@ -1101,16 +1101,16 @@ const ATTACK_FX: Record<string, ReactNode> = {
 
 /** Rótulo do ataque de cada chefe (aparece no flash quando o aluno erra). */
 export const BOSS_ATTACK_LABEL: Record<string, string> = {
-  "boss-1": "RAWR! 🔥",
-  "boss-2": "Crumbs everywhere! 🥐",
+  "boss-1": "GRRR! 🔥",
+  "boss-2": "Migalhas por todo lado! 🥐",
   "boss-3": "TUT TUT! 🚇",
   "boss-4": "BLA BLA BLA! 💬",
   "boss-5": "OUUU! 👻",
-  "boss-6": "Shards! 💔",
-  "boss-7": "Read this! 📖",
+  "boss-6": "Cacos! 💔",
+  "boss-7": "Leia isto! 📖",
   "boss-8": "NON! 💼",
-  "boss-9": "Think! 🦁",
-  "boss-10": "Splatter! 🎨",
+  "boss-9": "Pense! 🦁",
+  "boss-10": "Respingos! 🎨",
   "boss-11": "Abracadabra! 🧞",
   "boss-12": "BIP! 📺",
   "boss-13": "ERREUR! ⚖️",
