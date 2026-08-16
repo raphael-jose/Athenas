@@ -1497,6 +1497,43 @@ input, textarea, select {
   animation: floaty 2.4s ease-in-out infinite;
 }
 
+/* Sprites dos chefes */
+.boss-sprite {
+  display: inline-block;
+  animation: boss-idle 3.2s ease-in-out infinite;
+}
+
+.boss-sprite.boss-hurt {
+  animation: boss-hurt 0.5s ease;
+}
+
+.boss-arena {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 4px;
+  padding: 14px;
+  border-radius: var(--r-lg, 18px);
+  background: radial-gradient(circle at 50% 38%, var(--c-red-soft, #ffe8ec) 0%, transparent 72%);
+}
+
+.boss-arena .boss-sprite {
+  filter: drop-shadow(0 8px 14px rgba(90, 30, 40, 0.22));
+}
+
+@keyframes boss-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(-1.6deg); }
+}
+
+@keyframes boss-hurt {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px) rotate(-4deg); }
+  40% { transform: translateX(7px) rotate(4deg); }
+  60% { transform: translateX(-5px) rotate(-2deg); }
+  80% { transform: translateX(5px) rotate(2deg); }
+}
+
 /* ── Grammar Duel ───────────────────────────────────────────── */
 .duel-hud {
   position: sticky;

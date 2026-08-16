@@ -9,6 +9,7 @@ import { ExercisePlayer, type ExerciseResult } from "@/components/ExercisePlayer
 import { Button, Card, Chip, EmptyState, PageHeader } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
+import { BossSprite } from "@/components/BossSprite";
 import { LuluBurst } from "@/components/LuluBurst";
 import { fireConfetti } from "@/lib/confetti";
 
@@ -22,6 +23,7 @@ export function BossBattle({ bossId }: { bossId: string }) {
   const [exIdx, setExIdx] = useState(0);
   const [damage, setDamage] = useState(0);
   const [results, setResults] = useState<ExerciseResult[]>([]);
+  const [hurtTick, setHurtTick] = useState(0);
 
   if (!boss) return <EmptyState icon="smileySad" title="Boss não encontrado" />;
 
@@ -33,7 +35,10 @@ export function BossBattle({ bossId }: { bossId: string }) {
 
   const onResult = (r: ExerciseResult) => {
     setResults((prev) => [...prev, r]);
-    if (!r.correct || !r.firstTry) setDamage((d) => d + 1);
+    if (!r.correct || !r.firstTry) {
+      setDamage((d) => d + 1);
+      setHurtTick((t) => t + 1); // anima o sprite levando dano
+    }
   };
 
   const next = () => {
@@ -56,8 +61,8 @@ export function BossBattle({ bossId }: { bossId: string }) {
 
       {phase === "intro" && (
         <Card className="center">
-          <div className="boss-emoji" style={{ color: "var(--c-red)", display: "flex", justifyContent: "center" }}>
-            <Icon name={boss.icon} size={56} />
+          <div className="boss-arena">
+            <BossSprite bossId={boss.id} size={124} />
           </div>
           <h2>O chefe apareceu !</h2>
           <p className="muted small">{boss.intro}</p>
@@ -75,7 +80,10 @@ export function BossBattle({ bossId }: { bossId: string }) {
         <>
           <Card className="mb-3">
             <div className="row-between small mb-2">
-              <span className="bold row" style={{ gap: 5 }}><Icon name={boss.icon} size={15} /> HP</span>
+              <span className="bold row" style={{ gap: 5 }}>
+                <BossSprite bossId={boss.id} size={30} hurt={hurtTick > 0} key={`hp-${hurtTick}`} />
+                HP
+              </span>
               <span className="muted">
                 Ataque {exIdx + 1}/{exercises.length}
               </span>

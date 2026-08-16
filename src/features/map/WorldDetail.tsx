@@ -8,6 +8,7 @@ import { isBossUnlocked, isLessonUnlocked, worldById, worldLessons, worldProgres
 import { EmptyState, PageHeader, ProgressBar } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
+import { BossSprite } from "@/components/BossSprite";
 
 export function WorldDetail({ worldId }: { worldId: string }) {
   const { state } = useApp();
@@ -86,7 +87,7 @@ export function WorldDetail({ worldId }: { worldId: string }) {
             onClick={() => navigate(`/boss/${world.boss!.id}`)}
           >
             <div className="lc-emoji" style={{ background: "var(--c-red-soft)" }}>
-              <Icon name={world.boss.icon} size={24} />
+              <BossSprite bossId={world.boss.id} size={40} />
             </div>
             <div className="grow">
               <h4>{bossDone ? " " : ""}{world.boss.title}</h4>
