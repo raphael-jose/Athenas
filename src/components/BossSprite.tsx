@@ -843,27 +843,314 @@ const SPRITES: Record<string, ReactNode> = {
   )
 };
 
+// ══════════════════════════════════════════════════════════════
+// Poses do chefe: idle · hurt · low (HP<30%) · defeated · attack
+// O overlay de rosto usa a âncora de cada chefe (alguns têm o rosto
+// fora do padrão, ex.: o boxeador tem a cabeça lá em cima).
+// ══════════════════════════════════════════════════════════════
+export type BossPose = "idle" | "hurt" | "low" | "defeated" | "attack";
+
+type FaceAnchor = { x: number; ey: number; my: number; mouth: boolean };
+
+const FACE_ANCHOR: Record<string, FaceAnchor> = {
+  "boss-4": { x: 60, ey: 62, my: 88, mouth: true },
+  "boss-7": { x: 60, ey: 69, my: 78, mouth: false },
+  "boss-8": { x: 60, ey: 68, my: 84, mouth: true },
+  "boss-12": { x: 60, ey: 66, my: 74, mouth: true },
+  "boss-13": { x: 60, ey: 66, my: 84, mouth: true },
+  "boss-14": { x: 56, ey: 40, my: 52, mouth: true }
+};
+
+const anchorOf = (id: string): FaceAnchor => FACE_ANCHOR[id] ?? { x: 60, ey: 67, my: 87, mouth: true };
+
+/** Pose de HP baixo: olhos apertados, sobrancelhas de tensão, boca torta e gota de suor. */
+function LowPose({ id }: { id: string }) {
+  const { x, ey, my, mouth } = anchorOf(id);
+  return (
+    <g>
+      <g stroke="#24141c" strokeWidth={4} strokeLinecap="round" fill="none">
+        <path d={`M${x - 26} ${ey - 11} L${x - 5} ${ey - 1}`} />
+        <path d={`M${x + 26} ${ey - 11} L${x + 5} ${ey - 1}`} />
+        <path d={`M${x - 23} ${ey - 4} Q${x - 14} ${ey - 9} ${x - 5} ${ey - 3}`} />
+        <path d={`M${x + 5} ${ey - 3} Q${x + 14} ${ey - 9} ${x + 23} ${ey - 4}`} />
+        <path d={`M${x - 21} ${ey + 5} Q${x - 14} ${ey + 9} ${x - 7} ${ey + 4}`} />
+        <path d={`M${x + 7} ${ey + 4} Q${x + 14} ${ey + 9} ${x + 21} ${ey + 5}`} />
+      </g>
+      {mouth && <path d={`M${x - 9} ${my} q4 -5 9 0 q5 5 9 0`} stroke="#24141c" strokeWidth={3.6} strokeLinecap="round" fill="none" />}
+      <path d={`M${x - 36} ${ey - 14} q3.4 6.4 0 9.6 q-3.4 -3.2 0 -9.6 z`} fill="#9fd7ff" stroke="#5aa9e0" strokeWidth={1.4} />
+    </g>
+  );
+}
+
+/** Pose de derrota: olhos em X, boca caída, fumaça subindo e tontura (o tilt vem do CSS). */
+function DefeatPose({ id }: { id: string }) {
+  const { x, ey, my, mouth } = anchorOf(id);
+  return (
+    <g>
+      <g stroke="#24141c" strokeWidth={4.2} strokeLinecap="round">
+        <path d={`M${x - 21} ${ey - 7} L${x - 7} ${ey + 7}`} />
+        <path d={`M${x - 7} ${ey - 7} L${x - 21} ${ey + 7}`} />
+        <path d={`M${x + 7} ${ey - 7} L${x + 21} ${ey + 7}`} />
+        <path d={`M${x + 21} ${ey - 7} L${x + 7} ${ey + 7}`} />
+      </g>
+      {mouth && <path d={`M${x - 10} ${my + 4} Q${x} ${my + 11} ${x + 10} ${my + 4}`} stroke="#24141c" strokeWidth={3.4} strokeLinecap="round" fill="none" />}
+      <g className="boss-smoke" fill="#aeb6c4">
+        <circle cx={x - 32} cy={20} r={6.5} opacity={0.9} />
+        <circle cx={x - 18} cy={9} r={5} opacity={0.65} />
+        <circle cx={x + 26} cy={15} r={5.6} opacity={0.75} />
+      </g>
+      <g transform={`translate(${x + 37} ${ey - 16})`} fill="#e9c15c" opacity={0.95}>
+        <path d="M0 -7 l1.9 4 4 1.9 -4 1.9 -1.9 4 -1.9 -4 -4 -1.9 4 -1.9 z" />
+      </g>
+    </g>
+  );
+}
+
+/** Ataque de cada chefe (dispara quando o aluno erra um exercício). */
+const ATTACK_FX: Record<string, ReactNode> = {
+  // dragão solta fogo pela boca
+  "boss-1": (
+    <g className="boss-fx">
+      <path d="M32 82 Q14 66 5 76 Q13 80 7 92 Q24 88 33 95 z" fill="#f08a3c" />
+      <path d="M29 84 Q18 75 11 80 Q19 82 15 89 Q26 86 31 91 z" fill="#ffc37a" />
+      <path d="M27 86 Q20 81 17 85 Q23 83 26 89 z" fill="#fff3c0" />
+      <path d="M88 82 Q106 66 115 76 Q107 80 113 92 Q96 88 87 95 z" fill="#f08a3c" />
+      <path d="M91 84 Q102 75 109 80 Q101 82 105 89 Q94 86 89 91 z" fill="#ffc37a" />
+      <path d="M93 86 Q100 81 103 85 Q97 83 94 89 z" fill="#fff3c0" />
+    </g>
+  ),
+  // croissant espalha migalhas
+  "boss-2": (
+    <g className="boss-fx">
+      <circle cx={28} cy={24} r={3} fill="#e09a38" />
+      <circle cx={42} cy={13} r={2.4} fill="#eeb95f" />
+      <circle cx={86} cy={17} r={2.8} fill="#e09a38" />
+      <circle cx={99} cy={30} r={2.2} fill="#eeb95f" />
+      <path d="M20 32 q3 -5 7 -2 q-2 4 -7 2 z" fill="#ffe9b8" />
+      <path d="M92 22 q4 -4 8 -1 q-3 4 -8 1 z" fill="#ffe9b8" />
+      <path d="M62 10 l1.8 3.6 3.6 1.8 -3.6 1.8 -1.8 3.6 -1.8 -3.6 -3.6 -1.8 3.6 -1.8 z" fill="#f6c879" />
+    </g>
+  ),
+  // metrô apita com vapor
+  "boss-3": (
+    <g className="boss-fx">
+      <text x={60} y={24} fontSize={11} fontWeight={900} fill="#e5484d" textAnchor="middle" fontStyle="italic">TUT!</text>
+      <g stroke="#ffe28a" strokeWidth={3} strokeLinecap="round" fill="none" opacity={0.9}>
+        <path d="M14 42 q-7 -6 0 -12" />
+        <path d="M106 42 q7 -6 0 -12" />
+      </g>
+      <g fill="#dfe6f2" opacity={0.85}>
+        <circle cx={94} cy={18} r={5} />
+        <circle cx={103} cy={9} r={3.6} />
+      </g>
+    </g>
+  ),
+  // falador manda BLA BLA
+  "boss-4": (
+    <g className="boss-fx">
+      <g transform="translate(14 20)">
+        <rect x={-17} y={-8} width={34} height={15} rx={7.5} fill="#fff" stroke="#9672dd" strokeWidth={2.2} />
+        <path d="M-6 6 l-3 6 8 -6 z" fill="#fff" stroke="#9672dd" strokeWidth={2.2} strokeLinejoin="round" />
+        <text x={0} y={2.5} fontSize={7.5} fontWeight={800} fill="#8b6fd0" textAnchor="middle">BLA</text>
+      </g>
+      <g transform="translate(98 36)">
+        <rect x={-14} y={-7} width={28} height={13} rx={6.5} fill="#fff" stroke="#9672dd" strokeWidth={2.2} />
+        <path d="M-5 5 l-2.5 5 7 -5 z" fill="#fff" stroke="#9672dd" strokeWidth={2.2} strokeLinejoin="round" />
+        <text x={0} y={2} fontSize={7} fontWeight={800} fill="#8b6fd0" textAnchor="middle">!</text>
+      </g>
+    </g>
+  ),
+  // fantasma solta um OUUI
+  "boss-5": (
+    <g className="boss-fx">
+      <g transform="translate(24 20)">
+        <rect x={-18} y={-8} width={36} height={15} rx={7.5} fill="#fff" stroke="#aab3e8" strokeWidth={2.2} />
+        <path d="M-6 6 l-3 6 8 -6 z" fill="#fff" stroke="#aab3e8" strokeWidth={2.2} strokeLinejoin="round" />
+        <text x={0} y={2.5} fontSize={7.5} fontWeight={800} fill="#6a74c4" textAnchor="middle">OUUU!</text>
+      </g>
+      <g stroke="#c6cdf2" strokeWidth={3} strokeLinecap="round" fill="none">
+        <path d="M100 40 q8 -6 0 -12" />
+        <path d="M104 54 q9 -7 0 -14" />
+      </g>
+    </g>
+  ),
+  // coração espalha cacos
+  "boss-6": (
+    <g className="boss-fx">
+      <path d="M26 28 l6 4 l-3 7 l-6 -4 z" fill="#a8e2f5" stroke="#7cc7e8" strokeWidth={1.8} />
+      <path d="M96 24 l5 5 l-4 6 l-5 -5 z" fill="#bfe9f7" stroke="#7cc7e8" strokeWidth={1.8} />
+      <path d="M13 86 l5 4 l-3 6 l-5 -4 z" fill="#a8e2f5" stroke="#7cc7e8" strokeWidth={1.8} />
+      <path d="M103 88 l4 5 l-3 6 l-4 -5 z" fill="#bfe9f7" stroke="#7cc7e8" strokeWidth={1.8} />
+      <path d="M60 10 l2.4 5 5 2.4 -5 2.4 -2.4 5 -2.4 -5 -5 -2.4 5 -2.4 z" fill="#d8f4fd" />
+    </g>
+  ),
+  // coruja bate o livro
+  "boss-7": (
+    <g className="boss-fx">
+      <circle cx={16} cy={26} r={9} fill="#fff" stroke="#7d5fb0" strokeWidth={2.4} />
+      <text x={16} y={30} fontSize={13} fontWeight={800} fill="#7d5fb0" textAnchor="middle">!</text>
+      <g stroke="#a989d6" strokeWidth={3} strokeLinecap="round">
+        <path d="M96 66 q8 -4 4 -12" />
+        <path d="M98 80 q9 -5 3 -13" />
+      </g>
+    </g>
+  ),
+  // diretor bate o carimbo NON
+  "boss-8": (
+    <g className="boss-fx">
+      <g transform="translate(24 24) rotate(-8)">
+        <rect x={-17} y={-9} width={34} height={17} rx={3} fill="#e5484d" opacity={0.92} />
+        <text x={0} y={3.5} fontSize={10} fontWeight={900} fill="#fff" textAnchor="middle">NON!</text>
+      </g>
+      <g stroke="#4a4238" strokeWidth={2.6} strokeLinecap="round">
+        <path d="M40 22 l-6 -6 M38 30 l-8 2" />
+        <path d="M80 22 l6 -6 M82 30 l8 2" />
+      </g>
+    </g>
+  ),
+  // esfinge lança a pergunta
+  "boss-9": (
+    <g className="boss-fx">
+      <g transform="translate(98 16)">
+        <path d="M0 -7 q7 -9 13 0 q0 5 -5 7 q-4 2 -4 5" stroke="#d9a95f" strokeWidth={3.2} fill="none" strokeLinecap="round" />
+        <circle cx={2} cy={11} r={2.6} fill="#d9a95f" />
+      </g>
+      <g fill="#e3c088" opacity={0.9}>
+        <circle cx={18} cy={58} r={2.6} />
+        <circle cx={12} cy={72} r={2} />
+        <circle cx={104} cy={54} r={2.4} />
+      </g>
+    </g>
+  ),
+  // crítica espalha tinta
+  "boss-10": (
+    <g className="boss-fx">
+      <circle cx={24} cy={22} r={5} fill="#e5484d" />
+      <circle cx={34} cy={14} r={3} fill="#4a90d9" />
+      <circle cx={90} cy={18} r={4.4} fill="#e9b44c" />
+      <circle cx={103} cy={30} r={3} fill="#6fbf73" />
+      <path d="M17 34 q4 -3 7 0 q-2 4 -7 0 z" fill="#8b5fc9" />
+      <path d="M96 40 q4 -3 8 0 q-3 4 -8 0 z" fill="#e5484d" />
+      <circle cx={60} cy={10} r={3.6} fill="#8b5fc9" />
+    </g>
+  ),
+  // gênio solta faíscas
+  "boss-11": (
+    <g className="boss-fx">
+      <g fill="#ffe28a">
+        <path d="M20 28 l2 4.4 4.4 2 -4.4 2 -2 4.4 -2 -4.4 -4.4 -2 4.4 -2 z" />
+        <path d="M98 18 l1.8 3.8 3.8 1.8 -3.8 1.8 -1.8 3.8 -1.8 -3.8 -3.8 -1.8 3.8 -1.8 z" />
+        <path d="M60 8 l1.6 3.4 3.4 1.6 -3.4 1.6 -1.6 3.4 -1.6 -3.4 -3.4 -1.6 3.4 -1.6 z" />
+      </g>
+      <path d="M16 14 q2 4 0 8" stroke="#fff" strokeWidth={2.6} strokeLinecap="round" fill="none" opacity={0.9} />
+    </g>
+  ),
+  // apresentadora solta BIP
+  "boss-12": (
+    <g className="boss-fx">
+      <g transform="translate(32 18) rotate(-6)">
+        <rect x={-16} y={-8} width={32} height={15} rx={7.5} fill="#39406b" />
+        <text x={0} y={2.5} fontSize={8} fontWeight={800} fill="#fff" textAnchor="middle">BIP!</text>
+      </g>
+      <g stroke="#e5484d" strokeWidth={3} strokeLinecap="round" opacity={0.9}>
+        <path d="M96 42 q7 -5 0 -10" />
+        <path d="M100 54 q8 -6 0 -12" />
+      </g>
+    </g>
+  ),
+  // robô dispara laser
+  "boss-13": (
+    <g className="boss-fx">
+      <text x={60} y={16} fontSize={9} fontWeight={900} fill="#ff4d5e" textAnchor="middle" fontStyle="italic">ERREUR!</text>
+      <line x1={60} y1={70} x2={112} y2={26} stroke="#ff4d5e" strokeWidth={3.4} strokeLinecap="round" />
+      <line x1={60} y1={70} x2={100} y2={14} stroke="#ff8fa0" strokeWidth={2} strokeLinecap="round" />
+      <circle cx={112} cy={26} r={4} fill="#ff4d5e" />
+      <circle cx={100} cy={14} r={3} fill="#ff8fa0" />
+    </g>
+  ),
+  // boxeador desfere o golpe
+  "boss-14": (
+    <g className="boss-fx">
+      <g transform="translate(38 14)">
+        <circle cx={0} cy={0} r={17} fill="#fff" stroke="#d8dde6" strokeWidth={3.4} />
+        <path d="M-10 10 q-5 9 2 15" stroke="#d8dde6" strokeWidth={5} fill="none" strokeLinecap="round" />
+        <path d="M-6 -8 q10 2 13 9" stroke="#e5484d" strokeWidth={4} fill="none" strokeLinecap="round" />
+        <path d="M-8 -2 h17" stroke="#e5484d" strokeWidth={3} strokeLinecap="round" />
+      </g>
+      <g stroke="#f0a0a4" strokeWidth={3} strokeLinecap="round">
+        <path d="M64 6 l6 -5 M76 2 l4 -7 M88 8 l9 -3" opacity={0.9} />
+      </g>
+      <text x={60} y={110} fontSize={12} fontWeight={900} fill="#c93a3f" textAnchor="middle" fontStyle="italic">BOUM!</text>
+    </g>
+  ),
+  // rei dispara OUF!
+  "boss-15": (
+    <g className="boss-fx">
+      <g transform="translate(20 26)">
+        <rect x={-15} y={-8} width={30} height={15} rx={7.5} fill="#fff" stroke="#c9c3f0" strokeWidth={2.4} />
+        <path d="M-5 6 l-3 6 8 -6 z" fill="#fff" stroke="#c9c3f0" strokeWidth={2.4} strokeLinejoin="round" />
+        <text x={0} y={2.5} fontSize={8} fontWeight={800} fill="#8b5fc9" textAnchor="middle">OUF!</text>
+      </g>
+      <g fill="#ffe28a">
+        <path d="M96 44 l2 4.2 4.2 2 -4.2 2 -2 4.2 -2 -4.2 -4.2 -2 4.2 -2 z" />
+        <path d="M108 30 l1.5 3.2 3.2 1.5 -3.2 1.5 -1.5 3.2 -1.5 -3.2 -3.2 -1.5 3.2 -1.5 z" />
+      </g>
+    </g>
+  )
+};
+
+/** Rótulo do ataque de cada chefe (aparece no flash quando o aluno erra). */
+export const BOSS_ATTACK_LABEL: Record<string, string> = {
+  "boss-1": "RAWR! 🔥",
+  "boss-2": "Crumbs everywhere! 🥐",
+  "boss-3": "TUT TUT! 🚇",
+  "boss-4": "BLA BLA BLA! 💬",
+  "boss-5": "OUUU! 👻",
+  "boss-6": "Shards! 💔",
+  "boss-7": "Read this! 📖",
+  "boss-8": "NON! 💼",
+  "boss-9": "Think! 🦁",
+  "boss-10": "Splatter! 🎨",
+  "boss-11": "Abracadabra! 🧞",
+  "boss-12": "BIP! 📺",
+  "boss-13": "ERREUR! ⚖️",
+  "boss-14": "BOUM! 🥊",
+  "boss-15": "OUF! 👑"
+};
+
 export function BossSprite({
   bossId,
   size = 96,
   className = "",
+  pose = "idle",
   hurt = false
 }: {
   bossId: string;
   size?: number;
   className?: string;
+  pose?: BossPose;
   hurt?: boolean;
 }) {
+  const cls = ["boss-sprite"];
+  if (pose === "hurt" || hurt) cls.push("boss-hurt");
+  if (pose === "low") cls.push("boss-low");
+  if (pose === "defeated") cls.push("boss-defeated");
+  if (pose === "attack") cls.push("boss-attacking");
+  if (className) cls.push(className);
+
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 120 120"
-      className={`boss-sprite ${hurt ? "boss-hurt" : ""} ${className}`.trim()}
+      className={cls.join(" ")}
       role="img"
-      aria-label={`Sprite do chefe ${bossId}`}
+      aria-label={`Sprite do chefe ${bossId} — pose ${pose}`}
     >
-      {SPRITES[bossId] ?? <circle cx={60} cy={60} r={40} fill="#d9c9a0" />}
+      <g className="boss-body">{SPRITES[bossId] ?? <circle cx={60} cy={60} r={40} fill="#d9c9a0" />}</g>
+      {pose === "low" && <LowPose id={bossId} />}
+      {pose === "defeated" && <DefeatPose id={bossId} />}
+      {pose === "attack" && (ATTACK_FX[bossId] ?? <DefeatPose id={bossId} />)}
     </svg>
   );
 }

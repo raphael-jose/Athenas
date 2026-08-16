@@ -9,7 +9,7 @@ import { ExercisePlayer, type ExerciseResult } from "@/components/ExercisePlayer
 import { Button, Card, Chip, EmptyState, PageHeader } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
-import { BossSprite, BOSS_ACCENTS } from "@/components/BossSprite";
+import { BossSprite, BOSS_ACCENTS, BOSS_ATTACK_LABEL } from "@/components/BossSprite";
 import { LuluBurst } from "@/components/LuluBurst";
 import { fireConfetti } from "@/lib/confetti";
 
@@ -24,12 +24,14 @@ export function BossBattle({ bossId }: { bossId: string }) {
   const [damage, setDamage] = useState(0);
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [hurtTick, setHurtTick] = useState(0);
+  const [attackTick, setAttackTick] = useState(0); // > 0 = flash de ataque do chefe
 
   if (!boss) return <EmptyState icon="smileySad" title="Boss não encontrado" />;
 
   const world = worldById(boss.worldId);
   const exercises = boss.exercises;
   const hp = Math.max(0, 100 - (damage / exercises.length) * 100);
+  const lowHp = hp < 30; // inclui 0 (chefe quase morto no meio da batalha)
   const firstTryCount = results.filter((r) => r.firstTry).length;
   const allFirstTry = results.length > 0 && results.every((r) => r.firstTry);
 
@@ -38,6 +40,7 @@ export function BossBattle({ bossId }: { bossId: string }) {
     if (!r.correct || !r.firstTry) {
       setDamage((d) => d + 1);
       setHurtTick((t) => t + 1); // anima o sprite levando dano
+      setAttackTick((t) => t + 1); // o chefe contra-ataca com a pose de ataque
     }
   };
 
@@ -84,26 +87,42 @@ export function BossBattle({ bossId }: { bossId: string }) {
           <Card className="mb-3">
             <div className="row-between small mb-2">
               <span className="bold row" style={{ gap: 5 }}>
-                <BossSprite bossId={boss.id} size={30} hurt={hurtTick > 0} key={`hp-${hurtTick}`} />
+                <BossSprite bossId={boss.id} size={30} pose={lowHp ? "low" : "idle"} hurt={hurtTick > 0} key={`hp-${hurtTick}`} />
                 HP
               </span>
               <span className="muted">
                 Ataque {exIdx + 1}/{exercises.length}
               </span>
             </div>
-            <div className="boss-hp">
+            <div className={`boss-hp${lowHp ? " boss-hp-low" : ""}`}>
               <span style={{ width: `${hp}%` }} />
             </div>
           </Card>
           <ExercisePlayer key={`${bossId}-${exIdx}`} exercise={exercises[exIdx]} index={exIdx} total={exercises.length} onResult={onResult} onNext={next} />
+
+          {attackTick > 0 && (
+            <div
+              className="boss-attack-flash"
+              key={attackTick}
+              onAnimationEnd={(e) => {
+                if (e.target === e.currentTarget) setAttackTick(0);
+              }}
+            >
+              <BossSprite bossId={boss.id} size={128} pose="attack" />
+              <span className="boss-attack-label">{BOSS_ATTACK_LABEL[boss.id] ?? "Attaque !"}</span>
+            </div>
+          )}
         </>
       )}
 
       {phase === "victory" && (
         <Card className="center">
-          <LuluBurst theme={state.settings.theme}>
-            <Mascot mood="excited" size={130} />
-          </LuluBurst>
+          <div className="row" style={{ justifyContent: "center", alignItems: "flex-end", gap: 18 }}>
+            <LuluBurst theme={state.settings.theme}>
+              <Mascot mood="excited" size={112} />
+            </LuluBurst>
+            <BossSprite bossId={boss.id} size={102} pose="defeated" />
+          </div>
           <h2 className="row" style={{ fontSize: "1.5rem", justifyContent: "center", gap: 8 }}>Victoire ! <Icon name="confetti" size={22} /></h2>
           <p className="muted small">
             {firstTryCount}/{exercises.length} golpes perfeitos

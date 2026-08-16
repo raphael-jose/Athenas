@@ -1534,6 +1534,103 @@ input, textarea, select {
   80% { transform: translateX(5px) rotate(2deg); }
 }
 
+/* Pose de HP baixo: aura escura + corpo apagado */
+.boss-sprite.boss-low {
+  filter: drop-shadow(0 0 10px rgba(160, 30, 45, 0.75));
+}
+.boss-sprite.boss-low .boss-body {
+  filter: brightness(0.78) saturate(0.8);
+}
+
+.boss-hp-low {
+  box-shadow: 0 0 0 2px rgba(190, 40, 60, 0.3), 0 0 16px rgba(190, 40, 60, 0.28);
+  animation: boss-hp-low-pulse 1.3s ease-in-out infinite;
+}
+@keyframes boss-hp-low-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(190, 40, 60, 0.22), 0 0 8px rgba(190, 40, 60, 0.16); }
+  50% { box-shadow: 0 0 0 2px rgba(190, 40, 60, 0.45), 0 0 20px rgba(190, 40, 60, 0.38); }
+}
+
+/* Pose de derrota: cai torto, cinza e com fumaça */
+.boss-sprite.boss-defeated {
+  animation: boss-fall 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+.boss-sprite.boss-defeated .boss-body {
+  filter: grayscale(0.4) brightness(0.82);
+}
+@keyframes boss-fall {
+  0% { transform: translateY(-16px) rotate(0deg); opacity: 0.4; }
+  55% { transform: translateY(4px) rotate(-13deg); opacity: 1; }
+  70% { transform: translateY(-2px) rotate(-11deg); }
+  100% { transform: translateY(0) rotate(-13deg); }
+}
+.boss-smoke circle {
+  animation: boss-smoke-rise 1.5s ease-out infinite;
+}
+.boss-smoke circle:nth-child(2) { animation-delay: 0.25s; }
+.boss-smoke circle:nth-child(3) { animation-delay: 0.5s; }
+@keyframes boss-smoke-rise {
+  0% { transform: translateY(0); opacity: 0.9; }
+  100% { transform: translateY(-11px); opacity: 0; }
+}
+
+/* Pose de ataque: investida + efeito especial de cada chefe */
+.boss-sprite.boss-attacking {
+  animation: boss-attack 0.8s ease;
+}
+@keyframes boss-attack {
+  0% { transform: translateX(0) scale(0.7); opacity: 0; }
+  18% { transform: translateX(-10px) scale(1.14); opacity: 1; }
+  34% { transform: translateX(8px) scale(1); }
+  50% { transform: translateX(-6px) scale(1.06); }
+  100% { transform: translateX(0) scale(1); }
+}
+.boss-fx {
+  animation: boss-fx-pop 0.7s ease;
+}
+@keyframes boss-fx-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  30% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Flash do contra-ataque do chefe quando o aluno erra */
+.boss-attack-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: radial-gradient(circle at 50% 42%, rgba(24, 12, 24, 0.68), rgba(18, 8, 18, 0.9));
+  animation: boss-flash-fade 0.95s ease forwards;
+  pointer-events: none;
+}
+.boss-attack-label {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(225, 55, 85, 0.92);
+  padding: 5px 16px;
+  border-radius: 999px;
+  animation: boss-label-pop 0.8s ease;
+  box-shadow: 0 6px 18px rgba(120, 10, 30, 0.4);
+}
+@keyframes boss-flash-fade {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  78% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes boss-label-pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
 /* ── Grammar Duel ───────────────────────────────────────────── */
 .duel-hud {
   position: sticky;

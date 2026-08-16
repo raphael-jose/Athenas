@@ -72,6 +72,7 @@ export function CustomizePage() {
                 <div className="row">
                   <div
                     className="lc-emoji"
+                    data-costume={c.id}
                     style={{ width: 52, height: 52, borderRadius: 16, background: "var(--c-accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 0 }}
                   >
                     <Mascot mood="happy" size={46} />
