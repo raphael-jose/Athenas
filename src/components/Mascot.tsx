@@ -248,15 +248,9 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       {/* Máscaras/capacetes dos heróis (roupinhas Vingadores) — cada grupo
           aparece só com o traje certo (ver .mc-hero no CSS). */}
       <g className="mc-hero">
-        {/* Homem-Aranha: touca com teias, máscara vermelha, olhos brancos e aranha */}
+        {/* Homem-Aranha: máscara completa cobrindo a cara toda, com teias
+            e olhos brancos grandes — igual ao desenho/filme */}
         <g className="mc-spidey">
-          <g stroke="#1a1a2e" strokeWidth={1.4} opacity={0.55} fill="none" strokeLinecap="round">
-            <path d="M70 20 Q60 27 46 27" />
-            <path d="M70 20 Q80 27 94 27" />
-            <path d="M70 20 L70 33" />
-            <path d="M70 20 Q57 33 47 34" />
-            <path d="M70 20 Q83 33 93 34" />
-          </g>
           {/* aranha no topo da cabeça */}
           <g transform="translate(70 24)">
             <circle r={2.6} fill="#1a1a2e" />
@@ -264,35 +258,64 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
               <line key={a} x1={0} y1={0} x2={0} y2={-3.8} stroke="#1a1a2e" strokeWidth={1.2} transform={`rotate(${a})`} />
             ))}
           </g>
-          {/* máscara vermelha (testa e olhos; sorriso fica de fora) */}
-          <path d="M26 44 Q70 33 114 44 Q118 56 113 66 Q110 78 100 81 Q70 87 40 81 Q30 78 27 66 Q22 56 26 44 Z" fill="#e23a2e" stroke="#1a1a2e" strokeWidth={3} strokeLinejoin="round" />
-          {/* teias da máscara */}
-          <g stroke="#1a1a2e" strokeWidth={1.3} opacity={0.5} fill="none" strokeLinecap="round">
-            <path d="M70 62 Q46 55 32 59" />
-            <path d="M70 62 Q94 55 108 59" />
-            <path d="M70 62 Q47 73 36 74" />
-            <path d="M70 62 Q93 73 104 74" />
-            <path d="M70 62 L70 79" />
+          {/* máscara inteira (do topo da cabeça ao queixo) */}
+          <path d="M24 40 Q70 26 116 40 Q120 62 118 80 Q116 100 100 108 Q70 118 40 108 Q24 100 22 80 Q20 62 24 40 Z" fill="#e23a2e" stroke="#1a1a2e" strokeWidth={3} strokeLinejoin="round" />
+          {/* brilho suave no topo */}
+          <path d="M34 44 Q70 33 106 44 Q70 40 34 44 Z" fill="#ffffff" opacity={0.12} />
+          {/* teias: linhas radiais do centro até a borda */}
+          <g stroke="#1a1a2e" strokeWidth={1.3} opacity={0.55} fill="none" strokeLinecap="round">
+            <path d="M70 60 L70 32" />
+            <path d="M70 60 L96 38" />
+            <path d="M70 60 L114 62" />
+            <path d="M70 60 L96 86" />
+            <path d="M70 60 L70 112" />
+            <path d="M70 60 L44 86" />
+            <path d="M70 60 L26 62" />
+            <path d="M70 60 L44 38" />
+            {/* arcos do anel interno */}
+            <path d="M70 40 Q77 42 84 46" />
+            <path d="M84 46 Q88 53 90 60" />
+            <path d="M90 60 Q88 67 84 74" />
+            <path d="M84 74 Q77 78 70 80" />
+            <path d="M70 80 Q63 78 56 74" />
+            <path d="M56 74 Q52 67 50 60" />
+            <path d="M50 60 Q52 53 56 46" />
+            <path d="M56 46 Q63 42 70 40" />
+            {/* arcos do anel externo */}
+            <path d="M70 33 Q79 36 89 41" />
+            <path d="M89 41 Q94 50 97 60" />
+            <path d="M97 60 Q94 70 89 79" />
+            <path d="M89 79 Q80 84 70 87" />
+            <path d="M70 87 Q60 84 51 79" />
+            <path d="M51 79 Q46 70 43 60" />
+            <path d="M43 60 Q46 50 51 41" />
+            <path d="M51 41 Q60 36 70 33" />
           </g>
-          {/* olhos de aranha */}
+          {/* olhos de aranha grandes e certinhos */}
           <g fill="#ffffff" stroke="#1a1a2e" strokeWidth={3}>
-            <path d="M41 63 Q55 53 69 63 Q55 73 41 63 Z" />
-            <path d="M71 63 Q85 53 99 63 Q85 73 71 63 Z" />
+            <path d="M34 62 Q55 48 76 62 Q55 74 34 62 Z" />
+            <path d="M64 62 Q85 48 106 62 Q85 74 64 62 Z" />
           </g>
         </g>
-        {/* Homem de Ferro: capacete vermelho, placa dourada, visor azul e reator */}
+        {/* Homem de Ferro: máscara completa vermelha e dourada, igual
+            aos desenhos/filmes, com olhos azuis e reator no peito */}
         <g className="mc-ironman">
-          <path d="M24 40 Q70 16 116 40 Q120 54 116 66 Q112 80 100 84 Q70 92 40 84 Q28 80 24 66 Q20 54 24 40 Z" fill="#d6483b" stroke="#7a1f16" strokeWidth={2.6} strokeLinejoin="round" />
+          {/* capacete vermelho cobrindo a cara toda */}
+          <path d="M24 40 Q70 16 116 40 Q120 62 118 80 Q116 100 100 108 Q70 118 40 108 Q24 100 22 80 Q20 62 24 40 Z" fill="#d6483b" stroke="#7a1f16" strokeWidth={2.6} strokeLinejoin="round" />
           {/* aletas douradas (as antenas viram o capacete) */}
           <path d="M22 42 L8 32 L12 50 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={1.8} strokeLinejoin="round" />
           <path d="M118 42 L132 32 L128 50 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={1.8} strokeLinejoin="round" />
           {/* placa facial dourada */}
-          <path d="M42 50 Q70 45 98 50 L100 72 Q70 83 40 72 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={2.2} strokeLinejoin="round" />
-          {/* visor azul brilhante */}
-          <path d="M45 61 Q70 56 95 61 L95 68 Q70 63 45 68 Z" fill="#4dd0ff" stroke="#155a8a" strokeWidth={1.8} />
-          <path d="M47 62.5 Q70 58 93 62.5 L93 64.5 Q70 60 47 64.5 Z" fill="#dff6ff" />
+          <path d="M42 50 Q70 43 98 50 Q102 72 100 92 Q98 106 70 108 Q42 106 40 92 Q38 72 42 50 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={2.2} strokeLinejoin="round" />
+          {/* sombra nas laterais da placa (profundidade) */}
+          <path d="M42 50 Q70 43 98 50 Q102 60 100 68 Q70 60 40 68 Q38 60 42 50 Z" fill="#c47f22" opacity={0.5} />
+          {/* olhos azuis brilhantes (formato do filme, inclinados pro centro) */}
+          <path d="M40 60 L68 64 L68 69 L40 65 Z" fill="#4dd0ff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
+          <path d="M100 60 L72 64 L72 69 L100 65 Z" fill="#4dd0ff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
+          <path d="M44 61 L66 64.2 L66 65.6 L44 62.6 Z" fill="#dff6ff" />
+          <path d="M96 61 L74 64.2 L74 65.6 L96 62.6 Z" fill="#dff6ff" />
           {/* boca do capacete */}
-          <path d="M56 76 Q70 80 84 76" stroke="#7a1f16" strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <path d="M56 88 Q70 92 84 88" stroke="#7a1f16" strokeWidth={2.4} fill="none" strokeLinecap="round" />
           {/* reator no peito */}
           <g>
             <circle cx={70} cy={117} r={8} fill="#e8a13a" stroke="#9c6a14" strokeWidth={2} />
