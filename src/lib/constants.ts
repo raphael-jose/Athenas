@@ -134,7 +134,7 @@ export const COSTUMES: CostumeDef[] = [
   { id: "chocolat", name: "Chocolat Fondant", icon: "cake", price: 130, desc: "Tons quentinhos de chocolate francês." },
   { id: "emeraude", name: "Émeraude Parisienne", icon: "sparkle", price: 160, desc: "Verde esmeralda elegante, estilo museu." },
   { id: "spidey", name: "Teia do Aranha", icon: "maskHappy", price: 170, desc: "Máscara do Homem-Aranha: vermelha com teias e olhos de aranha." },
-  { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Capacete do Homem de Ferro com visor azul brilhante." },
+  { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Capacete vermelho e dourado com olhos brancos brilhantes." },
   { id: "captain", name: "Escudo Estrela", icon: "shield", price: 180, desc: "Capacete do Capitão América com estrela e asinhas." },
   { id: "thor", name: "Mjolnir", icon: "lightning", price: 200, desc: "Capacete de Asgard com asas e o martelo Mjolnir." },
   { id: "hulk", name: "Fúria Gamma", icon: "pawPrint", price: 190, desc: "A Lulu fica verde que nem o Hulk — e a echarpe roxa." },

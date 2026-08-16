@@ -251,13 +251,6 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
         {/* Homem-Aranha: máscara completa cobrindo a cara toda, com teias
             e olhos brancos grandes — igual ao desenho/filme */}
         <g className="mc-spidey">
-          {/* aranha no topo da cabeça */}
-          <g transform="translate(70 24)">
-            <circle r={2.6} fill="#1a1a2e" />
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
-              <line key={a} x1={0} y1={0} x2={0} y2={-3.8} stroke="#1a1a2e" strokeWidth={1.2} transform={`rotate(${a})`} />
-            ))}
-          </g>
           {/* máscara inteira (do topo da cabeça ao queixo) */}
           <path d="M24 40 Q70 26 116 40 Q120 62 118 80 Q116 100 100 108 Q70 118 40 108 Q24 100 22 80 Q20 62 24 40 Z" fill="#e23a2e" stroke="#1a1a2e" strokeWidth={3} strokeLinejoin="round" />
           {/* brilho suave no topo */}
@@ -296,6 +289,13 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
             <path d="M34 62 Q55 48 76 62 Q55 74 34 62 Z" />
             <path d="M64 62 Q85 48 106 62 Q85 74 64 62 Z" />
           </g>
+          {/* aranha no peito (como na referência) */}
+          <g transform="translate(70 117)">
+            <circle r={2.2} fill="#1a1a2e" />
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+              <line key={a} x1={0} y1={0} x2={0} y2={-3.2} stroke="#1a1a2e" strokeWidth={1} transform={`rotate(${a})`} />
+            ))}
+          </g>
         </g>
         {/* Homem de Ferro: máscara completa vermelha e dourada, igual
             aos desenhos/filmes, com olhos azuis e reator no peito */}
@@ -309,11 +309,11 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
           <path d="M42 50 Q70 43 98 50 Q102 72 100 92 Q98 106 70 108 Q42 106 40 92 Q38 72 42 50 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={2.2} strokeLinejoin="round" />
           {/* sombra nas laterais da placa (profundidade) */}
           <path d="M42 50 Q70 43 98 50 Q102 60 100 68 Q70 60 40 68 Q38 60 42 50 Z" fill="#c47f22" opacity={0.5} />
-          {/* olhos azuis brilhantes (formato do filme, inclinados pro centro) */}
-          <path d="M40 60 L68 64 L68 69 L40 65 Z" fill="#4dd0ff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
-          <path d="M100 60 L72 64 L72 69 L100 65 Z" fill="#4dd0ff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
-          <path d="M44 61 L66 64.2 L66 65.6 L44 62.6 Z" fill="#dff6ff" />
-          <path d="M96 61 L74 64.2 L74 65.6 L96 62.6 Z" fill="#dff6ff" />
+          {/* olhos brancos brilhantes (como na referência) com leve halo ciano */}
+          <path d="M39 59 L69 63 L69 70 L39 66 Z" fill="#4dd0ff" opacity={0.25} />
+          <path d="M101 59 L71 63 L71 70 L101 66 Z" fill="#4dd0ff" opacity={0.25} />
+          <path d="M40 60 L68 64 L68 69 L40 65 Z" fill="#ffffff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
+          <path d="M100 60 L72 64 L72 69 L100 65 Z" fill="#ffffff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
           {/* boca do capacete */}
           <path d="M56 88 Q70 92 84 88" stroke="#7a1f16" strokeWidth={2.4} fill="none" strokeLinecap="round" />
           {/* reator no peito */}

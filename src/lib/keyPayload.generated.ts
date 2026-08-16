@@ -2,14 +2,14 @@
 // GERADO AUTOMATICAMENTE por scripts/encode-key.mjs — NÃO edite.
 // Contém a chave da IA APENAS na forma codificada (XOR + base64),
 // com semente rotativa por build e checksum de integridade.
-// Build id: msw6e27k
+// Build id: msw6wd0o
 // ══════════════════════════════════════════════════════════════
 export const KEY_FRAGMENTS = [
-  "Ol0dMFVcP3UwSVoHLgN",
-  "eeBlKMDR3NQtJeAdgFQ",
-  "oLQX4lH1gMWkkPK0kfc",
-  "HJzIQdbZQZlRgNaQ3pw"
+  "GjIgKipbO1gjaFpaHyJ",
+  "VUV9eGz93B1pIWGhdD3",
+  "UMRVM2PlhRa2gEAg8LW",
+  "3lzE1ZaRWlYXHxdR1dj"
 ];
-export const XOR_SEED = "V5Tq2mpLFyl4cpmJpyFFGGf9";
+export const XOR_SEED = "vZikMjtaUXliRQfc6mmMGu78";
 export const KEY_CHECKSUM = "6e3fd9017657c0d2";
-export const KEY_BUILD_ID = "msw6e27k";
+export const KEY_BUILD_ID = "msw6wd0o";
