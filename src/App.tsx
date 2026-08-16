@@ -31,7 +31,6 @@ import { CustomizePage } from "@/features/profile/Customize";
 import { FeedbackPage } from "@/features/profile/Feedback";
 import { AboutPage } from "@/features/profile/About";
 import { MentorPage } from "@/features/mentor/Mentor";
-import { warmUpNaturalVoice } from "@/hooks/useSpeech";
 import { lessonById, worldById } from "@/data/worlds";
 import { playBossMusic, playWorldMusic, setMusicEnabled, stopMusic } from "@/lib/music";
 
@@ -91,24 +90,10 @@ function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Aquece a voz natural SEM travar a tela: o carregamento do modelo
-  // (WASM) roda na thread principal e pode congelar o app por alguns
-  // segundos. Por isso só aquecemos quando o usuário fica 30s sem
-  // tocar na tela — nunca no meio de uma digitação ou exercício.
-  useEffect(() => {
-    let t: number;
-    const schedule = () => {
-      window.clearTimeout(t);
-      t = window.setTimeout(() => warmUpNaturalVoice(0), 30000);
-    };
-    schedule();
-    const events: (keyof WindowEventMap)[] = ["pointerdown", "keydown", "touchstart", "scroll"];
-    events.forEach((e) => window.addEventListener(e, schedule, { passive: true }));
-    return () => {
-      window.clearTimeout(t);
-      events.forEach((e) => window.removeEventListener(e, schedule));
-    };
-  }, []);
+  // A voz natural é aquecida junto com o PRIMEIRO áudio tocado (tap no
+  // alto-falante) — ver kickOffNaturalWarmup em useSpeech. Sem aquecimento
+  // automático em segundo plano: nada carrega enquanto o usuário digita
+  // ou estuda (nada de congelar a tela).
 
   if (!state.onboarded) {
     return (
