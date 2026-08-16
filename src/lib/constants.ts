@@ -133,12 +133,12 @@ export const COSTUMES: CostumeDef[] = [
   { id: "bleuet", name: "Bleuet Étoilé", icon: "drop", price: 110, desc: "Azul céu com estrelinhas — perfeita pra sonhar." },
   { id: "chocolat", name: "Chocolat Fondant", icon: "cake", price: 130, desc: "Tons quentinhos de chocolate francês." },
   { id: "emeraude", name: "Émeraude Parisienne", icon: "sparkle", price: 160, desc: "Verde esmeralda elegante, estilo museu." },
-  { id: "spidey", name: "Teia do Aranha", icon: "maskHappy", price: 170, desc: "Máscara do Homem-Aranha: vermelha com teias e olhos de aranha." },
-  { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Capacete vermelho e dourado com olhos brancos brilhantes." },
-  { id: "captain", name: "Escudo Estrela", icon: "shield", price: 180, desc: "Capacete do Capitão América com estrela e asinhas." },
-  { id: "thor", name: "Mjolnir", icon: "lightning", price: 200, desc: "Capacete de Asgard com asas e o martelo Mjolnir." },
-  { id: "hulk", name: "Fúria Gamma", icon: "pawPrint", price: 190, desc: "A Lulu fica verde que nem o Hulk — e a echarpe roxa." },
-  { id: "widow", name: "Ampulheta", icon: "hourglass", price: 210, desc: "Visual da Viúva Negra: preto com o símbolo da ampulheta." }
+  { id: "spidey", name: "Teia do Aranha", icon: "maskHappy", price: 170, desc: "Cosplay do Aranha: máscara vermelha com teias e olhos grandes — de boina!" },
+  { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Cosplay do Homem de Ferro: capacete com olhos brilhantes e a boina por cima." },
+  { id: "captain", name: "Escudo Estrela", icon: "shield", price: 180, desc: "Cosplay do Capitão: faixa azul com 'A', asinhas e estrela — de boina!" },
+  { id: "thor", name: "Mjolnir", icon: "lightning", price: 200, desc: "Cosplay do Thor: faixa prateada com asas e o martelo Mjolnir pendurado." },
+  { id: "hulk", name: "Fúria Gamma", icon: "pawPrint", price: 190, desc: "Cosplay do Hulk: a Lulu fica verde com raio gamma na bochecha e cabelo espetado." },
+  { id: "widow", name: "Ampulheta", icon: "hourglass", price: 210, desc: "Cosplay da Viúva: cabelo ruivo, faixa preta na testa e ampulheta de broche." }
 ];
 
 // ── Molduras do avatar (loja) ─────────────────────────────────

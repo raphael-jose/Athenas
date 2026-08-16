@@ -1519,46 +1519,30 @@ input, textarea, select {
 .mc-costume-chocolat .mc-choco,
 .mc-costume-emeraude .mc-gem {
   opacity: 1;
-}/* Máscaras SVG desenhadas à mão: ficam ocultas (os heróis agora usam o
-   sticker PNG de public/heroes). */
+}
+
+/* Cosplay dos heróis (roupinhas Vingadores): desenhos ORIGINAIS em SVG
+   inspirados nos personagens, com a Lulu de boina + anteninhas + rostinho
+   à mostra (cosplay, não troca de cara). Cada traje mostra só a sua máscara. */
 .mc-hero > g {
   opacity: 0;
   transition: opacity 0.25s ease;
 }
+.mc-costume-spidey .mc-spidey,
+.mc-costume-captain .mc-captain,
+.mc-costume-thor .mc-thor,
+.mc-costume-hulk .mc-hulk,
+.mc-costume-widow .mc-widow {
+  opacity: 1;
+}
 
-/* Roupinhas de herói: a Lulu veste a cabeça chibi (sticker PNG de
-   public/heroes) e esconde a carinha, a boina, as anteninhas e as
-   máscaras SVG desenhadas à mão. */
-.mc-costume-spidey .mc-beret,
-.mc-costume-spidey .mc-face-base,
-.mc-costume-spidey .mc-cheeks,
-.mc-costume-spidey .mc-antennas,
-.mc-costume-spidey .mc-hero,
-.mc-costume-ironman .mc-beret,
+/* Homem de Ferro: usa o PNG aprovado por baixo da boina e das anteninhas.
+   Esconde só a carinha desenhada (o PNG tem o próprio rostinho do capacete)
+   — a boina e as antenas continuam POR CIMA, no cosplay. */
+.mc-costume-ironman .mc-skin,
 .mc-costume-ironman .mc-face-base,
 .mc-costume-ironman .mc-cheeks,
-.mc-costume-ironman .mc-antennas,
-.mc-costume-ironman .mc-hero,
-.mc-costume-captain .mc-beret,
-.mc-costume-captain .mc-face-base,
-.mc-costume-captain .mc-cheeks,
-.mc-costume-captain .mc-antennas,
-.mc-costume-captain .mc-hero,
-.mc-costume-thor .mc-beret,
-.mc-costume-thor .mc-face-base,
-.mc-costume-thor .mc-cheeks,
-.mc-costume-thor .mc-antennas,
-.mc-costume-thor .mc-hero,
-.mc-costume-hulk .mc-beret,
-.mc-costume-hulk .mc-face-base,
-.mc-costume-hulk .mc-cheeks,
-.mc-costume-hulk .mc-antennas,
-.mc-costume-hulk .mc-hero,
-.mc-costume-widow .mc-beret,
-.mc-costume-widow .mc-face-base,
-.mc-costume-widow .mc-cheeks,
-.mc-costume-widow .mc-antennas,
-.mc-costume-widow .mc-hero {
+.mc-costume-ironman .mc-hero {
   opacity: 0;
 }
 
