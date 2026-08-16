@@ -248,69 +248,103 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       {/* Máscaras/capacetes dos heróis (roupinhas Vingadores) — cada grupo
           aparece só com o traje certo (ver .mc-hero no CSS). */}
       <g className="mc-hero">
-        {/* Homem-Aranha: teias na cabeça + máscara vermelha com olhos brancos */}
+        {/* Homem-Aranha: touca com teias, máscara vermelha, olhos brancos e aranha */}
         <g className="mc-spidey">
-          <g stroke="#1a1a2e" strokeWidth={1.6} opacity={0.5} fill="none" strokeLinecap="round">
-            <path d="M70 20 Q60 26 46 26" />
-            <path d="M70 20 Q80 26 94 26" />
-            <path d="M70 20 L70 32" />
-            <path d="M70 20 Q56 32 46 33" />
-            <path d="M70 20 Q84 32 94 33" />
+          <g stroke="#1a1a2e" strokeWidth={1.4} opacity={0.55} fill="none" strokeLinecap="round">
+            <path d="M70 20 Q60 27 46 27" />
+            <path d="M70 20 Q80 27 94 27" />
+            <path d="M70 20 L70 33" />
+            <path d="M70 20 Q57 33 47 34" />
+            <path d="M70 20 Q83 33 93 34" />
           </g>
-          <path d="M26 56 Q70 44 114 56 Q118 66 112 76 Q70 87 28 76 Q22 66 26 56 Z" fill="#e23a2e" />
-          <g stroke="#1a1a2e" strokeWidth={1.6} opacity={0.55} fill="none" strokeLinecap="round">
-            <path d="M70 63 Q44 56 30 60" />
-            <path d="M70 63 Q96 56 110 60" />
-            <path d="M70 63 Q44 74 33 72" />
-            <path d="M70 63 Q96 74 107 72" />
-            <path d="M70 63 L70 77" />
+          {/* aranha no topo da cabeça */}
+          <g transform="translate(70 24)">
+            <circle r={2.6} fill="#1a1a2e" />
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+              <line key={a} x1={0} y1={0} x2={0} y2={-3.8} stroke="#1a1a2e" strokeWidth={1.2} transform={`rotate(${a})`} />
+            ))}
           </g>
-          <g fill="#ffffff" stroke="#1a1a2e" strokeWidth={2.4}>
-            <path d="M42 66 Q55 57 68 66 Q55 75 42 66 Z" />
-            <path d="M72 66 Q85 57 98 66 Q85 75 72 66 Z" />
+          {/* máscara vermelha (testa e olhos; sorriso fica de fora) */}
+          <path d="M26 44 Q70 33 114 44 Q118 56 113 66 Q110 78 100 81 Q70 87 40 81 Q30 78 27 66 Q22 56 26 44 Z" fill="#e23a2e" stroke="#1a1a2e" strokeWidth={3} strokeLinejoin="round" />
+          {/* teias da máscara */}
+          <g stroke="#1a1a2e" strokeWidth={1.3} opacity={0.5} fill="none" strokeLinecap="round">
+            <path d="M70 62 Q46 55 32 59" />
+            <path d="M70 62 Q94 55 108 59" />
+            <path d="M70 62 Q47 73 36 74" />
+            <path d="M70 62 Q93 73 104 74" />
+            <path d="M70 62 L70 79" />
+          </g>
+          {/* olhos de aranha */}
+          <g fill="#ffffff" stroke="#1a1a2e" strokeWidth={3}>
+            <path d="M41 63 Q55 53 69 63 Q55 73 41 63 Z" />
+            <path d="M71 63 Q85 53 99 63 Q85 73 71 63 Z" />
           </g>
         </g>
-        {/* Homem de Ferro: placa facial dourada com visor azul e reator no peito */}
+        {/* Homem de Ferro: capacete vermelho, placa dourada, visor azul e reator */}
         <g className="mc-ironman">
-          <path d="M28 54 Q70 44 112 54 L114 96 Q70 106 26 96 Z" fill="#e8a13a" />
-          <path d="M28 54 Q70 44 112 54 L112 60 Q70 50 28 60 Z" fill="#c47f22" />
-          <path d="M30 64 L110 64 L110 70 Q70 62 30 70 Z" fill="#d6483b" />
-          <path d="M42 66 Q70 61 98 66 L98 72 Q70 67 42 72 Z" fill="#4dd0ff" />
-          <path d="M42 67.5 Q70 62.5 98 67.5 L98 69.5 Q70 64.5 42 69.5 Z" fill="#dff6ff" />
-          <path d="M56 84 Q70 88 84 84" stroke="#7a5412" strokeWidth={3} fill="none" strokeLinecap="round" />
+          <path d="M24 40 Q70 16 116 40 Q120 54 116 66 Q112 80 100 84 Q70 92 40 84 Q28 80 24 66 Q20 54 24 40 Z" fill="#d6483b" stroke="#7a1f16" strokeWidth={2.6} strokeLinejoin="round" />
+          {/* aletas douradas (as antenas viram o capacete) */}
+          <path d="M22 42 L8 32 L12 50 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={1.8} strokeLinejoin="round" />
+          <path d="M118 42 L132 32 L128 50 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={1.8} strokeLinejoin="round" />
+          {/* placa facial dourada */}
+          <path d="M42 50 Q70 45 98 50 L100 72 Q70 83 40 72 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={2.2} strokeLinejoin="round" />
+          {/* visor azul brilhante */}
+          <path d="M45 61 Q70 56 95 61 L95 68 Q70 63 45 68 Z" fill="#4dd0ff" stroke="#155a8a" strokeWidth={1.8} />
+          <path d="M47 62.5 Q70 58 93 62.5 L93 64.5 Q70 60 47 64.5 Z" fill="#dff6ff" />
+          {/* boca do capacete */}
+          <path d="M56 76 Q70 80 84 76" stroke="#7a1f16" strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          {/* reator no peito */}
           <g>
-            <circle cx={70} cy={117} r={7} fill="#e8a13a" stroke="#c47f22" strokeWidth={2} />
-            <circle cx={70} cy={117} r={4} fill="#4dd0ff" />
-            <circle cx={70} cy={117} r={1.8} fill="#ffffff" />
+            <circle cx={70} cy={117} r={8} fill="#e8a13a" stroke="#9c6a14" strokeWidth={2} />
+            <circle cx={70} cy={117} r={4.6} fill="#4dd0ff" />
+            <circle cx={70} cy={117} r={2} fill="#ffffff" />
           </g>
         </g>
-        {/* Capitão América: asinhas brancas e estrela no capacete */}
+        {/* Capitão América: capacete azul com A, asinhas brancas */}
         <g className="mc-captain">
-          <path d="M50 62 Q16 46 8 40 Q16 50 20 58 Q26 62 46 64 Z" fill="#ffffff" />
-          <path d="M90 62 Q124 46 132 40 Q124 50 120 58 Q114 62 94 64 Z" fill="#ffffff" />
-          <path d="M0 -7 L1.6 -2.2 L6.7 -2.2 L2.5 0.8 L4.1 5.7 L0 2.7 L-4.1 5.7 L-2.5 0.8 L-6.7 -2.2 L-1.6 -2.2 Z" fill="#ffffff" transform="translate(70 30)" />
+          <path d="M24 40 Q70 16 116 40 Q120 52 116 64 Q70 56 24 64 Q20 52 24 40 Z" fill="#3d6fd8" stroke="#1f3f8a" strokeWidth={2.4} strokeLinejoin="round" />
+          {/* letra A branca na testa */}
+          <g stroke="#ffffff" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <path d="M62 52 L70 34 L78 52" />
+            <path d="M65.6 45 L74.4 45" />
+          </g>
+          {/* asinhas */}
+          <path d="M52 50 Q28 38 16 32 Q24 42 26 50 Q32 57 50 57 Z" fill="#ffffff" stroke="#1f3f8a" strokeWidth={2} strokeLinejoin="round" />
+          <path d="M88 50 Q112 38 124 32 Q116 42 114 50 Q108 57 90 57 Z" fill="#ffffff" stroke="#1f3f8a" strokeWidth={2} strokeLinejoin="round" />
         </g>
-        {/* Thor: capacete alado prateado + Mjolnir pendurado */}
+        {/* Thor: capacete prateado com asas e Mjolnir pendurado */}
         <g className="mc-thor">
-          <path d="M50 60 Q16 46 10 40 Q18 50 22 58 Q28 62 46 64 Z" fill="#e8e8f0" />
-          <path d="M90 60 Q124 46 130 40 Q122 50 118 58 Q112 62 94 64 Z" fill="#e8e8f0" />
-          <circle cx={70} cy={25} r={4} fill="#c9cdd8" />
-          <g transform="translate(103 115)">
-            <rect x={-2.5} y={-7} width={5} height={9} rx={1.5} fill="#7a5b2e" />
-            <rect x={-7} y={-13} width={14} height={8} rx={2} fill="#9aa1b0" />
+          <path d="M24 40 Q70 16 116 40 Q120 52 116 64 Q70 56 24 64 Q20 52 24 40 Z" fill="#c9cdd8" stroke="#5f6775" strokeWidth={2.4} strokeLinejoin="round" />
+          {/* rebites */}
+          <circle cx={44} cy={46} r={1.9} fill="#8b93a3" />
+          <circle cx={96} cy={46} r={1.9} fill="#8b93a3" />
+          <circle cx={70} cy={40} r={2.3} fill="#8b93a3" />
+          {/* asas */}
+          <path d="M52 50 Q28 38 16 32 Q24 42 26 50 Q32 57 50 57 Z" fill="#e8e8f0" stroke="#5f6775" strokeWidth={2} strokeLinejoin="round" />
+          <path d="M88 50 Q112 38 124 32 Q116 42 114 50 Q108 57 90 57 Z" fill="#e8e8f0" stroke="#5f6775" strokeWidth={2} strokeLinejoin="round" />
+          {/* Mjolnir pendurado */}
+          <g transform="translate(104 119)">
+            <rect x={-3} y={-11} width={6} height={11} rx={2} fill="#8b5a2b" stroke="#5d3a1a" strokeWidth={1.4} />
+            <rect x={-8.5} y={-17.5} width={17} height={8.5} rx={2.5} fill="#9aa1b0" stroke="#5f6775" strokeWidth={1.4} />
+            <path d="M-8.5 -12.2 h17 l-1.5 2.2 h-14 z" fill="#6b7280" />
           </g>
         </g>
-        {/* Hulk: relâmpago gamma na boina */}
+        {/* Hulk: cabelo verde espetado + raio gamma na bochecha */}
         <g className="mc-hulk">
-          <path d="M70 17 l-5 9 h4.5 l-3.5 8.5 l9 -12 h-4.5 l4.5 -5.5 z" fill="#ffe28a" />
+          <path d="M46 30 Q52 10 64 18 Q70 8 80 16 Q88 10 94 22 Q100 26 97 34 Q70 24 45 34 Q42 32 46 30 Z" fill="#2e8a46" stroke="#1f5c30" strokeWidth={2.2} strokeLinejoin="round" />
+          <path d="M38 78 l-3.6 6.2 h3 l-2.3 5.6 l6 -7.6 h-3.2 l3.2 -4.2 z" fill="#ffe28a" />
         </g>
-        {/* Viúva Negra: faixa preta + ampulheta vermelha no peito */}
+        {/* Viúva Negra: cabelo vermelho, faixa preta e ampulheta no peito */}
         <g className="mc-widow">
-          <path d="M28 50 Q70 42 112 50 L114 58 Q70 50 26 58 Z" fill="#2b2b3a" />
-          <path d="M26 53 Q70 45 114 53 Q70 61 26 53 Z" fill="#1a1a26" opacity={0.5} />
+          <path d="M38 32 Q70 20 102 32 Q106 38 103 46 Q100 53 92 55 Q70 47 48 55 Q40 53 37 46 Q34 38 38 32 Z" fill="#a52a2a" stroke="#7a1f1f" strokeWidth={2.2} strokeLinejoin="round" />
+          <path d="M36 44 Q26 50 23 60 Q29 52 40 50 Z" fill="#a52a2a" stroke="#7a1f1f" strokeWidth={1.6} strokeLinejoin="round" />
+          <path d="M104 44 Q114 50 117 60 Q111 52 100 50 Z" fill="#a52a2a" stroke="#7a1f1f" strokeWidth={1.6} strokeLinejoin="round" />
+          {/* faixa preta */}
+          <path d="M30 50 Q70 42 110 50 L112 58 Q70 50 28 58 Z" fill="#2b2b3a" stroke="#14141f" strokeWidth={1.8} strokeLinejoin="round" />
+          {/* ampulheta */}
           <g transform="translate(70 117)">
-            <path d="M-5 -6 L5 -6 L0 0 Z" fill="#d33f3f" />
-            <path d="M-5 6 L5 6 L0 0 Z" fill="#d33f3f" />
+            <path d="M-5 -6.5 L5 -6.5 L0 0 Z" fill="#d33f3f" stroke="#8f1f1f" strokeWidth={1.2} strokeLinejoin="round" />
+            <path d="M-5 6.5 L5 6.5 L0 0 Z" fill="#d33f3f" stroke="#8f1f1f" strokeWidth={1.2} strokeLinejoin="round" />
           </g>
         </g>
       </g>

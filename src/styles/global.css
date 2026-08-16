@@ -1461,7 +1461,7 @@ input, textarea, select {
 [data-costume="spidey"] {
   --c-beret: #d63a2e;
   --c-beret-dark: #a92b22;
-  --c-beret-dot: #3d7ae0;
+  --c-beret-dot: #d63a2e;
   --c-scarf: #e23a2e;
   --c-scarf-dark: #b02c23;
 }
@@ -1480,8 +1480,8 @@ input, textarea, select {
   --c-scarf-dark: #a9352b;
 }
 [data-costume="thor"] {
-  --c-beret: #9aa1b0;
-  --c-beret-dark: #7a8294;
+  --c-beret: #c9cdd8;
+  --c-beret-dark: #9aa1b0;
   --c-beret-dot: #5a8ff0;
   --c-scarf: #5a8ff0;
   --c-scarf-dark: #3567c9;
@@ -1496,8 +1496,8 @@ input, textarea, select {
   --c-skin-dark: #7cc584;
 }
 [data-costume="widow"] {
-  --c-beret: #2b2b3a;
-  --c-beret-dark: #1a1a26;
+  --c-beret: #8f2323;
+  --c-beret-dark: #7a1f1f;
   --c-beret-dot: #d33f3f;
   --c-scarf: #3a3a4a;
   --c-scarf-dark: #1a1a26;
@@ -1532,9 +1532,8 @@ input, textarea, select {
 .mc-costume-widow .mc-widow {
   opacity: 1;
 }
-/* Heróis de máscara cobrem o rostinho padrão (olhos/bochechas) */
-.mc-costume-spidey .mc-face-base,
-.mc-costume-spidey .mc-cheeks,
+/* O capacete do Homem de Ferro cobre o rostinho todo; os outros heróis
+   deixam a carinha de fora (o sorriso do Aranha fica abaixo da máscara). */
 .mc-costume-ironman .mc-face-base,
 .mc-costume-ironman .mc-cheeks {
   opacity: 0;

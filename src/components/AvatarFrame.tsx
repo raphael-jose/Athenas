@@ -86,79 +86,92 @@ const ACCENTS: Record<string, ReactNode> = {
     </g>
   ),
   spidey: (
-    <g stroke="#ffffff" strokeWidth={1.8} strokeLinecap="round" opacity={0.9}>
-      {RING_POINTS.map(([x, y], i) => (
-        <g key={i} transform={`translate(${x} ${y})`}>
-          <line x1={-4} y1={0} x2={4} y2={0} />
-          <line x1={0} y1={-4} x2={0} y2={4} />
-          <line x1={-2.8} y1={-2.8} x2={2.8} y2={2.8} />
-          <line x1={2.8} y1={-2.8} x2={-2.8} y2={2.8} />
-        </g>
-      ))}
+    <g>
+      {/* teia entre os pontos do anel */}
+      <g stroke="#ffffff" strokeWidth={1.5} fill="none" opacity={0.85} strokeLinecap="round">
+        {RING_POINTS.map(([x, y], i) => {
+          const [nx, ny] = RING_POINTS[(i + 1) % RING_POINTS.length];
+          const mx = (x + nx) / 2;
+          const my = (y + ny) / 2;
+          return <path key={i} d={`M${x} ${y} Q${50 + (mx - 50) * 0.82} ${50 + (my - 50) * 0.82} ${nx} ${ny}`} />;
+        })}
+      </g>
+      {/* aranhinha no topo */}
+      <g transform="translate(50 4)">
+        <circle r={3.2} fill="#ffffff" />
+        {[0, 60, 120, 180, 240, 300].map((a) => (
+          <line key={a} x1={0} y1={0} x2={0} y2={-4.6} stroke="#ffffff" strokeWidth={1.4} transform={`rotate(${a})`} />
+        ))}
+      </g>
     </g>
   ),
   ironman: (
     <g>
-      {RING_POINTS.map(([x, y], i) => (
+      {/* reatores no topo e embaixo */}
+      {[[50, 4], [50, 96]].map(([x, y], i) => (
         <g key={i} transform={`translate(${x} ${y})`}>
-          <circle cx={0} cy={0} r={3.4} fill="#4dd0ff" />
-          <circle cx={0} cy={0} r={1.5} fill="#ffffff" />
+          <circle r={5.5} fill="#e8a13a" stroke="#c47f22" strokeWidth={1.6} />
+          <circle r={3} fill="#4dd0ff" />
+          <circle r={1.2} fill="#ffffff" />
         </g>
+      ))}
+      {/* detalhes dourados nos lados */}
+      {[RING_POINTS[0], RING_POINTS[2], RING_POINTS[3], RING_POINTS[5]].map(([x, y], i) => (
+        <line key={i} x1={x - 3} y1={y} x2={x + 3} y2={y} stroke="#ffffff" strokeWidth={2} strokeLinecap="round" opacity={0.9} />
       ))}
     </g>
   ),
   captain: (
-    <g fill="#ffffff" opacity={0.95}>
-      {[RING_POINTS[0], RING_POINTS[2], RING_POINTS[3], RING_POINTS[5]].map(([x, y], i) => (
+    <g>
+      {/* estrelas no topo e embaixo */}
+      {[[50, 4], [50, 96]].map(([x, y], i) => (
         <path
           key={i}
-          transform={`translate(${x} ${y}) scale(0.62)`}
+          transform={`translate(${x} ${y}) scale(0.8)`}
+          fill="#ffffff"
+          stroke="#d8483f"
+          strokeWidth={1.4}
           d="M0 -7 L1.6 -2.2 L6.7 -2.2 L2.5 0.8 L4.1 5.7 L0 2.7 L-4.1 5.7 L-2.5 0.8 L-6.7 -2.2 L-1.6 -2.2 Z"
         />
+      ))}
+      {[RING_POINTS[0], RING_POINTS[2], RING_POINTS[3], RING_POINTS[5]].map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r={2.4} fill="#ffffff" />
       ))}
     </g>
   ),
   thor: (
-    <g fill="#ffffff" opacity={0.95}>
+    <g fill="#ffe28a" stroke="#b8860b" strokeWidth={1.4}>
       {RING_POINTS.map(([x, y], i) => (
         <path
           key={i}
-          transform={`translate(${x} ${y}) scale(0.55)`}
+          transform={`translate(${x} ${y}) scale(0.6)`}
           d="M2 -8 L-3 1 L0 1 L-2 8 L4 -1 L1 -1 Z"
         />
       ))}
     </g>
   ),
   hulk: (
-    <g>
-      <g fill="#4cae63">
-        {[RING_POINTS[1], RING_POINTS[4]].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r={4.2} />
-        ))}
-      </g>
-      <g fill="#ffffff" opacity={0.9}>
-        {RING_POINTS.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r={2.2} />
-        ))}
-      </g>
+    <g stroke="#8a6fd8" strokeWidth={2.4} strokeLinecap="round" opacity={0.95}>
+      {RING_POINTS.map(([x, y], i) => (
+        <line key={i} x1={x - 3.4} y1={y} x2={x + 3.4} y2={y} />
+      ))}
+      <line x1={RING_POINTS[0][0]} y1={RING_POINTS[0][1]} x2={RING_POINTS[3][0]} y2={RING_POINTS[3][1]} opacity={0.6} />
+      <line x1={RING_POINTS[1][0]} y1={RING_POINTS[1][1]} x2={RING_POINTS[4][0]} y2={RING_POINTS[4][1]} opacity={0.6} />
+      <line x1={RING_POINTS[2][0]} y1={RING_POINTS[2][1]} x2={RING_POINTS[5][0]} y2={RING_POINTS[5][1]} opacity={0.6} />
     </g>
   ),
   widow: (
     <g>
-      <g fill="#d33f3f">
-        {RING_POINTS.map(([x, y], i) => (
-          <path
-            key={i}
-            transform={`translate(${x} ${y}) scale(0.55)`}
-            d="M-5 -6 L5 -6 L0 0 Z M-5 6 L5 6 L0 0 Z"
-          />
-        ))}
-      </g>
-      <g fill="#ffffff" opacity={0.85}>
-        {RING_POINTS.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r={1.6} />
-        ))}
-      </g>
+      {/* ampulhetas no topo e embaixo */}
+      {[[50, 4], [50, 96]].map(([x, y], i) => (
+        <g key={i} transform={`translate(${x} ${y}) scale(0.85)`}>
+          <path d="M-4 -4.5 L4 -4.5 L0 0 Z" fill="#d33f3f" />
+          <path d="M-4 4.5 L4 4.5 L0 0 Z" fill="#d33f3f" />
+        </g>
+      ))}
+      {[RING_POINTS[0], RING_POINTS[2], RING_POINTS[3], RING_POINTS[5]].map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r={2} fill="#ffffff" opacity={0.9} />
+      ))}
     </g>
   )
 };
