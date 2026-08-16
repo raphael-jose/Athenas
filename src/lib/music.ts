@@ -18,6 +18,10 @@ let currentId: string | null = null;
 let enabled = true;
 let nextBar = 0;
 let barIndex = 0;
+// Camadas da música: a trilha FICA MAIS RICA conforme o usuário avança
+// nas aulas do mundo. 0 = só o acorde-pad · 1 = + baixo · 2 = + melodia
+// · 3 = + brilho (clímax). O boss toca sempre na camada cheia.
+let layers = 3;
 
 // Progressões de acordes (tríades em semitons a partir da tônica)
 // I → IV → iii → V (calmo) e i → iv → v → III (emotivo)
@@ -140,7 +144,7 @@ function pluck(f: number, t: number, vol: number, dur = 1.4) {
   o.stop(t + dur + 0.05);
 }
 
-/** Agenda UM compasso (acorde-pad + baixo + melodia curta). */
+/** Agenda UM compasso (acorde-pad + camadas conforme a evolução). */
 function scheduleBar(mood: Mood) {
   if (!ctx) return;
   const now = ctx.currentTime;
@@ -150,15 +154,27 @@ function scheduleBar(mood: Mood) {
   const barDur = mood.bar;
   const root = mood.root;
 
-  // pad do acorde (3 vozes em triângulo, bem macio)
+  const hasBass = layers >= 1;
+  const hasMelody = layers >= 2;
+  const hasSparkle = layers >= 3;
+
+  // camada 0: o acorde-pad (3 vozes em triângulo, bem macio) — sempre presente
   chord.forEach((semi) => pad(freq(root, semi), t, barDur * 1.7, mood.vol));
 
-  // baixo: tônica do acorde uma oitava abaixo
-  bass(freq(root, chord[0]) / 2, t, barDur * 1.6, mood.vol * 1.5);
+  // camada 1: baixo (tônica do acorde uma oitava abaixo)
+  if (hasBass) bass(freq(root, chord[0]) / 2, t, barDur * 1.6, mood.vol * 1.5);
 
-  // melodia: uma nota do acorde, na segunda metade do compasso
-  const melSemi = chord[(barIndex * 2) % chord.length];
-  pluck(freq(root, melSemi) * 2, t + barDur * 0.62, mood.vol * 1.1);
+  // camada 2: melodia curta na segunda metade do compasso
+  if (hasMelody) {
+    const melSemi = chord[(barIndex * 2) % chord.length];
+    pluck(freq(root, melSemi) * 2, t + barDur * 0.62, mood.vol * 1.1);
+  }
+
+  // camada 3: brilho — nota aguda do acorde, bem leve (clímax)
+  if (hasSparkle) {
+    const highSemi = chord[1] + 12;
+    pluck(freq(root, highSemi), t + barDur * 0.35, mood.vol * 0.55, 1.0);
+  }
 
   // boss: pulsação de baixo mais presente + dissonância leve (b9) baixinha
   if (mood.tense) {
@@ -202,15 +218,22 @@ function start(mood: Mood, id: string) {
   loop(mood, id);
 }
 
-/** Toca o humor do mundo (por ordem). */
-export function playWorldMusic(order: number) {
+/**
+ * Toca o humor do mundo (por ordem). `progress` (0..1) controla a
+ * evolução: 0-24% só o pad, 25-49% + baixo, 50-74% + melodia,
+ * 75%+ o arranjo completo com brilho.
+ */
+export function playWorldMusic(order: number, progress = 0) {
   if (!enabled) return;
+  const p = Math.max(0, Math.min(1, progress));
+  layers = p >= 0.75 ? 3 : p >= 0.5 ? 2 : p >= 0.25 ? 1 : 0;
   start(worldMood(order), `world-${order}`);
 }
 
-/** Trilha tensa do boss. */
+/** Trilha tensa do boss — sempre no arranjo completo (clímax). */
 export function playBossMusic() {
   if (!enabled) return;
+  layers = 3;
   start(BOSS_MOOD, "boss");
 }
 

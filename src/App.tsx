@@ -31,7 +31,7 @@ import { CustomizePage } from "@/features/profile/Customize";
 import { FeedbackPage } from "@/features/profile/Feedback";
 import { AboutPage } from "@/features/profile/About";
 import { MentorPage } from "@/features/mentor/Mentor";
-import { lessonById, worldById } from "@/data/worlds";
+import { lessonById, WORLDS, worldById, worldProgress } from "@/data/worlds";
 import { playBossMusic, playWorldMusic, setMusicEnabled, stopMusic } from "@/lib/music";
 
 function Shell() {
@@ -55,8 +55,9 @@ function Shell() {
     document.documentElement.style.colorScheme = state.settings.theme === "nuit" ? "dark" : "light";
   }, [state.settings.theme, state.settings.fontScale, state.settings.costume]);
 
-  // Música de fundo conforme o mapa: cada mundo tem sua trilha, o boss
-  // fica tenso, e as demais telas ficam em silêncio (ou no tema da casa).
+  // Música de fundo conforme o mapa: cada mundo tem sua trilha que
+  // EVOLUI em camadas conforme as aulas concluídas (pad → baixo →
+  // melodia → brilho), o boss fica tenso, e as demais telas em silêncio.
   useEffect(() => {
     setMusicEnabled(state.settings.music);
     if (!state.settings.music || !state.onboarded) {
@@ -68,21 +69,27 @@ function Shell() {
       playBossMusic();
       return;
     }
+    let world: (typeof WORLDS)[number] | undefined;
     if (seg === "world") {
-      playWorldMusic(worldById(parts[1] ?? "")?.order ?? 1);
+      world = worldById(parts[1] ?? "");
+    } else if (seg === "lesson") {
+      world = worldById(lessonById(parts[1] ?? "")?.worldId ?? "");
+    } else {
+      // mapa/home: o mundo atual = o primeiro com aula pendente
+      for (const w of WORLDS) {
+        if (w.lessons.length === 0) continue;
+        if (!state.worldsUnlocked.includes(w.id) && !state.worldsCleared.includes(w.id)) continue;
+        world = w;
+        break;
+      }
+    }
+    if (!world) {
+      stopMusic();
       return;
     }
-    if (seg === "lesson") {
-      const wid = lessonById(parts[1] ?? "")?.worldId;
-      playWorldMusic(worldById(wid ?? "")?.order ?? 1);
-      return;
-    }
-    if (seg === "map" || seg === "") {
-      playWorldMusic(1); // tema da casa
-      return;
-    }
-    stopMusic();
-  }, [path, state.settings.music, state.onboarded]);
+    const p = worldProgress(world, state.lessonsCompleted);
+    playWorldMusic(world.order, p.total > 0 ? p.done / p.total : 0);
+  }, [path, state.settings.music, state.onboarded, state.lessonsCompleted]);
 
   // Streak carinhoso em cada visita
   useEffect(() => {
