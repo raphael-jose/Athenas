@@ -1,6 +1,7 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Sobre mim: o que é o app + contatos
 // ══════════════════════════════════════════════════════════════
+import { useRef } from "react";
 import { useRouter } from "@/lib/router";
 import { APP_TAGLINE, CONTACTS } from "@/lib/constants";
 import { Button, Card, PageHeader } from "@/components/ui";
@@ -9,6 +10,18 @@ import { Mascot } from "@/components/Mascot";
 
 export function AboutPage() {
   const { navigate } = useRouter();
+  // Botão secreto do criador: 7 toques na versão em até 3,5s → /admin
+  const versionTaps = useRef(0);
+  const versionTimer = useRef<number | null>(null);
+  const onVersionTap = () => {
+    versionTaps.current += 1;
+    if (versionTimer.current) window.clearTimeout(versionTimer.current);
+    versionTimer.current = window.setTimeout(() => (versionTaps.current = 0), 3500);
+    if (versionTaps.current >= 7) {
+      versionTaps.current = 0;
+      navigate("/admin");
+    }
+  };
 
   const waMessage = encodeURIComponent("Olá ! Vim pelo app Athenas 🌸");
   const waHref = `https://wa.me/${CONTACTS.whatsapp}?text=${waMessage}`;
@@ -55,6 +68,10 @@ export function AboutPage() {
           <Icon name="chatText" size={16} /> Mandar feedback
         </Button>
       </Card>
+
+      <p className="muted small center mt-4" onClick={onVersionTap} style={{ cursor: "pointer", userSelect: "none" }}>
+        Athenas v2 🌸
+      </p>
     </div>
   );
 }

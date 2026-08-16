@@ -1402,6 +1402,19 @@ input, textarea, select {
   display: inline-block;
 }
 
+/* Área do criador: código de presente */
+.code-chip {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--c-accent-soft);
+  color: var(--c-accent-deep);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  border: 1px dashed var(--c-accent-deep);
+}
+
 /* Feedback: botões de humor + linha de contato */
 .mood-btn {
   display: flex;

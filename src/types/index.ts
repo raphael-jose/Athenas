@@ -274,6 +274,8 @@ export interface StudentState {
   boughtFrames: string[];
   /** Efeitos de confete comprados na Loja. */
   boughtConfettis: string[];
+  /** Códigos de presente já resgatados neste aparelho (evita reuso). */
+  redeemedGiftCodes: string[];
   notificationsSeen: Record<string, number>;
   /** Sessão: último dia em que o usuário fez login (yyyy-mm-dd) — controla a tela de boas-vindas. */
   lastLoginDate: string;

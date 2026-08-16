@@ -167,6 +167,12 @@ export const CONFETTIS: ConfettiDef[] = [
 
 export const STICKERS = ["🌹", "🥐", "🗼", "❤️", "✨", "😘", "🍷", "🐌"];
 
+// ── Área administrativa secreta ───────────────────────────────
+// PIN do criador (toque 7× na versão no "Sobre" → digite o PIN).
+// Troque por um de sua preferência — o mesmo PIN valida os códigos
+// de presente, então não esqueça de trocar em todos os lugares.
+export const ADMIN_PIN = "1202";
+
 // ── Contatos (Sobre + Feedback) ───────────────────────────────
 export const CONTACTS = {
   email: "raphaeltaylor60@gmail.com",

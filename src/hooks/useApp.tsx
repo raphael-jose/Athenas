@@ -11,7 +11,8 @@ import {
   useState,
   type ReactNode
 } from "react";
-import { CONFETTIS, COSTUMES, FRAMES, STARS, XP } from "@/lib/constants";
+import { CONFETTIS, COSTUMES, FRAMES, STARS, THEMES, XP } from "@/lib/constants";
+import { parseGiftCode, type ItemCategory } from "@/lib/giftCode";
 import { fireConfetti, fireSparkle } from "@/lib/confetti";
 import { setSfxEnabled, sfxAchievement, sfxLevelUp, sfxVictory } from "@/lib/sfx";
 import { dayKey, uid } from "@/lib/utils";
@@ -22,6 +23,14 @@ import { newReviewItem, scheduleReview } from "@/services/srs";
 import { defaultState, loadState, saveState, clearState, importBackup } from "@/services/storage";
 import type { CefrBand, ChatMessage, ConversationLog, DailyMission, IconName, StudentState, Settings } from "@/types";
 import { Icon } from "@/components/Icons";
+
+/** Busca um item da loja por categoria+id (para resgatar código de presente). */
+function findStoreItem(category: ItemCategory, id: string): { name: string } | null {
+  if (category === "theme") return THEMES.find((t) => t.id === id) ?? null;
+  if (category === "costume") return COSTUMES.find((c) => c.id === id) ?? null;
+  if (category === "frame") return FRAMES.find((f) => f.id === id) ?? null;
+  return CONFETTIS.find((c) => c.id === id) ?? null;
+}
 
 export interface Toast {
   id: string;
@@ -47,6 +56,12 @@ export interface AppApi {
   buyFrame: (frameId: string) => boolean;
   /** Compra um efeito de confete (desconta étoiles e aplica na hora). */
   buyConfetti: (confettiId: string) => boolean;
+  /** Resgata um código de presente (étoiles ou item da loja). */
+  redeemGiftCode: (code: string) => { ok: boolean; message: string };
+  /** Área admin: presenteia étoiles na conta deste aparelho. */
+  adminAddStars: (amount: number) => void;
+  /** Área admin: desbloqueia tudo da loja neste aparelho. */
+  adminUnlockAll: () => void;
   setSettings: (patch: Partial<Settings>) => void;
   finishOnboarding: (opts: { name: string; avatar: string; band: CefrBand }) => void;
   updateProfile: (opts: { name?: string; avatar?: string; photo?: string; email?: string; passwordHash?: string }) => void;
@@ -395,6 +410,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
         });
         toast("Confete desbloqueado!", "gift");
         return true;
+      },
+      redeemGiftCode: (code) => {
+        const s0 = stateRef.current;
+        const parsed = parseGiftCode(code);
+        if (!parsed) return { ok: false, message: "Código inválido — confere se copiou tudo!" };
+        const key = code.trim().toUpperCase();
+        if ((s0.redeemedGiftCodes ?? []).includes(key)) {
+          return { ok: false, message: "Esse código já foi resgatado neste aparelho." };
+        }
+        if (parsed.type === "stars") {
+          commit({
+            ...s0,
+            stars: s0.stars + parsed.amount,
+            redeemedGiftCodes: [...(s0.redeemedGiftCodes ?? []), key]
+          });
+          toast(`+${parsed.amount} étoiles de presente! 🎁`, "gift");
+          return { ok: true, message: `+${parsed.amount} étoiles!` };
+        }
+        const { category, id } = parsed;
+        const def = findStoreItem(category, id);
+        if (!def) return { ok: false, message: "Item não encontrado na loja." };
+        let s: StudentState = s0;
+        if (category === "theme") {
+          s = { ...s, boughtThemes: [...s.boughtThemes, id], settings: { ...s.settings, theme: id } };
+        } else if (category === "costume") {
+          s = { ...s, boughtCostumes: [...s.boughtCostumes, id], settings: { ...s.settings, costume: id } };
+        } else if (category === "frame") {
+          s = { ...s, boughtFrames: [...s.boughtFrames, id], settings: { ...s.settings, frame: id } };
+        } else {
+          s = { ...s, boughtConfettis: [...s.boughtConfettis, id], settings: { ...s.settings, confetti: id } };
+        }
+        commit({ ...s, redeemedGiftCodes: [...(s.redeemedGiftCodes ?? []), key] });
+        toast(`Presente: ${def.name} desbloqueado!`, "gift");
+        return { ok: true, message: `${def.name} desbloqueado!` };
+      },
+      adminAddStars: (amount) => {
+        const n = Math.max(0, Math.floor(amount));
+        if (n <= 0) return;
+        const s0 = stateRef.current;
+        commit({ ...s0, stars: s0.stars + n });
+        toast(`+${n} étoiles na conta deste aparelho`, "gift");
+      },
+      adminUnlockAll: () => {
+        const s0 = stateRef.current;
+        commit({
+          ...s0,
+          boughtThemes: [...new Set([...s0.boughtThemes, ...THEMES.map((t) => t.id)])],
+          boughtCostumes: [...new Set([...s0.boughtCostumes, ...COSTUMES.map((c) => c.id)])],
+          boughtFrames: [...new Set([...s0.boughtFrames, ...FRAMES.map((f) => f.id)])],
+          boughtConfettis: [...new Set([...s0.boughtConfettis, ...CONFETTIS.map((c) => c.id)])]
+        });
+        toast("Tudo da loja desbloqueado neste aparelho!", "gift");
       },
       setSettings: (patch) => {
         commit({ ...stateRef.current, settings: { ...stateRef.current.settings, ...patch } });

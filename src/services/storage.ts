@@ -85,6 +85,7 @@ export function defaultState(): StudentState {
     boughtCostumes: [],
     boughtFrames: [],
     boughtConfettis: [],
+    redeemedGiftCodes: [],
     notificationsSeen: {},
     lastLoginDate: "",
     lastRoute: "",

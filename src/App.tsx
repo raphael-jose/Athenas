@@ -30,6 +30,7 @@ import { VocabularyPage } from "@/features/profile/Vocabulary";
 import { CustomizePage } from "@/features/profile/Customize";
 import { FeedbackPage } from "@/features/profile/Feedback";
 import { AboutPage } from "@/features/profile/About";
+import { AdminPage } from "@/features/profile/Admin";
 import { MentorPage } from "@/features/mentor/Mentor";
 import { lessonById, WORLDS, worldById, worldProgress } from "@/data/worlds";
 import { playBossMusic, playWorldMusic, setMusicEnabled, stopMusic } from "@/lib/music";
@@ -143,6 +144,7 @@ function Shell() {
       case "profile": return <ProfilePage />;
       case "feedback": return <FeedbackPage />;
       case "about": return <AboutPage />;
+      case "admin": return <AdminPage />;
       case "welcome":
         // já onboarded: volta pra home
         window.location.hash = "/";

@@ -1,6 +1,7 @@
 // ══════════════════════════════════════════════════════════════
 // Athenas — Loja de personalização (étoiles)
 // ══════════════════════════════════════════════════════════════
+import { useState } from "react";
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
 import { CONFETTIS, COSTUMES, FRAMES, THEMES } from "@/lib/constants";
@@ -10,8 +11,10 @@ import { Icon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
 
 export function CustomizePage() {
-  const { state, buyTheme, buyCostume, buyFrame, buyConfetti, setSettings } = useApp();
+  const { state, buyTheme, buyCostume, buyFrame, buyConfetti, redeemGiftCode, setSettings } = useApp();
   const { navigate } = useRouter();
+  const [giftCode, setGiftCode] = useState("");
+  const [giftMsg, setGiftMsg] = useState("");
 
   return (
     <div className="page">
@@ -24,6 +27,32 @@ export function CustomizePage() {
             Ganhe étoiles estudando: aulas, revisões, missões diárias e bosses. Troque por temas e personalize o seu Athenas!
           </p>
         </div>
+      </Card>
+
+      <Card className="mb-3">
+        <div className="section-title" style={{ marginBottom: 8 }}>
+          <Icon name="gift" size={17} /> Código de presente
+        </div>
+        <div className="row" style={{ gap: 8 }}>
+          <input
+            className="text-input grow"
+            placeholder="Colar código aqui (ATH-…)"
+            value={giftCode}
+            onChange={(e) => setGiftCode(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && redeemGiftCode(giftCode)}
+            aria-label="Código de presente"
+          />
+          <Button
+            size="sm"
+            onClick={() => {
+              const r = redeemGiftCode(giftCode);
+              setGiftMsg(r.message);
+            }}
+          >
+            Resgatar
+          </Button>
+        </div>
+        {giftMsg && <p className="small mt-2" style={{ marginBottom: 0 }}>{giftMsg}</p>}
       </Card>
 
       <div className="section-title">
