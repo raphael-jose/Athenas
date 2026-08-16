@@ -107,7 +107,13 @@ export const THEMES: ThemeDef[] = [
   { id: "lavande", name: "Lavande", icon: "flowerLotus", price: 100, desc: "Campos de lavanda da Provence." },
   { id: "bleuet", name: "Bleuet", icon: "drop", price: 120, desc: "Azul bebê como o céu de Paris." },
   { id: "creme", name: "Crème Brûlée", icon: "cake", price: 150, desc: "Creme, dourado suave e aconchego." },
-  { id: "nuit", name: "Nuit Douce", icon: "moon", price: 200, desc: "Noite lilás escura para os noturnos." }
+  { id: "nuit", name: "Nuit Douce", icon: "moon", price: 200, desc: "Noite lilás escura para os noturnos." },
+  { id: "spidey", name: "Homem-Aranha", icon: "maskHappy", price: 220, desc: "Vermelho e azul na teia do Homem-Aranha." },
+  { id: "ironman", name: "Homem de Ferro", icon: "robot", price: 240, desc: "Dourado e vermelho do Homem de Ferro." },
+  { id: "captain", name: "Capitão América", icon: "shield", price: 230, desc: "Azul, vermelho e a estrela do Capitão." },
+  { id: "thor", name: "Thor", icon: "lightning", price: 250, desc: "O trovão e o dourado de Asgard." },
+  { id: "hulk", name: "Hulk", icon: "pawPrint", price: 240, desc: "O verde da força do Hulk." },
+  { id: "widow", name: "Viúva Negra", icon: "hourglass", price: 260, desc: "Preto e vermelho da Viúva Negra." }
 ];
 
 export const AVATARS: IconName[] = ["rabbit", "cat", "dog", "horse", "cow", "butterfly", "fish", "bird", "bug", "flower", "starFour", "heart", "coffee", "book", "moon", "sun", "sparkle"];
@@ -126,7 +132,13 @@ export const COSTUMES: CostumeDef[] = [
   { id: "lavande", name: "Mystère Lavande", icon: "flowerLotus", price: 90, desc: "Boina lilás e echarpe de lavanda da Provence." },
   { id: "bleuet", name: "Bleuet Étoilé", icon: "drop", price: 110, desc: "Azul céu com estrelinhas — perfeita pra sonhar." },
   { id: "chocolat", name: "Chocolat Fondant", icon: "cake", price: 130, desc: "Tons quentinhos de chocolate francês." },
-  { id: "emeraude", name: "Émeraude Parisienne", icon: "sparkle", price: 160, desc: "Verde esmeralda elegante, estilo museu." }
+  { id: "emeraude", name: "Émeraude Parisienne", icon: "sparkle", price: 160, desc: "Verde esmeralda elegante, estilo museu." },
+  { id: "spidey", name: "Teia do Aranha", icon: "maskHappy", price: 170, desc: "Máscara do Homem-Aranha: vermelha com teias e olhos de aranha." },
+  { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Capacete do Homem de Ferro com visor azul brilhante." },
+  { id: "captain", name: "Escudo Estrela", icon: "shield", price: 180, desc: "Capacete do Capitão América com estrela e asinhas." },
+  { id: "thor", name: "Mjolnir", icon: "lightning", price: 200, desc: "Capacete de Asgard com asas e o martelo Mjolnir." },
+  { id: "hulk", name: "Fúria Gamma", icon: "pawPrint", price: 190, desc: "A Lulu fica verde que nem o Hulk — e a echarpe roxa." },
+  { id: "widow", name: "Ampulheta", icon: "hourglass", price: 210, desc: "Visual da Viúva Negra: preto com o símbolo da ampulheta." }
 ];
 
 // ── Molduras do avatar (loja) ─────────────────────────────────
@@ -144,7 +156,13 @@ export const FRAMES: FrameDef[] = [
   { id: "galaxia", name: "Galaxie", icon: "moon", price: 140, desc: "Noite estrelada com estrelinhas." },
   { id: "flor", name: "Jardin de Provence", icon: "flowerTulip", price: 130, desc: "Flores delicadas para emoldurar o sorriso." },
   { id: "arcoiris", name: "Arc-en-ciel", icon: "sparkle", price: 150, desc: "Um arco-íris inteiro para você." },
-  { id: "coracao", name: "Cœur", icon: "heart", price: 160, desc: "Corações de carinho ao redor." }
+  { id: "coracao", name: "Cœur", icon: "heart", price: 160, desc: "Corações de carinho ao redor." },
+  { id: "spidey", name: "Teia do Aranha", icon: "maskHappy", price: 170, desc: "Anel vermelho com teias de aranha." },
+  { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Anel dourado com o reator brilhando." },
+  { id: "captain", name: "Escudo", icon: "shield", price: 180, desc: "Anel azul com a estrela do escudo." },
+  { id: "thor", name: "Trovão", icon: "lightning", price: 200, desc: "Anel prateado com raios de trovão." },
+  { id: "hulk", name: "Gamma", icon: "pawPrint", price: 190, desc: "Anel verde de pura força." },
+  { id: "widow", name: "Viúva", icon: "hourglass", price: 210, desc: "Anel escuro com detalhes vermelhos." }
 ];
 
 // ── Efeitos de confete (loja) ─────────────────────────────────

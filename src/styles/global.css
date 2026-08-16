@@ -148,6 +148,130 @@
   --pop-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
+/* ── Temas dos Vingadores ───────────────────────────────────── */
+[data-theme="spidey"] {
+  --c-bg: #fdf1f0;
+  --c-surface-2: #ffe6e3;
+  --c-surface-3: #ffd9d4;
+  --c-primary: #e7483f;
+  --c-primary-soft: #ffdcd9;
+  --c-primary-deep: #c1342c;
+  --c-accent: #3d7ae0;
+  --c-accent-soft: #dceaff;
+  --c-accent-deep: #2a5cb8;
+  --c-ring: #e7483f;
+  --card-border: #f6cbc6;
+  --card-shadow: 0 4px 18px rgba(199, 52, 44, 0.14);
+  --card-shadow-hover: 0 8px 24px rgba(199, 52, 44, 0.22);
+}
+[data-theme="ironman"] {
+  --c-bg: #fff8ef;
+  --c-surface-2: #fff0da;
+  --c-surface-3: #ffe7c4;
+  --c-primary: #e8a13a;
+  --c-primary-soft: #fdeeda;
+  --c-primary-deep: #c47f22;
+  --c-accent: #d6483b;
+  --c-accent-soft: #ffe0dc;
+  --c-accent-deep: #a9352b;
+  --c-ring: #e8a13a;
+  --card-border: #f3ddbb;
+  --card-shadow: 0 4px 18px rgba(196, 127, 34, 0.14);
+  --card-shadow-hover: 0 8px 24px rgba(196, 127, 34, 0.22);
+}
+[data-theme="captain"] {
+  --c-bg: #f0f5ff;
+  --c-surface-2: #e4edff;
+  --c-surface-3: #d6e4ff;
+  --c-primary: #3d6fd8;
+  --c-primary-soft: #dce9ff;
+  --c-primary-deep: #2a50ad;
+  --c-accent: #d8483f;
+  --c-accent-soft: #ffe0dc;
+  --c-accent-deep: #a9352b;
+  --c-ring: #3d6fd8;
+  --card-border: #cfe0fb;
+  --card-shadow: 0 4px 18px rgba(42, 80, 173, 0.14);
+  --card-shadow-hover: 0 8px 24px rgba(42, 80, 173, 0.22);
+}
+[data-theme="thor"] {
+  --c-bg: #eef4ff;
+  --c-surface-2: #e0ecff;
+  --c-surface-3: #d0e2ff;
+  --c-primary: #5a8ff0;
+  --c-primary-soft: #dbe9ff;
+  --c-primary-deep: #3567c9;
+  --c-accent: #e9c46a;
+  --c-accent-soft: #fdf3d8;
+  --c-accent-deep: #c0942e;
+  --c-ring: #5a8ff0;
+  --card-border: #cfe0fb;
+  --card-shadow: 0 4px 18px rgba(53, 103, 201, 0.15);
+  --card-shadow-hover: 0 8px 24px rgba(53, 103, 201, 0.24);
+}
+[data-theme="hulk"] {
+  --c-bg: #f0f9f1;
+  --c-surface-2: #e0f5e4;
+  --c-surface-3: #cdeed4;
+  --c-primary: #4cae63;
+  --c-primary-soft: #ddf3e2;
+  --c-primary-deep: #2e8a46;
+  --c-accent: #8a6fd8;
+  --c-accent-soft: #ede4ff;
+  --c-accent-deep: #6a4fc0;
+  --c-ring: #4cae63;
+  --card-border: #c6e8cd;
+  --card-shadow: 0 4px 18px rgba(46, 138, 70, 0.14);
+  --card-shadow-hover: 0 8px 24px rgba(46, 138, 70, 0.22);
+}
+[data-theme="widow"] {
+  --c-bg: #fafafa;
+  --c-surface-2: #f0f0f4;
+  --c-surface-3: #e6e6ec;
+  --c-primary: #d33f3f;
+  --c-primary-soft: #ffe0e0;
+  --c-primary-deep: #a52a2a;
+  --c-accent: #2b2b3a;
+  --c-accent-soft: #e7e7ee;
+  --c-accent-deep: #1a1a26;
+  --c-ring: #d33f3f;
+  --card-border: #dcdce4;
+  --card-shadow: 0 4px 18px rgba(43, 43, 58, 0.12);
+  --card-shadow-hover: 0 8px 24px rgba(43, 43, 58, 0.2);
+}
+
+/* Fundo temático: gradientes sutis com as cores do herói por tema */
+[data-theme="spidey"] body {
+  background-image:
+    radial-gradient(circle at 12% 16%, rgba(231, 72, 63, 0.09), transparent 42%),
+    radial-gradient(circle at 88% 84%, rgba(61, 122, 224, 0.09), transparent 46%);
+}
+[data-theme="ironman"] body {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(232, 161, 58, 0.12), transparent 44%),
+    radial-gradient(circle at 85% 80%, rgba(214, 72, 59, 0.1), transparent 46%);
+}
+[data-theme="captain"] body {
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(61, 111, 216, 0.1), transparent 44%),
+    radial-gradient(circle at 86% 82%, rgba(216, 72, 63, 0.09), transparent 46%);
+}
+[data-theme="thor"] body {
+  background-image:
+    radial-gradient(circle at 16% 20%, rgba(90, 143, 240, 0.12), transparent 44%),
+    radial-gradient(circle at 84% 82%, rgba(233, 196, 106, 0.14), transparent 46%);
+}
+[data-theme="hulk"] body {
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(76, 174, 99, 0.12), transparent 44%),
+    radial-gradient(circle at 86% 84%, rgba(138, 111, 216, 0.1), transparent 46%);
+}
+[data-theme="widow"] body {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(211, 63, 63, 0.09), transparent 44%),
+    radial-gradient(circle at 85% 82%, rgba(43, 43, 58, 0.06), transparent 46%);
+}
+
 /* ── 3. Base ───────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
@@ -1334,6 +1458,50 @@ input, textarea, select {
   --c-scarf: #5fc98a;
   --c-scarf-dark: #2e9e5b;
 }
+[data-costume="spidey"] {
+  --c-beret: #d63a2e;
+  --c-beret-dark: #a92b22;
+  --c-beret-dot: #3d7ae0;
+  --c-scarf: #e23a2e;
+  --c-scarf-dark: #b02c23;
+}
+[data-costume="ironman"] {
+  --c-beret: #e8a13a;
+  --c-beret-dark: #c47f22;
+  --c-beret-dot: #4dd0ff;
+  --c-scarf: #d6483b;
+  --c-scarf-dark: #a9352b;
+}
+[data-costume="captain"] {
+  --c-beret: #3d6fd8;
+  --c-beret-dark: #2a50ad;
+  --c-beret-dot: #ffffff;
+  --c-scarf: #d8483f;
+  --c-scarf-dark: #a9352b;
+}
+[data-costume="thor"] {
+  --c-beret: #9aa1b0;
+  --c-beret-dark: #7a8294;
+  --c-beret-dot: #5a8ff0;
+  --c-scarf: #5a8ff0;
+  --c-scarf-dark: #3567c9;
+}
+[data-costume="hulk"] {
+  --c-beret: #2e8a46;
+  --c-beret-dark: #1f6b33;
+  --c-beret-dot: #ffe28a;
+  --c-scarf: #8a6fd8;
+  --c-scarf-dark: #6a4fc0;
+  --c-skin: #a7dca9;
+  --c-skin-dark: #7cc584;
+}
+[data-costume="widow"] {
+  --c-beret: #2b2b3a;
+  --c-beret-dark: #1a1a26;
+  --c-beret-dot: #d33f3f;
+  --c-scarf: #3a3a4a;
+  --c-scarf-dark: #1a1a26;
+}
 
 /* Acessórios da roupinha: cada traje mostra o detalhe do título
    (rosê, lavanda, estrelinhas, fondant, gema). A classe mc-costume-*
@@ -1349,6 +1517,27 @@ input, textarea, select {
 .mc-costume-chocolat .mc-choco,
 .mc-costume-emeraude .mc-gem {
   opacity: 1;
+}
+
+/* Máscaras e capacetes dos heróis: cada um aparece só com o traje certo */
+.mc-hero > g {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.mc-costume-spidey .mc-spidey,
+.mc-costume-ironman .mc-ironman,
+.mc-costume-captain .mc-captain,
+.mc-costume-thor .mc-thor,
+.mc-costume-hulk .mc-hulk,
+.mc-costume-widow .mc-widow {
+  opacity: 1;
+}
+/* Heróis de máscara cobrem o rostinho padrão (olhos/bochechas) */
+.mc-costume-spidey .mc-face-base,
+.mc-costume-spidey .mc-cheeks,
+.mc-costume-ironman .mc-face-base,
+.mc-costume-ironman .mc-cheeks {
+  opacity: 0;
 }
 
 /* Palavras da aula que falam ao toque */

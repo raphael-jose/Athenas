@@ -10,7 +10,13 @@ const GRADS: Record<string, string[]> = {
   galaxia: ["#9a7bd8", "#4a3a75", "#8b6fd0", "#5a4a8f"],
   flor: ["#ff8fa3", "#e56b9d", "#ffb3c8", "#e56b9d"],
   arcoiris: ["#f5484d", "#f5a623", "#f5c96b", "#6fbf73", "#4a90d9", "#8b5fc9"],
-  coracao: ["#ff8fa3", "#e5484d", "#ff8fa3", "#e5484d"]
+  coracao: ["#ff8fa3", "#e5484d", "#ff8fa3", "#e5484d"],
+  spidey: ["#e23a2e", "#3d7ae0", "#e23a2e", "#8b2f28"],
+  ironman: ["#e8a13a", "#d6483b", "#f5c96b", "#a9352b"],
+  captain: ["#3d6fd8", "#d8483f", "#ffffff", "#2a50ad"],
+  thor: ["#c9cdd8", "#5a8ff0", "#ffffff", "#7a8294"],
+  hulk: ["#4cae63", "#8a6fd8", "#6fbf73", "#2e8a46"],
+  widow: ["#2b2b3a", "#d33f3f", "#5a5a70", "#1a1a26"]
 };
 
 // Pontos sobre o anel (r=46) para os detalhes.
@@ -77,6 +83,82 @@ const ACCENTS: Record<string, ReactNode> = {
           d="M0 3 c-1.9 -2.7 -5.2 -1.3 -4.6 2.3 c0.5 2.3 4.6 3.6 4.6 3.6 c0 0 4.1 -1.3 4.6 -3.6 c0.6 -3.6 -2.7 -5 -4.6 -2.3 z"
         />
       ))}
+    </g>
+  ),
+  spidey: (
+    <g stroke="#ffffff" strokeWidth={1.8} strokeLinecap="round" opacity={0.9}>
+      {RING_POINTS.map(([x, y], i) => (
+        <g key={i} transform={`translate(${x} ${y})`}>
+          <line x1={-4} y1={0} x2={4} y2={0} />
+          <line x1={0} y1={-4} x2={0} y2={4} />
+          <line x1={-2.8} y1={-2.8} x2={2.8} y2={2.8} />
+          <line x1={2.8} y1={-2.8} x2={-2.8} y2={2.8} />
+        </g>
+      ))}
+    </g>
+  ),
+  ironman: (
+    <g>
+      {RING_POINTS.map(([x, y], i) => (
+        <g key={i} transform={`translate(${x} ${y})`}>
+          <circle cx={0} cy={0} r={3.4} fill="#4dd0ff" />
+          <circle cx={0} cy={0} r={1.5} fill="#ffffff" />
+        </g>
+      ))}
+    </g>
+  ),
+  captain: (
+    <g fill="#ffffff" opacity={0.95}>
+      {[RING_POINTS[0], RING_POINTS[2], RING_POINTS[3], RING_POINTS[5]].map(([x, y], i) => (
+        <path
+          key={i}
+          transform={`translate(${x} ${y}) scale(0.62)`}
+          d="M0 -7 L1.6 -2.2 L6.7 -2.2 L2.5 0.8 L4.1 5.7 L0 2.7 L-4.1 5.7 L-2.5 0.8 L-6.7 -2.2 L-1.6 -2.2 Z"
+        />
+      ))}
+    </g>
+  ),
+  thor: (
+    <g fill="#ffffff" opacity={0.95}>
+      {RING_POINTS.map(([x, y], i) => (
+        <path
+          key={i}
+          transform={`translate(${x} ${y}) scale(0.55)`}
+          d="M2 -8 L-3 1 L0 1 L-2 8 L4 -1 L1 -1 Z"
+        />
+      ))}
+    </g>
+  ),
+  hulk: (
+    <g>
+      <g fill="#4cae63">
+        {[RING_POINTS[1], RING_POINTS[4]].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={4.2} />
+        ))}
+      </g>
+      <g fill="#ffffff" opacity={0.9}>
+        {RING_POINTS.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={2.2} />
+        ))}
+      </g>
+    </g>
+  ),
+  widow: (
+    <g>
+      <g fill="#d33f3f">
+        {RING_POINTS.map(([x, y], i) => (
+          <path
+            key={i}
+            transform={`translate(${x} ${y}) scale(0.55)`}
+            d="M-5 -6 L5 -6 L0 0 Z M-5 6 L5 6 L0 0 Z"
+          />
+        ))}
+      </g>
+      <g fill="#ffffff" opacity={0.85}>
+        {RING_POINTS.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={1.6} />
+        ))}
+      </g>
     </g>
   )
 };
