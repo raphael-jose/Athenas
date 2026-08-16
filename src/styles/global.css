@@ -1483,17 +1483,18 @@ input, textarea, select {
   --c-beret: #c9cdd8;
   --c-beret-dark: #9aa1b0;
   --c-beret-dot: #5a8ff0;
-  --c-scarf: #5a8ff0;
-  --c-scarf-dark: #3567c9;
+  --c-scarf: #d6483b;
+  --c-scarf-dark: #a9352b;
 }
 [data-costume="hulk"] {
-  --c-beret: #2e8a46;
-  --c-beret-dark: #1f6b33;
-  --c-beret-dot: #ffe28a;
+  --c-beret: #232a2e;
+  --c-beret-dark: #14141f;
+  --c-beret-dot: #14141f;
   --c-scarf: #8a6fd8;
   --c-scarf-dark: #6a4fc0;
-  --c-skin: #a7dca9;
-  --c-skin-dark: #7cc584;
+  --c-skin: #86d06a;
+  --c-skin-dark: #5ca848;
+  --c-face-line: #14141f;
 }
 [data-costume="widow"] {
   --c-beret: #8f2323;
@@ -1518,27 +1519,46 @@ input, textarea, select {
 .mc-costume-chocolat .mc-choco,
 .mc-costume-emeraude .mc-gem {
   opacity: 1;
-}
-
-/* Máscaras e capacetes dos heróis: cada um aparece só com o traje certo */
+}/* Máscaras SVG desenhadas à mão: ficam ocultas (os heróis agora usam o
+   sticker PNG de public/heroes). */
 .mc-hero > g {
   opacity: 0;
   transition: opacity 0.25s ease;
 }
-.mc-costume-spidey .mc-spidey,
-.mc-costume-ironman .mc-ironman,
-.mc-costume-captain .mc-captain,
-.mc-costume-thor .mc-thor,
-.mc-costume-hulk .mc-hulk,
-.mc-costume-widow .mc-widow {
-  opacity: 1;
-}
-/* Aranha e Homem de Ferro usam máscara completa — cobrem o rostinho todo;
-   os outros heróis deixam a carinha de fora. */
+
+/* Roupinhas de herói: a Lulu veste a cabeça chibi (sticker PNG de
+   public/heroes) e esconde a carinha, a boina, as anteninhas e as
+   máscaras SVG desenhadas à mão. */
+.mc-costume-spidey .mc-beret,
 .mc-costume-spidey .mc-face-base,
 .mc-costume-spidey .mc-cheeks,
+.mc-costume-spidey .mc-antennas,
+.mc-costume-spidey .mc-hero,
+.mc-costume-ironman .mc-beret,
 .mc-costume-ironman .mc-face-base,
-.mc-costume-ironman .mc-cheeks {
+.mc-costume-ironman .mc-cheeks,
+.mc-costume-ironman .mc-antennas,
+.mc-costume-ironman .mc-hero,
+.mc-costume-captain .mc-beret,
+.mc-costume-captain .mc-face-base,
+.mc-costume-captain .mc-cheeks,
+.mc-costume-captain .mc-antennas,
+.mc-costume-captain .mc-hero,
+.mc-costume-thor .mc-beret,
+.mc-costume-thor .mc-face-base,
+.mc-costume-thor .mc-cheeks,
+.mc-costume-thor .mc-antennas,
+.mc-costume-thor .mc-hero,
+.mc-costume-hulk .mc-beret,
+.mc-costume-hulk .mc-face-base,
+.mc-costume-hulk .mc-cheeks,
+.mc-costume-hulk .mc-antennas,
+.mc-costume-hulk .mc-hero,
+.mc-costume-widow .mc-beret,
+.mc-costume-widow .mc-face-base,
+.mc-costume-widow .mc-cheeks,
+.mc-costume-widow .mc-antennas,
+.mc-costume-widow .mc-hero {
   opacity: 0;
 }
 

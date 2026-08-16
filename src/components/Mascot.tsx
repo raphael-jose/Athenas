@@ -33,18 +33,20 @@ const MOODS: Record<Mood, { eyes: EyeKind; mouth: MouthKind; brows?: BrowKind }>
   explaining: { eyes: "round", mouth: "explain" }
 };
 
+const FACE = "var(--c-face-line, #5b3a56)";
+
 function Eyes({ kind }: { kind: EyeKind }) {
   switch (kind) {
     case "arcs":
       return (
-        <g stroke="#5b3a56" strokeWidth={3} strokeLinecap="round" fill="none">
+        <g stroke={FACE} strokeWidth={3} strokeLinecap="round" fill="none">
           <path d="M48 68 Q55 61 62 68" />
           <path d="M78 68 Q85 61 92 68" />
         </g>
       );
     case "round":
       return (
-        <g fill="#5b3a56">
+        <g fill={FACE}>
           <circle cx={55} cy={69} r={5} />
           <circle cx={85} cy={69} r={5} />
           <circle cx={57} cy={67} r={1.6} fill="#fff" />
@@ -53,7 +55,7 @@ function Eyes({ kind }: { kind: EyeKind }) {
       );
     case "big":
       return (
-        <g fill="#5b3a56">
+        <g fill={FACE}>
           <circle cx={55} cy={69} r={7} />
           <circle cx={85} cy={69} r={7} />
           <circle cx={58} cy={66} r={2.4} fill="#fff" />
@@ -62,15 +64,15 @@ function Eyes({ kind }: { kind: EyeKind }) {
       );
     case "squint":
       return (
-        <g stroke="#5b3a56" strokeWidth={3} strokeLinecap="round">
+        <g stroke={FACE} strokeWidth={3} strokeLinecap="round">
           <path d="M48 70 Q55 66 62 70" fill="none" />
           <path d="M78 69 Q85 65 92 69" fill="none" />
-          <circle cx={55} cy={71} r={2} fill="#5b3a56" />
+          <circle cx={55} cy={71} r={2} fill={FACE} />
         </g>
       );
     case "sad":
       return (
-        <g stroke="#5b3a56" strokeWidth={3} strokeLinecap="round" fill="none">
+        <g stroke={FACE} strokeWidth={3} strokeLinecap="round" fill="none">
           <path d="M48 72 Q55 78 62 72" />
           <path d="M78 72 Q85 78 92 72" />
         </g>
@@ -90,24 +92,24 @@ function Eyes({ kind }: { kind: EyeKind }) {
 function Mouth({ kind }: { kind: MouthKind }) {
   switch (kind) {
     case "smile":
-      return <path d="M58 88 Q70 97 82 88" stroke="#5b3a56" strokeWidth={3} strokeLinecap="round" fill="none" />;
+      return <path d="M58 88 Q70 97 82 88" stroke={FACE} strokeWidth={3} strokeLinecap="round" fill="none" />;
     case "grin":
       return (
-        <path d="M56 87 Q70 99 84 87 Q70 93 56 87" fill="#5b3a56" />
+        <path d="M56 87 Q70 99 84 87 Q70 93 56 87" fill={FACE} />
       );
     case "o":
-      return <ellipse cx={70} cy={90} rx={5} ry={6} fill="#5b3a56" />;
+      return <ellipse cx={70} cy={90} rx={5} ry={6} fill={FACE} />;
     case "frown":
-      return <path d="M58 92 Q70 84 82 92" stroke="#5b3a56" strokeWidth={3} strokeLinecap="round" fill="none" />;
+      return <path d="M58 92 Q70 84 82 92" stroke={FACE} strokeWidth={3} strokeLinecap="round" fill="none" />;
     case "wavy":
-      return <path d="M58 90 q4 -4 8 0 q4 4 8 0 q4 -4 8 0" stroke="#5b3a56" strokeWidth={2.6} strokeLinecap="round" fill="none" />;
+      return <path d="M58 90 q4 -4 8 0 q4 4 8 0 q4 -4 8 0" stroke={FACE} strokeWidth={2.6} strokeLinecap="round" fill="none" />;
     case "small":
-      return <ellipse cx={70} cy={91} rx={3.4} ry={4} fill="#5b3a56" />;
+      return <ellipse cx={70} cy={91} rx={3.4} ry={4} fill={FACE} />;
     case "explain":
       return (
         <g>
-          <path d="M60 88 Q66 95 72 89" stroke="#5b3a56" strokeWidth={3} strokeLinecap="round" fill="none" />
-          <path d="M75 88 Q79 92 84 89" stroke="#5b3a56" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+          <path d="M60 88 Q66 95 72 89" stroke={FACE} strokeWidth={3} strokeLinecap="round" fill="none" />
+          <path d="M75 88 Q79 92 84 89" stroke={FACE} strokeWidth={2.4} strokeLinecap="round" fill="none" />
         </g>
       );
     default:
@@ -119,7 +121,7 @@ function Brows({ kind }: { kind?: BrowKind }) {
   if (!kind) return null;
   const raise = kind === "raise";
   return (
-    <g stroke="#5b3a56" strokeWidth={2.6} strokeLinecap="round">
+    <g stroke="var(--c-face-line, #5b3a56)" strokeWidth={2.6} strokeLinecap="round">
       <path d={raise ? "M46 56 Q55 52 64 55" : "M46 60 Q55 65 64 61"} />
       <path d={raise ? "M76 55 Q85 52 94 56" : "M76 61 Q85 65 94 60"} />
     </g>
@@ -159,12 +161,12 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       <ellipse cx={24} cy={92} rx={12} ry={20} fill="#ffffff" opacity={0.55} transform="rotate(-18 24 92)" />
       <ellipse cx={116} cy={92} rx={12} ry={20} fill="#ffffff" opacity={0.55} transform="rotate(18 116 92)" />
 
-      {/* antenas */}
-      <g stroke="#b9a5f0" strokeWidth={4} strokeLinecap="round" fill="none">
+      {/* antenas (ocultas nas roupinhas de herói de máscara completa) */}
+      <g className="mc-antennas" stroke="#b9a5f0" strokeWidth={4} strokeLinecap="round" fill="none">
         <path d="M48 40 Q40 26 36 16" />
         <path d="M92 40 Q100 26 104 16" />
       </g>
-      <g fill="#e9b44c">
+      <g className="mc-antennas" fill="#e9b44c">
         <circle cx={36} cy={14} r={5.5} />
         <circle cx={104} cy={14} r={5.5} />
         <circle cx={36} cy={14} r={2} fill="#fff" opacity={0.7} />
@@ -172,7 +174,7 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       </g>
 
       {/* boina francesa (cores da roupinha — veja COSTUMES em global.css) */}
-      <g transform="rotate(-6 70 30)">
+      <g className="mc-beret" transform="rotate(-6 70 30)">
         <ellipse cx={70} cy={30} rx={33} ry={13} fill="var(--c-beret, #e5484d)" />
         <path d="M55 34 q15 -14 30 0 l-4 6 q-11 -7 -22 0 z" fill="var(--c-beret-dark, #c93a3f)" />
         <circle cx={70} cy={26} r={3} fill="var(--c-beret-dot, #f28bb4)" />
@@ -284,10 +286,10 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
             <path d="M43 60 Q46 50 51 41" />
             <path d="M51 41 Q60 36 70 33" />
           </g>
-          {/* olhos de aranha grandes e certinhos */}
-          <g fill="#ffffff" stroke="#1a1a2e" strokeWidth={3}>
-            <path d="M34 62 Q55 48 76 62 Q55 74 34 62 Z" />
-            <path d="M64 62 Q85 48 106 62 Q85 74 64 62 Z" />
+          {/* olhos de aranha grandes e arredondados (como na referência) */}
+          <g fill="#ffffff" stroke="#1a1a2e" strokeWidth={3.2}>
+            <path d="M32 62 Q55 46 78 62 Q55 77 32 62 Z" />
+            <path d="M62 62 Q85 46 108 62 Q85 77 62 62 Z" />
           </g>
           {/* aranha no peito (como na referência) */}
           <g transform="translate(70 117)">
@@ -309,11 +311,11 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
           <path d="M42 50 Q70 43 98 50 Q102 72 100 92 Q98 106 70 108 Q42 106 40 92 Q38 72 42 50 Z" fill="#e8a13a" stroke="#9c6a14" strokeWidth={2.2} strokeLinejoin="round" />
           {/* sombra nas laterais da placa (profundidade) */}
           <path d="M42 50 Q70 43 98 50 Q102 60 100 68 Q70 60 40 68 Q38 60 42 50 Z" fill="#c47f22" opacity={0.5} />
-          {/* olhos brancos brilhantes (como na referência) com leve halo ciano */}
-          <path d="M39 59 L69 63 L69 70 L39 66 Z" fill="#4dd0ff" opacity={0.25} />
-          <path d="M101 59 L71 63 L71 70 L101 66 Z" fill="#4dd0ff" opacity={0.25} />
-          <path d="M40 60 L68 64 L68 69 L40 65 Z" fill="#ffffff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
-          <path d="M100 60 L72 64 L72 69 L100 65 Z" fill="#ffffff" stroke="#155a8a" strokeWidth={1.4} strokeLinejoin="round" />
+          {/* olhos brancos brilhantes e grandes (como na referência) */}
+          <path d="M38 59 L68 63.5 L68 69.5 L38 65 Z" fill="#ffffff" stroke="#8f9db5" strokeWidth={1.2} strokeLinejoin="round" />
+          <path d="M102 59 L72 63.5 L72 69.5 L102 65 Z" fill="#ffffff" stroke="#8f9db5" strokeWidth={1.2} strokeLinejoin="round" />
+          <path d="M41 60.5 L66 64 L66 65.4 L41 62 Z" fill="#e8f6ff" />
+          <path d="M99 60.5 L74 64 L74 65.4 L99 62 Z" fill="#e8f6ff" />
           {/* boca do capacete */}
           <path d="M56 88 Q70 92 84 88" stroke="#7a1f16" strokeWidth={2.4} fill="none" strokeLinecap="round" />
           {/* reator no peito */}
@@ -331,9 +333,11 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
             <path d="M62 52 L70 34 L78 52" />
             <path d="M65.6 45 L74.4 45" />
           </g>
-          {/* asinhas */}
-          <path d="M52 50 Q28 38 16 32 Q24 42 26 50 Q32 57 50 57 Z" fill="#ffffff" stroke="#1f3f8a" strokeWidth={2} strokeLinejoin="round" />
-          <path d="M88 50 Q112 38 124 32 Q116 42 114 50 Q108 57 90 57 Z" fill="#ffffff" stroke="#1f3f8a" strokeWidth={2} strokeLinejoin="round" />
+          {/* asinhas prateadas (como na referência) */}
+          <path d="M52 50 Q28 38 16 32 Q24 42 26 50 Q32 57 50 57 Z" fill="#d8dbe0" stroke="#1f3f8a" strokeWidth={2} strokeLinejoin="round" />
+          <path d="M88 50 Q112 38 124 32 Q116 42 114 50 Q108 57 90 57 Z" fill="#d8dbe0" stroke="#1f3f8a" strokeWidth={2} strokeLinejoin="round" />
+          {/* estrela branca no peito (como na referência) */}
+          <path transform="translate(70 117)" d="M0 -5.5 L1.3 -1.8 L5.2 -1.8 L2.2 0.7 L3.4 4.5 L0 2.2 L-3.4 4.5 L-2.2 0.7 L-5.2 -1.8 L-1.3 -1.8 Z" fill="#ffffff" stroke="#1f3f8a" strokeWidth={1.2} strokeLinejoin="round" />
         </g>
         {/* Thor: capacete prateado com asas e Mjolnir pendurado */}
         <g className="mc-thor">
@@ -352,16 +356,20 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
             <path d="M-8.5 -12.2 h17 l-1.5 2.2 h-14 z" fill="#6b7280" />
           </g>
         </g>
-        {/* Hulk: cabelo verde espetado + raio gamma na bochecha */}
+        {/* Hulk: cabelo preto bagunçado (como na referência) + raio gamma */}
         <g className="mc-hulk">
-          <path d="M46 30 Q52 10 64 18 Q70 8 80 16 Q88 10 94 22 Q100 26 97 34 Q70 24 45 34 Q42 32 46 30 Z" fill="#2e8a46" stroke="#1f5c30" strokeWidth={2.2} strokeLinejoin="round" />
+          <path d="M46 30 Q52 10 64 18 Q70 8 80 16 Q88 10 94 22 Q100 26 97 34 Q70 24 45 34 Q42 32 46 30 Z" fill="#1a1a2e" stroke="#000000" strokeWidth={2.2} strokeLinejoin="round" />
+          <path d="M44 26 Q52 18 60 20 Q56 22 54 28 Q50 24 44 26 Z" fill="#2e2e44" opacity={0.6} />
           <path d="M38 78 l-3.6 6.2 h3 l-2.3 5.6 l6 -7.6 h-3.2 l3.2 -4.2 z" fill="#ffe28a" />
         </g>
         {/* Viúva Negra: cabelo vermelho, faixa preta e ampulheta no peito */}
         <g className="mc-widow">
-          <path d="M38 32 Q70 20 102 32 Q106 38 103 46 Q100 53 92 55 Q70 47 48 55 Q40 53 37 46 Q34 38 38 32 Z" fill="#a52a2a" stroke="#7a1f1f" strokeWidth={2.2} strokeLinejoin="round" />
-          <path d="M36 44 Q26 50 23 60 Q29 52 40 50 Z" fill="#a52a2a" stroke="#7a1f1f" strokeWidth={1.6} strokeLinejoin="round" />
-          <path d="M104 44 Q114 50 117 60 Q111 52 100 50 Z" fill="#a52a2a" stroke="#7a1f1f" strokeWidth={1.6} strokeLinejoin="round" />
+          {/* cabelo ruivo grande e vibrante (como na referência) */}
+          <path d="M38 32 Q70 20 102 32 Q106 38 103 46 Q100 53 92 55 Q70 47 48 55 Q40 53 37 46 Q34 38 38 32 Z" fill="#c13a1e" stroke="#8f2713" strokeWidth={2.2} strokeLinejoin="round" />
+          <path d="M36 44 Q26 50 23 60 Q29 52 40 50 Z" fill="#c13a1e" stroke="#8f2713" strokeWidth={1.6} strokeLinejoin="round" />
+          <path d="M104 44 Q114 50 117 60 Q111 52 100 50 Z" fill="#c13a1e" stroke="#8f2713" strokeWidth={1.6} strokeLinejoin="round" />
+          <path d="M46 40 Q52 46 48 54 Q44 46 46 40 Z" fill="#e04a22" />
+          <path d="M94 40 Q88 46 92 54 Q96 46 94 40 Z" fill="#e04a22" />
           {/* faixa preta */}
           <path d="M30 50 Q70 42 110 50 L112 58 Q70 50 28 58 Z" fill="#2b2b3a" stroke="#14141f" strokeWidth={1.8} strokeLinejoin="round" />
           {/* ampulheta */}
@@ -382,6 +390,31 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
 
       {/* coraçãozinho flutuante */}
       {mood === "love" && <path d="M70 14 c-4 -5 -12 -2 -9 4 c2 4 9 6 9 6 c0 0 7 -2 9 -6 c3 -6 -5 -9 -9 -4 z" fill="#e5484d" />}
+
+      {/* Cabeça chibi do herói (roupinhas Vingadores) — sticker com fundo
+          transparente cobrindo o rostinho da Lulu, como na referência. */}
+      {HERO_PNG[costume] && (
+        <image
+          href={HERO_PNG[costume].src}
+          x={HERO_PNG[costume].x}
+          y={HERO_PNG[costume].y}
+          width={HERO_PNG[costume].w}
+          height={HERO_PNG[costume].h}
+          preserveAspectRatio="xMidYMid meet"
+          className="mc-hero-png"
+          style={{ pointerEvents: "none" }}
+        />
+      )}
     </svg>
   );
 }
+
+// Cabeças chibi dos heróis (public/heroes) com o encaixe no rostinho da Lulu
+const HERO_PNG: Record<string, { src: string; x: number; y: number; w: number; h: number }> = {
+  spidey: { src: "./heroes/spidey.png", x: 24, y: 32, w: 92, h: 96 },
+  ironman: { src: "./heroes/ironman.png", x: 20, y: 34, w: 100, h: 92 },
+  captain: { src: "./heroes/captain.png", x: 22, y: 38, w: 96, h: 82 },
+  thor: { src: "./heroes/thor.png", x: 22, y: 34, w: 96, h: 94 },
+  hulk: { src: "./heroes/hulk.png", x: 22, y: 36, w: 96, h: 90 },
+  widow: { src: "./heroes/widow.png", x: 22, y: 40, w: 96, h: 74 }
+};
