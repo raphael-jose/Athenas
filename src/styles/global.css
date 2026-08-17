@@ -2265,6 +2265,96 @@ input, textarea, select {
   transform-origin: 50% 100%;
   animation: lulu-wave 1.6s var(--ease-pop) both;
 }
+/* Tchauzinho da Home: em vez de balançar o corpo, a Lulu acena com a
+   mãozinha (mc-wave-hand), que fica oculta fora da animação. A regra
+   .lulu-tchau (animation: none) fica ANTES de .lulu-react/.lulu-boop
+   para o toque e o feedback continuarem funcionando na Home. */
+.mc-wave-hand {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.lulu-tchau {
+  animation: none;
+}
+.lulu-tchau .mc-wave-hand {
+  animation: lulu-tchau 1.7s var(--ease-pop) 0.25s both;
+}
+@keyframes lulu-tchau {
+  0% { opacity: 0; transform: rotate(0deg); }
+  8% { opacity: 1; }
+  20% { transform: rotate(30deg); }
+  34% { transform: rotate(-26deg); }
+  48% { transform: rotate(30deg); }
+  62% { transform: rotate(-26deg); }
+  76% { transform: rotate(16deg); }
+  88% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(0deg); }
+}
+/* Reação no feedback de exercício: a Lulu "popa" para dentro da tela
+   (feliz no acerto / triste no erro) — sobrepõe o aceno, por isso fica
+   depois da regra .mc-svg. */
+.lulu-react {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lulu-react-pop 0.45s var(--ease-pop) both;
+}
+@keyframes lulu-react-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Toque na Lulu: reações em SEQUÊNCIA — cada toque seguido fica mais
+   animado (1 = pulinho, 2 = pulo com giro, 3 = pulo grande). Volta ao
+   nível 1 sozinha depois de 1,3s sem toques. */
+.lulu-reaction-1 {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lulu-boop 0.7s var(--ease-pop) both;
+}
+.lulu-reaction-2 {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lulu-boost 0.8s var(--ease-pop) both;
+}
+.lulu-reaction-3 {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lulu-zoom 0.95s var(--ease-pop) both;
+}
+@keyframes lulu-boop {
+  0% { transform: translateY(0) scale(1, 1); }
+  30% { transform: translateY(-14%) scale(0.95, 1.12); }
+  55% { transform: translateY(0) scale(1.1, 0.9); }
+  75% { transform: translateY(-5%) scale(0.98, 1.04); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes lulu-boost {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-22%) rotate(-7deg) scale(0.95, 1.12); }
+  50% { transform: translateY(0) rotate(5deg) scale(1.12, 0.88); }
+  75% { transform: translateY(-8%) rotate(-3deg) scale(0.98, 1.05); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+@keyframes lulu-zoom {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-30%) rotate(-10deg) scale(1.05, 1.1); }
+  40% { transform: translateY(0) rotate(8deg) scale(1.18, 0.85); }
+  60% { transform: translateY(-14%) rotate(-5deg) scale(1.05, 1.08); }
+  80% { transform: translateY(0) rotate(3deg) scale(1.1, 0.92); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+/* Corações do nível 3: sobem e somem */
+.lulu-hearts {
+  animation: lulu-hearts-float 0.9s ease-out both;
+}
+@keyframes lulu-hearts-float {
+  0% { transform: translateY(0) scale(0.4); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(-30px) scale(1.15); opacity: 0; }
+}
 @keyframes lulu-wave {
   0%, 100% { transform: rotate(0deg); }
   20% { transform: rotate(-9deg); }
@@ -2275,4 +2365,21 @@ input, textarea, select {
 @keyframes lulu-blink {
   0%, 93%, 100% { transform: scaleY(1); }
   96% { transform: scaleY(0.08); }
+}
+
+/* Anteninhas: balanço de vez em quando (gira em torno da base de cada
+   antena; a direita sai de sincronia com a esquerda para parecer vivo) */
+.mc-antenna {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lulu-antenna 5.5s ease-in-out infinite;
+}
+.mc-antenna-r {
+  animation-delay: -2.7s;
+}
+@keyframes lulu-antenna {
+  0%, 84%, 100% { transform: rotate(0deg); }
+  89% { transform: rotate(-7deg); }
+  94% { transform: rotate(6deg); }
+  97% { transform: rotate(-3deg); }
 }

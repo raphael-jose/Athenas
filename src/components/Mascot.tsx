@@ -4,6 +4,8 @@
 // orgulhosa, surpresa, preocupada, apaixonada, explicando.
 // ══════════════════════════════════════════════════════════════
 import { useEffect, useRef, useState } from "react";
+import { sfxSparkle } from "@/lib/sfx";
+import { useSpeech } from "@/hooks/useSpeech";
 export type Mood =
   | "happy"
   | "excited"
@@ -131,6 +133,30 @@ function Brows({ kind }: { kind?: BrowKind }) {
 export function Mascot({ mood = "happy", size = 120, className = "", speaking }: { mood?: Mood; size?: number; className?: string; speaking?: boolean }) {
   const m = MOODS[mood];
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const { speak, supported } = useSpeech();
+  // Ao tocar na Lulu: reações em SEQUÊNCIA — cada toque seguido deixa
+  // ela mais animada (1 = pulinho, 2 = pulo com giro, 3 = pulo grande +
+  // corações). Sem toques por 1,3s, a sequência volta ao começo.
+  const [level, setLevel] = useState(0);
+  const levelRef = useRef(0);
+  const levelTimer = useRef<number | null>(null);
+  // "Vozinha" da Lulu no toque: cada nível fala algo diferente (mais fofo).
+  const TAP_VOICE = ["", "Oi !", "Oiii !", "Miau !"];
+  const handleTap = () => {
+    sfxSparkle();
+    const next = Math.min(levelRef.current + 1, 3);
+    levelRef.current = next;
+    setLevel(next);
+    if (supported && TAP_VOICE[next]) speak(TAP_VOICE[next], { lang: "pt-BR", rate: 1 + next * 0.06 });
+    if (levelTimer.current) window.clearTimeout(levelTimer.current);
+    levelTimer.current = window.setTimeout(() => {
+      levelRef.current = 0;
+      setLevel(0);
+    }, 1300);
+  };
+  useEffect(() => () => {
+    if (levelTimer.current) window.clearTimeout(levelTimer.current);
+  }, []);
   // Traje atual: lê o [data-costume] mais próximo (html global ou o wrapper
   // de cada linha da loja). Um MutationObserver mantém a Lulu sincronizada
   // quando o usuário troca de roupa nas configurações.
@@ -149,6 +175,7 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
   // tela (Home, aulas, revisão…); o traje fica em mc-costume-*.
   const cls = ["mc-svg", `mc-costume-${costume}`];
   if (className) cls.push(className);
+  if (level > 0) cls.push(`lulu-reaction-${level}`);
   return (
     <svg
       ref={svgRef}
@@ -158,6 +185,8 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       className={cls.join(" ")}
       role="img"
       aria-label={`Lulu, a mascote do Athenas — expressão: ${mood}`}
+      onClick={handleTap}
+      style={{ cursor: "pointer" }}
     >
       {/* asas */}
       <ellipse cx={24} cy={92} rx={12} ry={20} fill="#ffffff" opacity={0.55} transform="rotate(-18 24 92)" />
@@ -178,15 +207,17 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
         />
       )}
 
-      {/* antenas (sempre à mostra — a Lulu nunca perde a identidade) */}
-      <g className="mc-antennas" stroke="#b9a5f0" strokeWidth={4} strokeLinecap="round" fill="none">
-        <path d="M48 40 Q40 26 36 16" />
-        <path d="M92 40 Q100 26 104 16" />
-      </g>
-      <g className="mc-antennas" fill="#e9b44c">
-        <circle cx={36} cy={14} r={5.5} />
-        <circle cx={104} cy={14} r={5.5} />
+      {/* antenas (sempre à mostra — a Lulu nunca perde a identidade).
+          Cada antena é um grupo próprio com a base embaixo, para o
+          balanço (lulu-antenna) girar em torno da base, não do meio. */}
+      <g className="mc-antenna mc-antenna-l">
+        <path d="M48 40 Q40 26 36 16" stroke="#b9a5f0" strokeWidth={4} strokeLinecap="round" fill="none" />
+        <circle cx={36} cy={14} r={5.5} fill="#e9b44c" />
         <circle cx={36} cy={14} r={2} fill="#fff" opacity={0.7} />
+      </g>
+      <g className="mc-antenna mc-antenna-r">
+        <path d="M92 40 Q100 26 104 16" stroke="#b9a5f0" strokeWidth={4} strokeLinecap="round" fill="none" />
+        <circle cx={104} cy={14} r={5.5} fill="#e9b44c" />
         <circle cx={104} cy={14} r={2} fill="#fff" opacity={0.7} />
       </g>
 
@@ -362,6 +393,24 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
             <path d="M-5 6.5 L5 6.5 L0 0 Z" fill="#d33f3f" stroke="#8f1f1f" strokeWidth={1.2} strokeLinejoin="round" />
           </g>
         </g>
+      </g>
+
+      {/* Corações do nível 3 (toques seguidos): sobem e somem */}
+      {level >= 3 && (
+        <g className="lulu-hearts" fill="#ff7bac">
+          <path d="M40 30 c-2.5 -3 -7 -1.2 -5.4 2.4 c1.2 2.4 5.4 3.6 5.4 3.6 s4.2 -1.2 5.4 -3.6 c1.6 -3.6 -2.9 -5.4 -5.4 -2.4 z" />
+          <path d="M95 22 c-2 -2.4 -5.6 -1 -4.3 1.9 c1 1.9 4.3 2.9 4.3 2.9 s3.4 -1 4.3 -2.9 c1.3 -2.9 -2.3 -4.3 -4.3 -1.9 z" />
+          <path d="M70 10 c-2.2 -2.7 -6.2 -1.1 -4.8 2.1 c1.1 2.1 4.8 3.2 4.8 3.2 s3.7 -1.1 4.8 -3.2 c1.4 -3.2 -2.6 -4.8 -4.8 -2.1 z" />
+        </g>
+      )}
+
+      {/* Mãozinha do "tchauzinho": acena quando a Lulu se apresenta na
+          Home (animação lulu-tchau no CSS). Invisível o resto do tempo. */}
+      <g className="mc-wave-hand">
+        <path d="M96 100 Q108 92 112 79" stroke="var(--c-skin-dark, #e7dcfb)" strokeWidth={5.5} strokeLinecap="round" fill="none" />
+        <circle cx={114} cy={75} r={6.5} fill="var(--c-skin, #f3ecff)" stroke="var(--c-skin-dark, #e7dcfb)" strokeWidth={1.8} />
+        <circle cx={117.5} cy={68} r={2.4} fill="var(--c-skin, #f3ecff)" stroke="var(--c-skin-dark, #e7dcfb)" strokeWidth={1.2} />
+        <circle cx={112} cy={66} r={2.4} fill="var(--c-skin, #f3ecff)" stroke="var(--c-skin-dark, #e7dcfb)" strokeWidth={1.2} />
       </g>
 
       {/* ondas de fala */}

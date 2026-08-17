@@ -51,6 +51,8 @@ export function ReviewPage() {
     setQueue((q) => q.filter((_, i) => i !== idx));
     setDone((d) => d + 1);
     setFlipped(false);
+    setHeard(null);
+    setVerdict(null);
     reviewWords([{ wordId: item.wordId, quality }]);
     // Errou? A palavra entra no reforço — que toca a pronúncia dela
     // (com calma, uma por vez) no final da revisão. Nada de falar a
@@ -227,7 +229,9 @@ export function ReviewPage() {
 
   const word = wordById(current.wordId);
   if (!word) return null;
-  const mood: Mood = masteryLevel(current) === "dominada" ? "proud" : "happy";
+  // Reação da Lulu: feliz quando a pronúncia sai certa, triste quando erra.
+  const mood: Mood =
+    verdict === "correct" ? "excited" : verdict === "wrong" ? "sad" : masteryLevel(current) === "dominada" ? "proud" : "happy";
 
   return (
     <div className="page">

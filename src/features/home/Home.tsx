@@ -77,10 +77,12 @@ export function Home() {
         </button>
       </header>
 
-      {/* Saudação + mascote */}
-      <Card className="center" style={{ paddingTop: 28 }}>
+      {/* Saudação + mascote. O marginTop dá espaço para a Lulu flutuar
+          inteira acima do card sem ficar escondida atrás do cabeçalho
+          (que é sticky com fundo translúcido). */}
+      <Card className="center" style={{ paddingTop: 28, marginTop: 44 }}>
         <div style={{ marginTop: -64 }}>
-          <Mascot mood={due > 0 ? "happy" : "excited"} size={110} />
+          <Mascot mood={due > 0 ? "happy" : "excited"} size={110} className="lulu-tchau" />
         </div>
         <h2 style={{ fontSize: "1.4rem", margin: "4px 0 0" }}>
           {greeting}, {state.name || "amigue"} ! 

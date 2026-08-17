@@ -7,7 +7,7 @@ import { fuzzyMatch, shuffle, percent } from "@/lib/utils";
 import { useSpeech } from "@/hooks/useSpeech";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/Icons";
-import { Mascot, type Mood } from "@/components/Mascot";
+import { Mascot } from "@/components/Mascot";
 import { fireSparkle } from "@/lib/confetti";
 import { sfxCorrect, sfxWrong } from "@/lib/sfx";
 
@@ -92,12 +92,12 @@ interface FeedbackProps {
 
 function FeedbackBar({ status, feedback, showAnswer, onNext, isLast }: FeedbackProps) {
   if (status === "idle") return null;
-  const mood: Mood = status === "correct" ? "excited" : "worried";
+  // Reação da Lulu: feliz no acerto, triste no erro (com "pop" ao surgir).
   return (
     <div className="mt-3">
       {status === "correct" && (
         <div className="feedback good row">
-          <Mascot mood="excited" size={46} />
+          <Mascot mood="excited" size={54} className="lulu-react" />
           <div className="grow">
             <strong>Parfait !</strong>
             <div className="small">{feedback}</div>
@@ -106,7 +106,7 @@ function FeedbackBar({ status, feedback, showAnswer, onNext, isLast }: FeedbackP
       )}
       {status === "wrong" && (
         <div className="feedback bad row">
-          <Mascot mood={mood} size={46} />
+          <Mascot mood="sad" size={54} className="lulu-react" />
           <div className="grow">
             <strong>Quase !</strong> <span className="small">{feedback}</span>
             {showAnswer && (
