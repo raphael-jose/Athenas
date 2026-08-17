@@ -2252,16 +2252,18 @@ input, textarea, select {
   .app { padding-left: var(--sp-6); padding-right: var(--sp-6); }
 }
 
-/* ── Lulu do cabeçalho: acena e pisca ao abrir a página ─────── */
-.lulu-hello {
+/* ── Lulu viva: acena ao aparecer e pisca durante o uso ────────── */
+/* Toda Lulu (qualquer tela) acena uma vez quando aparece e pisca
+   periodicamente — a animação mora no próprio Mascot (classe mc-svg). */
+.mc-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lulu-blink 4.8s ease-in-out infinite;
+}
+.mc-svg {
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: lulu-wave 1.6s var(--ease-pop) both;
-}
-.lulu-hello .mc-eyes {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: lulu-blink 2.4s ease-in-out 2;
 }
 @keyframes lulu-wave {
   0%, 100% { transform: rotate(0deg); }
@@ -2271,6 +2273,6 @@ input, textarea, select {
   80% { transform: rotate(5deg); }
 }
 @keyframes lulu-blink {
-  0%, 88%, 100% { transform: scaleY(1); }
-  94% { transform: scaleY(0.08); }
+  0%, 93%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.08); }
 }

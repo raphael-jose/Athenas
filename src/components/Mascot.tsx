@@ -145,7 +145,9 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-costume"] });
     return () => obs.disconnect();
   }, []);
-  const cls = [`mc-costume-${costume}`];
+  // "mc-svg" dá o aceno de boas-vindas sempre que a Lulu aparece na
+  // tela (Home, aulas, revisão…); o traje fica em mc-costume-*.
+  const cls = ["mc-svg", `mc-costume-${costume}`];
   if (className) cls.push(className);
   return (
     <svg

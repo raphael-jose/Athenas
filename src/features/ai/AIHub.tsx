@@ -86,7 +86,7 @@ export function AIHub() {
         title={
           <>
             <span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6 }}>
-              <Mascot mood="happy" size={28} className="lulu-hello" />
+              <Mascot mood="happy" size={28} />
             </span>{" "}
             Lulu IA
           </>
