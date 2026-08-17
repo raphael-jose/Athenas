@@ -2,14 +2,16 @@
 // Athenas — Fala: síntese + reconhecimento
 //
 // 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
-//   1. VOZ REMOTA INSTANTÂNEA — Google Cloud natural FEMININA via
-//      ResponsiveVoice (sem chave, sem download). Fala em <1s no
-//      primeiro toque, enquanto o modelo local aquece em background.
-//   2. VOZ NATURAL LOCAL — modelos abertos do HuggingFace rodando no
-//      navegador (transformers.js), grátis e sem chave. O modelo
-//      (≈36 MB) é baixado uma vez do CDN e fica no cache — depois
-//      funciona até offline. SÓ o francês tem modelo FEMININO
-//      (mms-tts-fra); o mms-tts-por é masculino e NÃO é usado.
+//   1. VOZ NATURAL DO HUGGINGFACE (a voz da Lulu) — modelo aberto
+//      rodando no navegador (transformers.js), grátis e sem chave.
+//      O app PRÉ-CARREGA o modelo assim que abre (em worker, sem
+//      travar) e usa ele como voz principal. O francês usa o modelo
+//      FEMININO mms-tts-fra (≈36 MB, cacheado — funciona até
+//      offline); o mms-tts-por é masculino e NÃO é usado.
+//   2. PONTE INSTANTÂNEA (só enquanto o modelo carrega) — voz Google
+//      Cloud natural FEMININA via ResponsiveVoice (sem chave). Fala
+//      em <1s para nunca haver silêncio; quando o modelo fica pronto,
+//      todas as falas passam para a voz do HuggingFace.
 //   3. FALLBACK: a melhor voz FEMININA do dispositivo (Web Speech
 //      API) — seleção ESTRITA: só feminina. Se o aparelho não tiver
 //      voz feminina no idioma, fica em silêncio — NUNCA voz
@@ -404,9 +406,17 @@ export function useSpeech(): SpeechResult {
     window.speechSynthesis.addEventListener?.("voiceschanged", load);
     // em alguns navegadores as vozes chegam atrasadas
     const t = setTimeout(load, 400);
+    // 🎀 PRÉ-CARGA da voz do HuggingFace: começa a baixar/carregar o
+    // modelo assim que o app abre (em worker, sem travar a tela). Assim
+    // a primeira fala do usuário já é a voz natural do HuggingFace — a
+    // ponte remota fica só para os primeiros segundos da sessão.
+    const pre = setTimeout(() => {
+      kickOffNaturalWarmup();
+    }, 2000);
     return () => {
       window.speechSynthesis.removeEventListener?.("voiceschanged", load);
       clearTimeout(t);
+      clearTimeout(pre);
     };
   }, [supported]);
 
