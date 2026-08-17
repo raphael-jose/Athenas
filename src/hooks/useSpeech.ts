@@ -2,16 +2,17 @@
 // Athenas — Fala: síntese + reconhecimento
 //
 // 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
-//   1. VOZ NATURAL FEMININA — modelos abertos do HuggingFace rodando
-//      no próprio navegador (transformers.js), grátis e sem chave.
-//      O modelo (≈36 MB) é baixado uma vez do CDN público e fica no
-//      cache — depois funciona até offline. SÓ o francês tem modelo
-//      natural FEMININO (mms-tts-fra); o mms-tts-por é masculino e
-//      NÃO é usado — português fala na voz feminina do aparelho.
-//   2. FALLBACK: a melhor voz FEMININA do dispositivo (Web Speech
-//      API) — cache global + retry + seleção ESTRITA: só feminina.
-//      Se o aparelho não tiver voz feminina no idioma, fica em
-//      silêncio (a voz natural assume quando pronta) — NUNCA voz
+//   1. VOZ REMOTA INSTANTÂNEA — Google Cloud natural FEMININA via
+//      ResponsiveVoice (sem chave, sem download). Fala em <1s no
+//      primeiro toque, enquanto o modelo local aquece em background.
+//   2. VOZ NATURAL LOCAL — modelos abertos do HuggingFace rodando no
+//      navegador (transformers.js), grátis e sem chave. O modelo
+//      (≈36 MB) é baixado uma vez do CDN e fica no cache — depois
+//      funciona até offline. SÓ o francês tem modelo FEMININO
+//      (mms-tts-fra); o mms-tts-por é masculino e NÃO é usado.
+//   3. FALLBACK: a melhor voz FEMININA do dispositivo (Web Speech
+//      API) — seleção ESTRITA: só feminina. Se o aparelho não tiver
+//      voz feminina no idioma, fica em silêncio — NUNCA voz
 //      masculina, em lugar nenhum do projeto.
 //
 // Detecção de idioma: texto em francês → voz fr-FR; texto em
@@ -20,6 +21,7 @@
 // ══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useMemo } from "react";
 import { isNaturalReady, langToModel, synthesizeNaturalVoice } from "@/services/naturalVoice";
+import { synthesizeRemote } from "@/services/remoteTTS";
 
 export interface SpeechResult {
   supported: boolean;
@@ -281,6 +283,41 @@ function refreshCache(): SpeechSynthesisVoice[] {
   return voiceCache;
 }
 
+/**
+ * Fala AGORA com a voz remota instantânea (Google natural FEMININA,
+ * sem chave) — latência <1s. O botão de áudio nunca mais fica mudo
+ * esperando o modelo local baixar. Se o remoto falhar (offline/limite),
+ * cai na voz feminina do aparelho; sem voz no aparelho, espera a voz
+ * natural local ficar pronta.
+ */
+async function speakRemoteFast(text: string, lang: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  try {
+    const blob = await withTimeout(synthesizeRemote(text, lang), 6000);
+    if (token !== naturalToken) return;
+    playAudioBlob(blob, opts?.onEnd);
+    return;
+  } catch (err) {
+    if (token !== naturalToken) return;
+    console.info(
+      "[Athenas-voz] TTS remoto indisponível — fallback para a voz do aparelho",
+      err instanceof Error ? err.message : ""
+    );
+    if (!pickVoice(lang, refreshCache())) {
+      // sem voz feminina no aparelho: se houver modelo local (francês),
+      // espera ele ficar pronto; senão, silêncio honesto (nunca masculina).
+      if (langToModel(lang)) {
+        speakWhenNaturalReady(text, lang, opts);
+      } else {
+        console.info(`[Athenas-voz] sem voz feminina em ${lang} — silêncio (nada masculino)`);
+        opts?.onEnd?.();
+      }
+      return;
+    }
+    webSpeak(text, lang, opts);
+  }
+}
+
 interface SpeakOpts {
   rate?: number;
   lang?: string;
@@ -377,34 +414,27 @@ export function useSpeech(): SpeechResult {
     (text: string, opts?: SpeakOpts) => {
       if (!supported) return false;
       const lang = opts?.lang ?? detectLang(text);
-      // 1. Voz natural feminina (HuggingFace no navegador) — grátis,
-      //    sem chave. Só usamos quando o modelo JÁ ESTÁ carregado em
-      //    memória: carregá-lo na hora pode congelar a tela no celular
-      //    (WASM na thread principal) — por isso o warm-up roda em
-      //    background (kickOffNaturalWarmup) e o restante fala na hora.
-      if (langToModel(lang)) {
-        if (isNaturalReady() && !naturalBusy) {
-          naturalBusy = true;
-          stop();
-          speakNatural(text, lang, opts).finally(() => {
-            naturalBusy = false;
-          });
-          return true;
-        }
-        // 2. Modelo ainda não pronto: aquece em background. Se o
-        //    aparelho tiver voz feminina no idioma, fala AGORA com ela
-        //    (zero espera). Se NÃO tiver (a regra estrita deixaria em
-        //    silêncio), espera a voz natural ficar pronta — o worker
-        //    carrega sem travar a tela e o áudio sai assim que puder.
-        kickOffNaturalWarmup();
-        if (!pickVoice(lang, refreshCache())) {
-          speakWhenNaturalReady(text, lang, opts);
-          return true;
-        }
-        webSpeak(text, lang, opts);
+      const hasNatural = langToModel(lang) !== null;
+
+      // 1. Voz natural LOCAL já quente (HuggingFace no navegador) —
+      //    alta qualidade, funciona offline, sem limite de uso.
+      if (hasNatural && isNaturalReady() && !naturalBusy) {
+        naturalBusy = true;
+        stop();
+        speakNatural(text, lang, opts).finally(() => {
+          naturalBusy = false;
+        });
         return true;
       }
-      webSpeak(text, lang, opts);
+
+      // 2. Aquece o modelo local em background (a próxima fala já
+      //    pode usar a voz local, até offline).
+      if (hasNatural) kickOffNaturalWarmup();
+
+      // 3. Voz remota INSTANTÂNEA (Google natural feminina, sem chave) —
+      //    fala em <1s, sem esperar download. Se falhar, cai na voz
+      //    feminina do aparelho e, sem ela, espera o modelo local.
+      speakRemoteFast(text, lang, opts);
       return true;
     },
     [supported]
