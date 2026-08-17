@@ -14,9 +14,7 @@ const GRADS: Record<string, string[]> = {
   spidey: ["#e23a2e", "#3d7ae0", "#e23a2e", "#8b2f28"],
   ironman: ["#e8a13a", "#d6483b", "#f5c96b", "#a9352b"],
   captain: ["#3d6fd8", "#d8483f", "#ffffff", "#2a50ad"],
-  thor: ["#c9cdd8", "#5a8ff0", "#ffffff", "#7a8294"],
-  hulk: ["#4cae63", "#8a6fd8", "#6fbf73", "#2e8a46"],
-  widow: ["#2b2b3a", "#d33f3f", "#5a5a70", "#1a1a26"]
+  nuit: ["#c79be8", "#3b2d4d", "#b99ae0", "#241b2e"]
 };
 
 // Pontos sobre o anel (r=46) para os detalhes.
@@ -139,39 +137,23 @@ const ACCENTS: Record<string, ReactNode> = {
       ))}
     </g>
   ),
-  thor: (
-    <g fill="#ffe28a" stroke="#b8860b" strokeWidth={1.4}>
-      {RING_POINTS.map(([x, y], i) => (
-        <path
-          key={i}
-          transform={`translate(${x} ${y}) scale(0.6)`}
-          d="M2 -8 L-3 1 L0 1 L-2 8 L4 -1 L1 -1 Z"
-        />
-      ))}
-    </g>
-  ),
-  hulk: (
-    <g stroke="#8a6fd8" strokeWidth={2.4} strokeLinecap="round" opacity={0.95}>
-      {RING_POINTS.map(([x, y], i) => (
-        <line key={i} x1={x - 3.4} y1={y} x2={x + 3.4} y2={y} />
-      ))}
-      <line x1={RING_POINTS[0][0]} y1={RING_POINTS[0][1]} x2={RING_POINTS[3][0]} y2={RING_POINTS[3][1]} opacity={0.6} />
-      <line x1={RING_POINTS[1][0]} y1={RING_POINTS[1][1]} x2={RING_POINTS[4][0]} y2={RING_POINTS[4][1]} opacity={0.6} />
-      <line x1={RING_POINTS[2][0]} y1={RING_POINTS[2][1]} x2={RING_POINTS[5][0]} y2={RING_POINTS[5][1]} opacity={0.6} />
-    </g>
-  ),
-  widow: (
+  nuit: (
     <g>
-      {/* ampulhetas no topo e embaixo */}
-      {[[50, 4], [50, 96]].map(([x, y], i) => (
-        <g key={i} transform={`translate(${x} ${y}) scale(0.85)`}>
-          <path d="M-4 -4.5 L4 -4.5 L0 0 Z" fill="#d33f3f" />
-          <path d="M-4 4.5 L4 4.5 L0 0 Z" fill="#d33f3f" />
-        </g>
-      ))}
-      {[RING_POINTS[0], RING_POINTS[2], RING_POINTS[3], RING_POINTS[5]].map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r={2} fill="#ffffff" opacity={0.9} />
-      ))}
+      {/* lua crescente no topo */}
+      <g transform="translate(50 4)">
+        <circle r={6.5} fill="#c79be8" />
+        <circle cx={2.4} cy={-1.4} r={5.6} fill="var(--c-surface-2, #ffffff)" />
+      </g>
+      {/* estrelinhas ao redor do anel */}
+      <g fill="#ffffff" opacity={0.95}>
+        {RING_POINTS.map(([x, y], i) => (
+          <path
+            key={i}
+            transform={`translate(${x} ${y}) scale(0.55)`}
+            d="M0 -5 L1.4 -1.6 L5.2 -1.6 L2.1 0.8 L3.4 4.5 L0 2.3 L-3.4 4.5 L-2.1 0.8 L-5.2 -1.6 L-1.4 -1.6 Z"
+          />
+        ))}
+      </g>
     </g>
   )
 };

@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concepção — Lulu de corpo inteiro</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: linear-gradient(160deg, #fdf3ee 0%, #f3ecff 45%, #fdeef4 100%);
+    min-height: 100vh;
+    padding: 28px 16px 60px;
+    color: #4a2b3f;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 800; text-align: center; color: #5b2a5e; }
+  .sub { text-align: center; color: #8a6f92; margin: 6px 0 26px; font-size: 14px; }
+
+  /* ── Vitrine principal ── */
+  .showcase {
+    background: rgba(255,255,255,.82);
+    border: 1px solid #f0e0f4;
+    border-radius: 26px;
+    padding: 22px;
+    box-shadow: 0 14px 40px rgba(160,110,180,.14);
+    display: flex;
+    gap: 26px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .stage {
+    width: 320px;
+    height: 400px;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, #eef3ff 0%, #fbeef7 100%);
+    border: 1px dashed #e3cfe9;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage::after {
+    content: "";
+    position: absolute;
+    left: 10%; right: 10%; bottom: 0;
+    height: 26%;
+    background: radial-gradient(ellipse at center, rgba(120,80,150,.16), transparent 70%);
+  }
+  .controls { flex: 1; min-width: 260px; }
+  .controls h2 { font-size: 18px; margin-bottom: 10px; }
+  .group { margin: 14px 0; }
+  .group > b { display: block; font-size: 13px; color: #8a6f92; margin-bottom: 7px; text-transform: uppercase; letter-spacing: .5px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    border: 1.6px solid #dcc4e6;
+    background: #fff;
+    color: #5b2a5e;
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .chip:hover { transform: translateY(-1px); }
+  .chip.active { background: #7d4fc0; border-color: #7d4fc0; color: #fff; }
+  .mood-btns { display: flex; flex-wrap: wrap; gap: 7px; }
+  .mood-btn {
+    border: 1.6px solid #f0c4d8;
+    background: #fff0f6;
+    color: #a83a6a;
+    border-radius: 12px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .mood-btn.active { background: #e5484d; border-color: #e5484d; color: #fff; }
+  .hint { margin-top: 14px; font-size: 13px; color: #9a7fa2; line-height: 1.5; }
+
+  /* ── Grade de roupinhas ── */
+  .grid-title { text-align: center; margin: 34px 0 16px; font-size: 18px; color: #5b2a5e; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
+  .tile {
+    background: rgba(255,255,255,.85);
+    border: 1px solid #eeddf2;
+    border-radius: 18px;
+    padding: 10px 8px 12px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(160,110,180,.10);
+  }
+  .tile svg { width: 120px; height: auto; }
+  .tile .name { font-size: 12.5px; font-weight: 700; color: #5b2a5e; margin-top: 4px; }
+  .tile .hint { font-size: 11px; color: #a58caa; margin-top: 2px; }
+  .foot { text-align: center; margin-top: 34px; font-size: 12.5px; color: #9a7fa2; }
+
+  /* ═══ SVG da Lulu de corpo inteiro ═══
+     Mesma identidade: boina + anteninhas + asas + echarpe.
+     Corpo: vestido Parisienne com babados, colarinho, botõezinhos,
+     perninhas de meia e Mary Janes. Traje e expressão via atributos. */
+  .lulu { width: 100%; height: auto; display: block; }
+
+  /* cores por roupinha */
+  .lulu[data-costume="classic"]  { --beret:#e5484d; --beret-dark:#c93a3f; --beret-dot:#f28bb4; --scarf:#f28bb4; --scarf-dark:#e56b9d; --dress:#f28bb4; --dress-dark:#e56b9d; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="lavande"]  { --beret:#9a7bd8; --beret-dark:#7d5ec2; --beret-dot:#e3d4ff; --scarf:#b9a5f0; --scarf-dark:#9a7bd8; --dress:#b9a5f0; --dress-dark:#9a7bd8; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="bleuet"]   { --beret:#4d8fe5; --beret-dark:#3a70c2; --beret-dot:#cfe6ff; --scarf:#7fb3f2; --scarf-dark:#4d8fe5; --dress:#7fb3f2; --dress-dark:#4d8fe5; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="chocolat"] { --beret:#a06a3f; --beret-dark:#7d4f2b; --beret-dot:#e8c9a8; --scarf:#c98f5f; --scarf-dark:#a06a3f; --dress:#c98f5f; --dress-dark:#a06a3f; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="emeraude"] { --beret:#2e9e5b; --beret-dark:#217a45; --beret-dot:#c6f0d8; --scarf:#5fc98a; --scarf-dark:#2e9e5b; --dress:#5fc98a; --dress-dark:#2e9e5b; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="spidey"]   { --beret:#d63a2e; --beret-dark:#a92b22; --beret-dot:#d63a2e; --scarf:#e23a2e; --scarf-dark:#b02c23; --dress:#e23a2e; --dress-dark:#b02c23; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="ironman"]  { --beret:#e8a13a; --beret-dark:#c47f22; --beret-dot:#4dd0ff; --scarf:#d6483b; --scarf-dark:#a9352b; --dress:#d6483b; --dress-dark:#a9352b; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="captain"]  { --beret:#3d6fd8; --beret-dark:#2a50ad; --beret-dot:#ffffff; --scarf:#d8483f; --scarf-dark:#a9352b; --dress:#3d6fd8; --dress-dark:#2a50ad; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+  .lulu[data-costume="nuit"]     { --beret:#3b2d4d; --beret-dark:#241b2e; --beret-dot:#c79be8; --scarf:#b99ae0; --scarf-dark:#8a6fd8; --dress:#3b2d4d; --dress-dark:#241b2e; --skin:#f3ecff; --skin-dark:#e7dcfb; --line:#5b3a56; }
+
+  /* rosto: só a expressão ativa aparece */
+  .lulu .eyes, .lulu .mouth, .lulu .brows { opacity: 0; transition: opacity .18s; }
+  .lulu[data-mood="happy"]     .eyes-arcs,    .lulu[data-mood="happy"]    .mouth-smile  { opacity: 1; }
+  .lulu[data-mood="love"]      .eyes-hearts,  .lulu[data-mood="love"]     .mouth-smile,  .lulu[data-mood="love"] .heart-float { opacity: 1; }
+  .lulu[data-mood="excited"]   .eyes-big,     .lulu[data-mood="excited"]  .mouth-grin   { opacity: 1; }
+  .lulu[data-mood="sad"]       .eyes-sad,     .lulu[data-mood="sad"]      .mouth-frown,  .lulu[data-mood="sad"] .brows-down { opacity: 1; }
+  .lulu[data-mood="surprised"] .eyes-round,   .lulu[data-mood="surprised"].mouth-o,      .lulu[data-mood="surprised"] .brows-up { opacity: 1; }
+  .lulu[data-mood="thinking"]  .eyes-squint,  .lulu[data-mood="thinking"] .mouth-small,  .lulu[data-mood="thinking"] .brows-down { opacity: 1; }
+
+  /* gema da Émeraude */
+  .lulu .gem { opacity: 0; transition: opacity .2s; }
+  .lulu[data-costume="emeraude"] .gem { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🌸 Lulu — corpo inteiro (conceito)</h1>
+  <p class="sub">A mesma fadinha-antena de boina, agora com vestidinho Parisienne, perninhas e Mary Janes</p>
+
+  <!-- ══ Vitrine principal ══ -->
+  <div class="showcase">
+    <div class="stage" id="stage"></div>
+    <div class="controls">
+      <h2>Experimente</h2>
+      <div class="group">
+        <b>Roupinha</b>
+        <div class="chips" id="costume-chips">
+          <button class="chip active" data-costume="classic">Clássica</button>
+          <button class="chip" data-costume="lavande">Lavande</button>
+          <button class="chip" data-costume="bleuet">Bleuet</button>
+          <button class="chip" data-costume="chocolat">Chocolat</button>
+          <button class="chip" data-costume="emeraude">Émeraude</button>
+          <button class="chip" data-costume="spidey">Homem-Aranha</button>
+          <button class="chip" data-costume="ironman">Homem de Ferro</button>
+          <button class="chip" data-costume="captain">Capitão América</button>
+          <button class="chip" data-costume="nuit">Nuit</button>
+        </div>
+      </div>
+      <div class="group">
+        <b>Expressão</b>
+        <div class="mood-btns" id="mood-btns">
+          <button class="mood-btn active" data-mood="happy">Feliz</button>
+          <button class="mood-btn" data-mood="love">Apaixonada</button>
+          <button class="mood-btn" data-mood="excited">Empolgada</button>
+          <button class="mood-btn" data-mood="sad">Triste</button>
+          <button class="mood-btn" data-mood="surprised">Surpresa</button>
+          <button class="mood-btn" data-mood="thinking">Pensando</button>
+        </div>
+      </div>
+      <p class="hint">
+        O vestido muda de cor com cada roupinha, igual à loja atual (Clássica, Lavande, Bleuet,
+        Chocolat, Émeraude, Homem-Aranha, Homem de Ferro, Capitão América e Nuit — a versão
+        noite, no lugar da antiga Viúva). Na Émeraude, a gema no peito. As máscaras dos heróis
+        seriam desenhadas por cima do rostinho no passo seguinte — como no busto atual.
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ Grade: todas as roupinhas ══ -->
+  <div class="grid-title">Todas as roupinhas (expressão feliz)</div>
+  <div class="grid" id="grid"></div>
+
+  <p class="foot">
+    Conceito em SVG — 100% desenhado à mão no código, sem imagens de terceiros. Nada do app foi alterado.
+  </p>
+</div>
+
+<!-- ══ Template da Lulu (SVG completo) ══ -->
+<svg id="lulu-template" class="lulu" viewBox="0 0 140 220" data-costume="classic" data-mood="happy" aria-hidden="true">
+  <!-- antenas -->
+  <g>
+    <path d="M48 52 Q40 34 36 22" stroke="#b9a5f0" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <circle cx="36" cy="20" r="5.5" fill="#e9b44c"/><circle cx="36" cy="20" r="2" fill="#fff" opacity=".7"/>
+  </g>
+  <g>
+    <path d="M92 52 Q100 34 104 22" stroke="#b9a5f0" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <circle cx="104" cy="20" r="5.5" fill="#e9b44c"/><circle cx="104" cy="20" r="2" fill="#fff" opacity=".7"/>
+  </g>
+  <!-- boina -->
+  <g transform="rotate(-6 70 38)">
+    <ellipse cx="70" cy="38" rx="29" ry="11.5" fill="var(--beret)"/>
+    <path d="M56 42 q14 -12 28 0 l-3.5 5 q-10.5 -6 -21 0 z" fill="var(--beret-dark)"/>
+    <circle cx="70" cy="34" r="2.6" fill="var(--beret-dot)"/>
+    <path d="M50 35 Q58 28 68 29 Q78 30 86 35" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".35"/>
+  </g>
+  <!-- cabeça -->
+  <ellipse cx="70" cy="64" rx="37" ry="31" fill="var(--skin-dark)"/>
+  <ellipse cx="70" cy="61" rx="37" ry="28" fill="var(--skin)"/>
+  <!-- bochechas -->
+  <ellipse cx="40" cy="78" rx="6" ry="4" fill="#ffb3c8" opacity=".9"/>
+  <ellipse cx="100" cy="78" rx="6" ry="4" fill="#ffb3c8" opacity=".9"/>
+  <!-- sobrancelhas -->
+  <g class="brows brows-up" stroke="var(--line)" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <path d="M44 52 Q55 48 66 51"/><path d="M74 51 Q85 48 96 52"/>
+  </g>
+  <g class="brows brows-down" stroke="var(--line)" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <path d="M44 58 Q55 63 66 59"/><path d="M74 59 Q85 63 96 58"/>
+  </g>
+  <!-- olhos -->
+  <g class="eyes eyes-arcs" stroke="var(--line)" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M50 60 Q57 53 64 60"/><path d="M76 60 Q83 53 90 60"/>
+  </g>
+  <g class="eyes eyes-round" fill="var(--line)">
+    <circle cx="55" cy="61" r="5"/><circle cx="85" cy="61" r="5"/>
+    <circle cx="57" cy="59" r="1.6" fill="#fff"/><circle cx="87" cy="59" r="1.6" fill="#fff"/>
+  </g>
+  <g class="eyes eyes-big" fill="var(--line)">
+    <circle cx="55" cy="61" r="7"/><circle cx="85" cy="61" r="7"/>
+    <circle cx="58" cy="58" r="2.4" fill="#fff"/><circle cx="88" cy="58" r="2.4" fill="#fff"/>
+  </g>
+  <g class="eyes eyes-sad" stroke="var(--line)" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M50 64 Q57 70 64 64"/><path d="M76 64 Q83 70 90 64"/>
+  </g>
+  <g class="eyes eyes-squint" stroke="var(--line)" stroke-width="3" stroke-linecap="round">
+    <path d="M50 62 Q57 58 64 62" fill="none"/><path d="M76 61 Q83 57 90 61" fill="none"/>
+    <circle cx="55" cy="63" r="2" fill="var(--line)"/>
+  </g>
+  <g class="eyes eyes-hearts" fill="#e5484d">
+    <path d="M55 63 c-3 -4 -9 -1 -7 3 c2 3 7 5 7 5 c0 0 5 -2 7 -5 c2 -4 -4 -7 -7 -3 z"/>
+    <path d="M85 63 c-3 -4 -9 -1 -7 3 c2 3 7 5 7 5 c0 0 5 -2 7 -5 c2 -4 -4 -7 -7 -3 z"/>
+  </g>
+  <!-- boca -->
+  <path class="mouth mouth-smile" d="M58 78 Q70 87 82 78" stroke="var(--line)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path class="mouth mouth-grin" d="M56 77 Q70 89 84 77 Q70 83 56 77" fill="var(--line)"/>
+  <ellipse class="mouth mouth-o" cx="70" cy="80" rx="5" ry="6" fill="var(--line)"/>
+  <path class="mouth mouth-frown" d="M58 82 Q70 74 82 82" stroke="var(--line)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <ellipse class="mouth mouth-small" cx="70" cy="81" rx="3.4" ry="4" fill="var(--line)"/>
+  <!-- coração flutuante (apaixonada) -->
+  <path class="heart-float" d="M70 20 c-4 -5 -12 -2 -9 4 c2 4 9 6 9 6 c0 0 7 -2 9 -6 c3 -6 -5 -9 -9 -4 z" fill="#e5484d"/>
+  <!-- pescoço -->
+  <path d="M63 88 L77 88 L78 100 L62 100 Z" fill="var(--skin-dark)"/>
+  <path d="M64 90 L76 90 L77 99 L63 99 Z" fill="var(--skin)"/>
+  <!-- bracinhos -->
+  <g>
+    <path d="M42 102 Q33 116 38 128" stroke="var(--skin-dark)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+    <circle cx="39" cy="131" r="5.5" fill="var(--skin)" stroke="var(--skin-dark)" stroke-width="1.6"/>
+    <path d="M98 102 Q107 116 102 128" stroke="var(--skin-dark)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+    <circle cx="101" cy="131" r="5.5" fill="var(--skin)" stroke="var(--skin-dark)" stroke-width="1.6"/>
+  </g>
+  <!-- vestido -->
+  <path d="M46 98 Q70 90 94 98 L100 146 Q70 158 40 146 Z" fill="var(--dress)"/>
+  <path d="M54 98 Q70 90 86 98 L78 112 Q70 116 62 112 Z" fill="#fff" stroke="#e0d4f0" stroke-width="1.4" stroke-linejoin="round"/>
+  <circle cx="70" cy="119" r="2" fill="var(--dress-dark)"/>
+  <circle cx="70" cy="128" r="2" fill="var(--dress-dark)"/>
+  <circle cx="70" cy="137" r="2" fill="var(--dress-dark)"/>
+  <path d="M40 146 q5 9 10 0 q5 9 10 0 q5 9 10 0 q5 9 10 0 q5 9 10 0 q5 9 10 0 L100 150 Q70 158 40 150 Z" fill="var(--dress-dark)"/>
+  <!-- echarpe (colar) com contorno pra aparecer sobre o vestido + gema -->
+  <path d="M40 104 q30 8 60 0 l-3 8 q-27 6 -54 0 z" fill="var(--scarf)" stroke="var(--scarf-dark)" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M92 104 l6 13 l-8 -3 z" fill="var(--scarf-dark)"/>
+  <g class="gem">
+    <path d="M70 106 l6.5 5.5 -6.5 8 -6.5 -8 z" fill="#2e9e5b" stroke="#217a45" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M70 106 l6.5 5.5 -3 2.2 -3.5 -3.4 z" fill="#5fc98a"/>
+    <circle cx="67.5" cy="113" r="1.2" fill="#c6f0d8"/>
+  </g>
+  <!-- perninhas -->
+  <rect x="56" y="154" width="9" height="24" rx="4.5" fill="var(--skin)"/>
+  <rect x="75" y="154" width="9" height="24" rx="4.5" fill="var(--skin)"/>
+  <path d="M60.5 156 v20 M79.5 156 v20" stroke="var(--dress-dark)" stroke-width="1.2" opacity=".5"/>
+  <!-- Mary Janes (sem laços) -->
+  <rect x="44" y="175" width="24" height="12" rx="5" fill="#8a5a2b"/>
+  <path d="M46 175 v-4 M66 175 v-4" stroke="#6f4622" stroke-width="2.4"/>
+  <rect x="72" y="175" width="24" height="12" rx="5" fill="#8a5a2b"/>
+  <path d="M74 175 v-4 M94 175 v-4" stroke="#6f4622" stroke-width="2.4"/>
+</svg>
+
+<script>
+  var template = document.getElementById("lulu-template");
+  var COSTUMES = [
+    ["classic","Clássica","Rosé Parisienne"],
+    ["lavande","Lavande","Mystère Lavande"],
+    ["bleuet","Bleuet","Bleuet Étoilé"],
+    ["chocolat","Chocolat","Chocolat Fondant"],
+    ["emeraude","Émeraude","Émeraude Parisienne"],
+    ["spidey","Homem-Aranha","Cosplay Aranha"],
+    ["ironman","Homem de Ferro","Cosplay Ferro"],
+    ["captain","Capitão América","Cosplay Capitão"],
+    ["nuit","Nuit","Versão noite estrelada"]
+  ];
+  var MOODS = ["happy","love","excited","sad","surprised","thinking"];
+
+  function makeLulu(costume, mood) {
+    var s = template.cloneNode(true);
+    s.removeAttribute("id");
+    s.setAttribute("data-costume", costume);
+    s.setAttribute("data-mood", mood);
+    return s;
+  }
+
+  // Vitrine
+  var stage = document.getElementById("stage");
+  var hero = makeLulu("classic", "happy");
+  hero.style.width = "240px";
+  stage.appendChild(hero);
+
+  var chips = document.querySelectorAll("#costume-chips .chip");
+  var moodBtns = document.querySelectorAll("#mood-btns .mood-btn");
+  function refresh() {
+    var c = document.querySelector("#costume-chips .chip.active").dataset.costume;
+    var m = document.querySelector("#mood-btns .mood-btn.active").dataset.mood;
+    hero.setAttribute("data-costume", c);
+    hero.setAttribute("data-mood", m);
+  }
+  chips.forEach(function (b) {
+    b.addEventListener("click", function () {
+      chips.forEach(function (x) { x.classList.remove("active"); });
+      b.classList.add("active");
+      refresh();
+    });
+  });
+  moodBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      moodBtns.forEach(function (x) { x.classList.remove("active"); });
+      b.classList.add("active");
+      refresh();
+    });
+  });
+
+  // Grade de roupinhas
+  var grid = document.getElementById("grid");
+  COSTUMES.forEach(function (c) {
+    var tile = document.createElement("div");
+    tile.className = "tile";
+    var svg = makeLulu(c[0], "happy");
+    svg.style.width = "120px";
+    tile.appendChild(svg);
+    var name = document.createElement("div");
+    name.className = "name";
+    name.textContent = c[1];
+    tile.appendChild(name);
+    var hint = document.createElement("div");
+    hint.className = "hint";
+    hint.textContent = c[2];
+    tile.appendChild(hint);
+    grid.appendChild(tile);
+  });
+</script>
+</body>
+</html>

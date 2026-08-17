@@ -5,7 +5,9 @@
 //   1. VOZ NATURAL FEMININA — modelos abertos do HuggingFace rodando
 //      no próprio navegador (transformers.js), grátis e sem chave.
 //      O modelo (≈36 MB) é baixado uma vez do CDN público e fica no
-//      cache — depois funciona até offline.
+//      cache — depois funciona até offline. SÓ o francês tem modelo
+//      natural FEMININO (mms-tts-fra); o mms-tts-por é masculino e
+//      NÃO é usado — português fala na voz feminina do aparelho.
 //   2. FALLBACK: a melhor voz FEMININA do dispositivo (Web Speech
 //      API) — cache global + retry + seleção ESTRITA: só feminina.
 //      Se o aparelho não tiver voz feminina no idioma, fica em
@@ -146,7 +148,10 @@ let naturalToken = 0;
 
 // Primeira fala baixa o modelo (≈36 MB) — dá tempo; depois é rápido.
 const NATURAL_FIRST_TIMEOUT_MS = 45000;
-const NATURAL_FAST_TIMEOUT_MS = 12000;
+// Síntese com modelo quente: em WASM no navegador a inferência pode
+// levar 10-20s mesmo em frases curtas — o timeout curto demais cortava
+// a fala bem na hora e caía no fallback silencioso ("botão morto").
+const NATURAL_FAST_TIMEOUT_MS = 20000;
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -222,19 +227,47 @@ let voiceCache: SpeechSynthesisVoice[] = [];
 // modelo começa a carregar em background junto com esse primeiro
 // áudio; quando estiver pronto, todas as falas seguintes usam a
 // voz natural.
-let warmupDone = false;
+let warmupPromise: Promise<void> | null = null;
 
 /**
  * Inicia o carregamento do modelo em background (uma vez por sessão).
  * A fala já saiu na voz do aparelho; quando o modelo ficar pronto,
- * as próximas falas usam a voz natural.
+ * as próximas falas usam a voz natural. Devolve a promise do
+ * aquecimento (resolve quando o modelo + 1ª síntese terminam).
  */
-function kickOffNaturalWarmup() {
-  if (warmupDone || isNaturalReady()) return;
-  warmupDone = true;
-  // Carrega o francês (idioma principal do app). Se falhar (offline,
-  // CDN bloqueado), simplesmente seguimos com a voz do aparelho.
-  synthesizeNaturalVoice("bonjour", "fr-FR").catch(() => {});
+function kickOffNaturalWarmup(): Promise<void> {
+  if (warmupPromise) return warmupPromise;
+  if (isNaturalReady()) return Promise.resolve();
+  warmupPromise = synthesizeNaturalVoice("bonjour", "fr-FR")
+    .then(() => undefined)
+    .catch(() => undefined);
+  return warmupPromise;
+}
+
+/**
+ * Espera a voz natural ficar pronta e fala com ela. Usado quando o
+ * aparelho NÃO tem voz feminina no idioma (a regra estrita deixaria
+ * em silêncio): em vez de nada, aguardamos o modelo natural — que
+ * carrega em um Web Worker, sem travar a tela. Se demorar demais
+ * ou falhar, cai no fallback do aparelho (silêncio logado).
+ */
+async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  try {
+    // Aguarda o aquecimento (carrega o modelo + 1ª síntese) e só então
+    // fala o texto — sem duas sínteses concorrentes no worker.
+    await withTimeout(kickOffNaturalWarmup(), NATURAL_FIRST_TIMEOUT_MS);
+    if (token !== naturalToken) return;
+    // O modelo acabou de carregar: a primeira síntese real ainda pode
+    // estar fria (WASM) — usa o timeout generoso da primeira carga.
+    const audio = await withTimeout(synthesizeNaturalVoice(text, lang), NATURAL_FIRST_TIMEOUT_MS);
+    if (token !== naturalToken) return;
+    playAudioBlob(audio.blob, opts?.onEnd);
+  } catch (err) {
+    if (token !== naturalToken) return;
+    console.info("[Athenas-voz] voz natural não ficou pronta a tempo — fallback para a voz do aparelho", err instanceof Error ? err.message : "");
+    webSpeak(text, lang, opts);
+  }
 }
 
 function refreshCache(): SpeechSynthesisVoice[] {
@@ -348,18 +381,28 @@ export function useSpeech(): SpeechResult {
       //    memória: carregá-lo na hora pode congelar a tela no celular
       //    (WASM na thread principal) — por isso o warm-up roda em
       //    background (kickOffNaturalWarmup) e o restante fala na hora.
-      if (langToModel(lang) && isNaturalReady() && !naturalBusy) {
-        naturalBusy = true;
-        stop();
-        speakNatural(text, lang, opts).finally(() => {
-          naturalBusy = false;
-        });
+      if (langToModel(lang)) {
+        if (isNaturalReady() && !naturalBusy) {
+          naturalBusy = true;
+          stop();
+          speakNatural(text, lang, opts).finally(() => {
+            naturalBusy = false;
+          });
+          return true;
+        }
+        // 2. Modelo ainda não pronto: aquece em background. Se o
+        //    aparelho tiver voz feminina no idioma, fala AGORA com ela
+        //    (zero espera). Se NÃO tiver (a regra estrita deixaria em
+        //    silêncio), espera a voz natural ficar pronta — o worker
+        //    carrega sem travar a tela e o áudio sai assim que puder.
+        kickOffNaturalWarmup();
+        if (!pickVoice(lang, refreshCache())) {
+          speakWhenNaturalReady(text, lang, opts);
+          return true;
+        }
+        webSpeak(text, lang, opts);
         return true;
       }
-      // 2. Modelo ainda não pronto: fala AGORA com a melhor voz do
-      //    aparelho e, junto com este primeiro áudio, aquece o modelo
-      //    natural em background — o próximo tap já usa a voz bonita.
-      if (langToModel(lang)) kickOffNaturalWarmup();
       webSpeak(text, lang, opts);
       return true;
     },

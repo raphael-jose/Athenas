@@ -16,10 +16,7 @@ const THEME_PALETTES: Record<string, { star: string; sparkle: string; heart: str
   nuit: { star: "#e9c46a", sparkle: "#b9a5f0", heart: "#f28bb4", dot: "#8fc3f0" },
   spidey: { star: "#e7483f", sparkle: "#3d7ae0", heart: "#e7483f", dot: "#3d7ae0" },
   ironman: { star: "#e8a13a", sparkle: "#d6483b", heart: "#f5c96b", dot: "#e8a13a" },
-  captain: { star: "#3d6fd8", sparkle: "#d8483f", heart: "#ffffff", dot: "#3d6fd8" },
-  thor: { star: "#e9c46a", sparkle: "#5a8ff0", heart: "#ffffff", dot: "#5a8ff0" },
-  hulk: { star: "#4cae63", sparkle: "#8a6fd8", heart: "#6fbf73", dot: "#4cae63" },
-  widow: { star: "#d33f3f", sparkle: "#2b2b3a", heart: "#e0708f", dot: "#5a5a70" }
+  captain: { star: "#3d6fd8", sparkle: "#d8483f", heart: "#ffffff", dot: "#3d6fd8" }
 };
 
 const DEFAULT_PALETTE = THEME_PALETTES.rose;

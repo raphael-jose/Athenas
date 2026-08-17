@@ -4,7 +4,7 @@
 // ══════════════════════════════════════════════════════════════
 import { describe, expect, it } from "vitest";
 import { pickVoice } from "./useSpeech";
-import { FR_MODEL, PT_MODEL, langToModel } from "@/services/naturalVoice";
+import { FR_MODEL, langToModel } from "@/services/naturalVoice";
 
 function v(name: string, lang: string): SpeechSynthesisVoice {
   return { name, lang, default: false, localService: false, voiceURI: name } as SpeechSynthesisVoice;
@@ -93,9 +93,9 @@ describe("langToModel — voz natural do HuggingFace", () => {
     expect(langToModel("fr")).toBe(FR_MODEL);
   });
 
-  it("português usa o modelo feminino de português", () => {
-    expect(langToModel("pt-BR")).toBe(PT_MODEL);
-    expect(langToModel("pt")).toBe(PT_MODEL);
+  it("português NÃO usa modelo natural (o mms-tts-por é masculino) — fica na voz feminina do aparelho", () => {
+    expect(langToModel("pt-BR")).toBeNull();
+    expect(langToModel("pt")).toBeNull();
   });
 
   it("idiomas sem modelo devolvem null (fallback para a voz do dispositivo)", () => {

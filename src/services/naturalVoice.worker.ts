@@ -18,13 +18,13 @@ import { env, pipeline, type TextToAudioPipeline } from "@huggingface/transforme
 // (evita 404 no GitHub Pages) e nada de chave.
 env.allowLocalModels = false;
 
+// Só o francês tem modelo natural FEMININO. O mms-tts-por (português) tem
+// voz masculina — não é usado; português fala na voz feminina do aparelho.
 const FR_MODEL = "Xenova/mms-tts-fra";
-const PT_MODEL = "Xenova/mms-tts-por";
 
 function langToModel(lang: string): string | null {
   const prefix = lang.toLowerCase().slice(0, 2);
   if (prefix === "fr") return FR_MODEL;
-  if (prefix === "pt") return PT_MODEL;
   return null;
 }
 

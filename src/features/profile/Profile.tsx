@@ -11,7 +11,7 @@ import { formatDuration, percent } from "@/lib/utils";
 import { Button, Card, Chip, Modal, PageHeader, Segmented, SettingRow, StatCard, Switch } from "@/components/ui";
 import { Icon } from "@/components/Icons";
 import type { IconName } from "@/types";
-import { Mascot } from "@/components/Mascot";
+import { LuluFullBody } from "@/components/LuluFullBody";
 import { AvatarFrame } from "@/components/AvatarFrame";
 import { AccountSection } from "./AccountSection";
 
@@ -295,7 +295,7 @@ export function ProfilePage() {
       </Card>
 
       <div className="center mt-4">
-        <Mascot mood="love" size={90} />
+        <LuluFullBody mood="love" size={150} />
         <p className="muted small">On a hâte de te voir progresser !</p>
       </div>
 

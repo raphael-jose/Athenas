@@ -12,21 +12,27 @@
 // só posta o texto e recebe o WAV pronto.
 //
 // 🎀 Voz feminina por idioma:
-//   francês  → Xenova/mms-tts-fra (voz feminina de francês)
-//   português → Xenova/mms-tts-por (voz feminina de português)
+//   francês → Xenova/mms-tts-fra (voz FEMININA natural de francês)
+//   português → NÃO tem modelo natural feminino compatível aqui: o
+//     Xenova/mms-tts-por tem voz MASCULINA (confirmado em
+//     huggingface.co/Xenova/mms-tts-por e transformers.js #547), então
+//     o app NÃO o usa — português fala na voz FEMININA do aparelho
+//     (Google/Microsoft pt-BR), com a regra estrita de nunca masculina.
 //
 // Se algo falhar (sem internet, CDN fora do ar, navegador sem suporte),
 // o app cai automaticamente na melhor voz feminina do dispositivo.
 // ══════════════════════════════════════════════════════════════
 
 export const FR_MODEL = "Xenova/mms-tts-fra";
-export const PT_MODEL = "Xenova/mms-tts-por";
 
-/** Modelo de voz natural para o idioma (null = sem voz natural disponível). */
+/**
+ * Modelo de voz natural para o idioma (null = sem voz natural disponível).
+ * Só devolve modelo quando a voz é FEMININA — o mms-tts-por (português)
+ * é masculino, então português fica com a voz feminina do aparelho.
+ */
 export function langToModel(lang: string): string | null {
   const prefix = lang.toLowerCase().slice(0, 2);
   if (prefix === "fr") return FR_MODEL;
-  if (prefix === "pt") return PT_MODEL;
   return null;
 }
 

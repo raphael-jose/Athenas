@@ -110,10 +110,7 @@ export const THEMES: ThemeDef[] = [
   { id: "nuit", name: "Nuit Douce", icon: "moon", price: 200, desc: "Noite lilás escura para os noturnos." },
   { id: "spidey", name: "Homem-Aranha", icon: "maskHappy", price: 220, desc: "Vermelho e azul na teia do Homem-Aranha." },
   { id: "ironman", name: "Homem de Ferro", icon: "robot", price: 240, desc: "Dourado e vermelho do Homem de Ferro." },
-  { id: "captain", name: "Capitão América", icon: "shield", price: 230, desc: "Azul, vermelho e a estrela do Capitão." },
-  { id: "thor", name: "Thor", icon: "lightning", price: 250, desc: "O trovão e o dourado de Asgard." },
-  { id: "hulk", name: "Hulk", icon: "pawPrint", price: 240, desc: "O verde da força do Hulk." },
-  { id: "widow", name: "Viúva Negra", icon: "hourglass", price: 260, desc: "Preto e vermelho da Viúva Negra." }
+  { id: "captain", name: "Capitão América", icon: "shield", price: 230, desc: "Azul, vermelho e a estrela do Capitão." }
 ];
 
 export const AVATARS: IconName[] = ["rabbit", "cat", "dog", "horse", "cow", "butterfly", "fish", "bird", "bug", "flower", "starFour", "heart", "coffee", "book", "moon", "sun", "sparkle"];
@@ -133,12 +130,10 @@ export const COSTUMES: CostumeDef[] = [
   { id: "bleuet", name: "Bleuet Étoilé", icon: "drop", price: 110, desc: "Azul céu com estrelinhas — perfeita pra sonhar." },
   { id: "chocolat", name: "Chocolat Fondant", icon: "cake", price: 130, desc: "Tons quentinhos de chocolate francês." },
   { id: "emeraude", name: "Émeraude Parisienne", icon: "sparkle", price: 160, desc: "Verde esmeralda elegante, estilo museu." },
-  { id: "spidey", name: "Teia do Aranha", icon: "maskHappy", price: 170, desc: "Cosplay do Aranha: máscara vermelha com teias e olhos grandes — de boina!" },
-  { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Cosplay do Homem de Ferro: capacete com olhos brilhantes e a boina por cima." },
-  { id: "captain", name: "Escudo Estrela", icon: "shield", price: 180, desc: "Cosplay do Capitão: faixa azul com 'A', asinhas e estrela — de boina!" },
-  { id: "thor", name: "Mjolnir", icon: "lightning", price: 200, desc: "Cosplay do Thor: faixa prateada com asas e o martelo Mjolnir pendurado." },
-  { id: "hulk", name: "Fúria Gamma", icon: "pawPrint", price: 190, desc: "Cosplay do Hulk: a Lulu fica verde com raio gamma na bochecha e cabelo espetado." },
-  { id: "widow", name: "Ampulheta", icon: "hourglass", price: 210, desc: "Cosplay da Viúva: cabelo ruivo, faixa preta na testa e ampulheta de broche." }
+  { id: "spidey", name: "Homem-Aranha", icon: "maskHappy", price: 170, desc: "Cosplay do Aranha: máscara vermelha com teias e olhos grandes — de boina!" },
+  { id: "ironman", name: "Homem de Ferro", icon: "robot", price: 190, desc: "Cosplay do Homem de Ferro: capacete com olhos brilhantes e a boina por cima." },
+  { id: "captain", name: "Capitão América", icon: "shield", price: 180, desc: "Cosplay do Capitão: faixa azul com 'A', asinhas e estrela — de boina!" },
+  { id: "nuit", name: "Nuit", icon: "moon", price: 210, desc: "Versão noite: lilás escuro e estrelas, pra quem ama a noite." }
 ];
 
 // ── Molduras do avatar (loja) ─────────────────────────────────
@@ -160,9 +155,7 @@ export const FRAMES: FrameDef[] = [
   { id: "spidey", name: "Teia do Aranha", icon: "maskHappy", price: 170, desc: "Anel vermelho com teias de aranha." },
   { id: "ironman", name: "Arc Reator", icon: "robot", price: 190, desc: "Anel dourado com o reator brilhando." },
   { id: "captain", name: "Escudo", icon: "shield", price: 180, desc: "Anel azul com a estrela do escudo." },
-  { id: "thor", name: "Trovão", icon: "lightning", price: 200, desc: "Anel prateado com raios de trovão." },
-  { id: "hulk", name: "Gamma", icon: "pawPrint", price: 190, desc: "Anel verde de pura força." },
-  { id: "widow", name: "Viúva", icon: "hourglass", price: 210, desc: "Anel escuro com detalhes vermelhos." }
+  { id: "nuit", name: "Nuit", icon: "moon", price: 210, desc: "Anel lilás escuro de noite estrelada." }
 ];
 
 // ── Efeitos de confete (loja) ─────────────────────────────────

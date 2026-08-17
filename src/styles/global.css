@@ -1421,7 +1421,8 @@ input, textarea, select {
   color: var(--c-accent-deep);
 }
 
-/* Roupinhas da Lulu: a boina e a echarpe mudam de cor com a loja */
+/* Roupinhas da Lulu: boina, echarpe e vestido mudam de cor com a loja
+   (--c-dress é usado pela Lulu de corpo inteiro) */
 :root,
 [data-costume="classic"] {
   --c-beret: #e5484d;
@@ -1429,6 +1430,8 @@ input, textarea, select {
   --c-beret-dot: #f28bb4;
   --c-scarf: #f28bb4;
   --c-scarf-dark: #e56b9d;
+  --c-dress: #f28bb4;
+  --c-dress-dark: #e56b9d;
 }
 [data-costume="lavande"] {
   --c-beret: #9a7bd8;
@@ -1436,6 +1439,8 @@ input, textarea, select {
   --c-beret-dot: #e3d4ff;
   --c-scarf: #b9a5f0;
   --c-scarf-dark: #9a7bd8;
+  --c-dress: #b9a5f0;
+  --c-dress-dark: #9a7bd8;
 }
 [data-costume="bleuet"] {
   --c-beret: #4d8fe5;
@@ -1443,6 +1448,8 @@ input, textarea, select {
   --c-beret-dot: #cfe6ff;
   --c-scarf: #7fb3f2;
   --c-scarf-dark: #4d8fe5;
+  --c-dress: #7fb3f2;
+  --c-dress-dark: #4d8fe5;
 }
 [data-costume="chocolat"] {
   --c-beret: #a06a3f;
@@ -1450,6 +1457,8 @@ input, textarea, select {
   --c-beret-dot: #e8c9a8;
   --c-scarf: #c98f5f;
   --c-scarf-dark: #a06a3f;
+  --c-dress: #c98f5f;
+  --c-dress-dark: #a06a3f;
 }
 [data-costume="emeraude"] {
   --c-beret: #2e9e5b;
@@ -1457,6 +1466,8 @@ input, textarea, select {
   --c-beret-dot: #c6f0d8;
   --c-scarf: #5fc98a;
   --c-scarf-dark: #2e9e5b;
+  --c-dress: #5fc98a;
+  --c-dress-dark: #2e9e5b;
 }
 [data-costume="spidey"] {
   --c-beret: #d63a2e;
@@ -1464,6 +1475,8 @@ input, textarea, select {
   --c-beret-dot: #d63a2e;
   --c-scarf: #e23a2e;
   --c-scarf-dark: #b02c23;
+  --c-dress: #e23a2e;
+  --c-dress-dark: #b02c23;
 }
 [data-costume="ironman"] {
   --c-beret: #e8a13a;
@@ -1471,6 +1484,8 @@ input, textarea, select {
   --c-beret-dot: #4dd0ff;
   --c-scarf: #d6483b;
   --c-scarf-dark: #a9352b;
+  --c-dress: #d6483b;
+  --c-dress-dark: #a9352b;
 }
 [data-costume="captain"] {
   --c-beret: #3d6fd8;
@@ -1478,30 +1493,19 @@ input, textarea, select {
   --c-beret-dot: #ffffff;
   --c-scarf: #d8483f;
   --c-scarf-dark: #a9352b;
+  --c-dress: #3d6fd8;
+  --c-dress-dark: #2a50ad;
 }
-[data-costume="thor"] {
-  --c-beret: #c9cdd8;
-  --c-beret-dark: #9aa1b0;
-  --c-beret-dot: #5a8ff0;
-  --c-scarf: #d6483b;
-  --c-scarf-dark: #a9352b;
-}
-[data-costume="hulk"] {
-  --c-beret: #232a2e;
-  --c-beret-dark: #14141f;
-  --c-beret-dot: #14141f;
-  --c-scarf: #8a6fd8;
-  --c-scarf-dark: #6a4fc0;
-  --c-skin: #86d06a;
-  --c-skin-dark: #5ca848;
-  --c-face-line: #14141f;
-}
-[data-costume="widow"] {
-  --c-beret: #8f2323;
-  --c-beret-dark: #7a1f1f;
-  --c-beret-dot: #d33f3f;
-  --c-scarf: #3a3a4a;
-  --c-scarf-dark: #1a1a26;
+/* Nuit — a versão noite (antes "Viúva"): lilás escuro e estrelado,
+   casando com o tema Nuit Douce. */
+[data-costume="nuit"] {
+  --c-beret: #3b2d4d;
+  --c-beret-dark: #241b2e;
+  --c-beret-dot: #c79be8;
+  --c-scarf: #b99ae0;
+  --c-scarf-dark: #8a6fd8;
+  --c-dress: #3b2d4d;
+  --c-dress-dark: #241b2e;
 }
 
 /* Acessórios da roupinha: cada traje mostra o detalhe do título
@@ -1529,10 +1533,7 @@ input, textarea, select {
   transition: opacity 0.25s ease;
 }
 .mc-costume-spidey .mc-spidey,
-.mc-costume-captain .mc-captain,
-.mc-costume-thor .mc-thor,
-.mc-costume-hulk .mc-hulk,
-.mc-costume-widow .mc-widow {
+.mc-costume-captain .mc-captain {
   opacity: 1;
 }
 

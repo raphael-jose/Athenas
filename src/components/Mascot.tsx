@@ -5,7 +5,6 @@
 // ══════════════════════════════════════════════════════════════
 import { useEffect, useRef, useState } from "react";
 import { sfxSparkle } from "@/lib/sfx";
-import { useSpeech } from "@/hooks/useSpeech";
 export type Mood =
   | "happy"
   | "excited"
@@ -37,7 +36,7 @@ const MOODS: Record<Mood, { eyes: EyeKind; mouth: MouthKind; brows?: BrowKind }>
 
 const FACE = "var(--c-face-line, #5b3a56)";
 
-function Eyes({ kind }: { kind: EyeKind }) {
+export function Eyes({ kind }: { kind: EyeKind }) {
   switch (kind) {
     case "arcs":
       return (
@@ -91,7 +90,7 @@ function Eyes({ kind }: { kind: EyeKind }) {
   }
 }
 
-function Mouth({ kind }: { kind: MouthKind }) {
+export function Mouth({ kind }: { kind: MouthKind }) {
   switch (kind) {
     case "smile":
       return <path d="M58 88 Q70 97 82 88" stroke={FACE} strokeWidth={3} strokeLinecap="round" fill="none" />;
@@ -119,7 +118,7 @@ function Mouth({ kind }: { kind: MouthKind }) {
   }
 }
 
-function Brows({ kind }: { kind?: BrowKind }) {
+export function Brows({ kind }: { kind?: BrowKind }) {
   if (!kind) return null;
   const raise = kind === "raise";
   return (
@@ -133,21 +132,17 @@ function Brows({ kind }: { kind?: BrowKind }) {
 export function Mascot({ mood = "happy", size = 120, className = "", speaking }: { mood?: Mood; size?: number; className?: string; speaking?: boolean }) {
   const m = MOODS[mood];
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const { speak, supported } = useSpeech();
   // Ao tocar na Lulu: reações em SEQUÊNCIA — cada toque seguido deixa
   // ela mais animada (1 = pulinho, 2 = pulo com giro, 3 = pulo grande +
   // corações). Sem toques por 1,3s, a sequência volta ao começo.
   const [level, setLevel] = useState(0);
   const levelRef = useRef(0);
   const levelTimer = useRef<number | null>(null);
-  // "Vozinha" da Lulu no toque: cada nível fala algo diferente (mais fofo).
-  const TAP_VOICE = ["", "Oi !", "Oiii !", "Miau !"];
   const handleTap = () => {
     sfxSparkle();
     const next = Math.min(levelRef.current + 1, 3);
     levelRef.current = next;
     setLevel(next);
-    if (supported && TAP_VOICE[next]) speak(TAP_VOICE[next], { lang: "pt-BR", rate: 1 + next * 0.06 });
     if (levelTimer.current) window.clearTimeout(levelTimer.current);
     levelTimer.current = window.setTimeout(() => {
       levelRef.current = 0;
