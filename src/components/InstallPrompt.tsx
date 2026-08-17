@@ -13,7 +13,11 @@ import { Icon } from "@/components/Icons";
 
 export function InstallPrompt() {
   const { state, markInstallPrompt, toast } = useApp();
-  const { canInstall, isStandalone, installed, install } = useInstallPrompt();
+  // Suprime o banner nativo SÓ quando o modal vai aparecer (primeiro
+  // login e ainda não instalado) — senão o Chrome reclama no console
+  // e o navegador perde o banner nativo à toa.
+  const suppress = state.onboarded && !state.installPromptSeen;
+  const { canInstall, isStandalone, installed, install } = useInstallPrompt(suppress);
 
   // Já instalou (botão nativo aceito): registra e comemora.
   useEffect(() => {

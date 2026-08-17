@@ -22,7 +22,14 @@ export interface InstallPromptApi {
   install: () => Promise<boolean>;
 }
 
-export function useInstallPrompt(): InstallPromptApi {
+/**
+ * `suppress` = suprimir o banner nativo do navegador (chamando
+ * preventDefault) para mostrar o botão de instalação PRÓPRIO do app.
+ * Deve ser true SÓ quando o modal de instalação vai aparecer — se for
+ * sempre true, o Chrome reclama no console ("Banner not shown:
+ * preventDefault() called") em toda visita em que o modal não aparece.
+ */
+export function useInstallPrompt(suppress = true): InstallPromptApi {
   const [canInstall, setCanInstall] = useState(false);
   const [installed, setInstalled] = useState(false);
   const deferred = useRef<BeforeInstallPromptEvent | null>(null);
@@ -34,7 +41,10 @@ export function useInstallPrompt(): InstallPromptApi {
 
   useEffect(() => {
     const onPrompt = (e: Event) => {
-      e.preventDefault();
+      // Só suprime o banner nativo quando o app vai mostrar o próprio
+      // botão de instalação (senão o Chrome avisa no console e o
+      // navegador fica sem o banner nativo à toa).
+      if (suppress) e.preventDefault();
       deferred.current = e as BeforeInstallPromptEvent;
       setCanInstall(true);
     };
@@ -48,7 +58,7 @@ export function useInstallPrompt(): InstallPromptApi {
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, []);
+  }, [suppress]);
 
   const install = useCallback(async () => {
     const e = deferred.current;
