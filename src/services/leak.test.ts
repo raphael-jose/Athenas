@@ -23,6 +23,8 @@ function jsFiles(dir: string): string[] {
 }
 
 describe("anti-vazamento do bundle", () => {
+  // O dist agora tem assets grandes (worker do Piper ≈ 45 MB) — a
+  // varredura pode passar de 5s quando roda em paralelo com a suíte.
   it("nenhum arquivo do dist contém uma chave de API em texto puro", () => {
     const distDir = join(process.cwd(), "dist");
     // `npm test` sozinho (sem build) não tem dist — pula em vez de falhar;
@@ -35,5 +37,5 @@ describe("anti-vazamento do bundle", () => {
       const hits = content.match(KEY_SHAPE) ?? [];
       expect(hits, `${f} contém possível chave vazada`).toEqual([]);
     }
-  });
+  }, 60000);
 });

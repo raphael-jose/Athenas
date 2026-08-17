@@ -2,17 +2,13 @@
 // Athenas — Fala: síntese + reconhecimento
 //
 // 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
-//   1. VOZ NATURAL DO HUGGINGFACE (a voz da Lulu) — quando o modelo já
-//      está pronto, é SEMPRE a primeira escolha. O francês usa o modelo
-//      FEMININO mms-tts-fra (≈36 MB, cacheado, funciona até offline); o
-//      português usa a voz Dii (Piper pt-BR FEMININA, ≈63 MB).
-//   2. PRIMEIRA FALA / FALLBACK: voz remota Google Cloud FEMININA
-//      (ResponsiveVoice, sem chave, ~700ms) — fala NA HORA enquanto o
-//      modelo local carrega em segundo plano (o modelo esquenta e
-//      assume nas falas seguintes). Soa natural e é feminina.
-//   3. Sem modelo local E sem internet → silêncio.
-//   NUNCA voz masculina e NUNCA voz genérica de navegador (Web Speech
-//   API), em lugar nenhum do projeto.
+//   SÓ existem DUAS vozes, ambas NATURAIS e FEMININAS do HuggingFace:
+//     1. FRANCÊS → mms-tts-fra (≈36 MB, cacheado, funciona até offline)
+//     2. PORTUGUÊS → Dii (Piper pt-BR, ≈63 MB)
+//   Enquanto o modelo não está pronto, o botão PULSA esperando; quando
+//   pronto, fala com a voz natural. Se o modelo falhar de verdade, fica
+//   em SILÊNCIO — NUNCA a voz genérica (nem Google, nem navegador) e
+//   NUNCA voz masculina, em lugar nenhum do projeto.
 //
 // Detecção de idioma: texto em francês → voz fr-FR; texto em
 // português → voz pt-BR. Cada um na sua língua, sem sotaque
@@ -20,7 +16,6 @@
 // ══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useMemo } from "react";
 import { isNaturalReady, langToModel, synthesizeNaturalVoice } from "@/services/naturalVoice";
-import { synthesizeRemote } from "@/services/remoteTTS";
 import { isPiperReady, piperWarmup, synthesizePiper } from "@/services/piperVoice";
 import { cleanForSpeech } from "@/services/speechClean";
 
@@ -28,8 +23,8 @@ export interface SpeechResult {
   supported: boolean;
   /**
    * Fala o texto com voz FEMININA NATURAL (HuggingFace: mms-tts-fra em
-   * francês, Piper Dii em português) ou, se falhar, com a voz remota
-   * Google Cloud FEMININA — NUNCA com a voz do navegador.
+   * francês, Piper Dii em português). O botão pulsa enquanto o modelo
+   * carrega; se falhar, silêncio — NUNCA voz genérica (Google/navegador).
    * `lang` força um idioma.
    */
   speak: (text: string, opts?: { rate?: number; lang?: string; onEnd?: () => void }) => boolean;
@@ -198,26 +193,22 @@ function playAudioBlob(blob: Blob, onEnd?: () => void) {
 }
 
 /**
- * Tenta a voz natural (HuggingFace); se falhar ou demorar demais,
- * fala com a voz remota Google Cloud FEMININA (nunca a do navegador).
+ * Tenta a voz natural (HuggingFace); se a síntese falhar, fica em
+ * silêncio — NUNCA cai na voz genérica (Google/navegador).
  */
 async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
-  let fellBack = false;
   const timeoutMs = isNaturalReady() ? NATURAL_FAST_TIMEOUT_MS : NATURAL_FIRST_TIMEOUT_MS;
   try {
     const audio = await withTimeout(synthesizeNaturalVoice(text, lang), timeoutMs);
-    // outra fala assumiu ou o fallback já falou — não duplica áudio
-    if (token !== naturalToken || fellBack) return;
+    // outra fala assumiu — não duplica áudio
+    if (token !== naturalToken) return;
     playAudioBlob(audio.blob, opts?.onEnd);
-    return;
   } catch {
     if (token !== naturalToken) return;
+    console.info("[Athenas-voz] síntese natural falhou — silêncio (nunca a voz genérica)");
+    opts?.onEnd?.();
   }
-  fellBack = true;
-  // NUNCA a voz feia do navegador: o fallback é a voz remota Google
-  // Cloud FEMININA (natural) — e, sem ela, silêncio.
-  speakRemoteFast(text, lang, opts);
 }
 
 // O app NÃO fala pela Web Speech API (voz do navegador é feia — o
@@ -228,18 +219,15 @@ let voiceCache: SpeechSynthesisVoice[] = [];
 
 // ── Warm-up da voz natural (junto com o 1º áudio tocado) ───────
 // O carregamento do modelo do HuggingFace roda em worker (não trava a
-// tela). Enquanto o modelo não está pronto, a 1ª fala usa a voz remota
-// Google Cloud FEMININA (na hora) e o modelo esquenta em segundo plano;
-// quando pronto, as falas seguintes usam a voz natural (nunca a do
-// navegador).
+// tela). Enquanto o modelo não está pronto, o botão PULSA esperando;
+// quando pronto, fala com a voz natural. Nunca a do navegador.
 let warmupPromise: Promise<void> | null = null;
 
 /**
  * Inicia o carregamento do modelo em background (uma vez por sessão,
  * e de novo após uma falha — o worker retenta o download). Devolve a
  * promise do aquecimento (resolve quando o modelo + 1ª síntese
- * terminam). Enquanto não está pronto, a fala sai na voz remota
- * (Google Cloud feminina) e o modelo assume quando termina.
+ * terminam).
  */
 function kickOffNaturalWarmup(): Promise<void> {
   if (warmupPromise) return warmupPromise;
@@ -251,6 +239,27 @@ function kickOffNaturalWarmup(): Promise<void> {
       warmupPromise = null;
     });
   return warmupPromise;
+}
+
+/**
+ * ESPERA pela voz do HuggingFace (francês) e fala com ela — o botão
+ * pulsa enquanto o modelo baixa/carrega (1ª vez ≈ 36 MB; depois fica
+ * em cache e é rápido). Se o modelo FALHAR de verdade, fica em
+ * silêncio — NUNCA a voz genérica (Google/navegador).
+ */
+async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  try {
+    await withTimeout(kickOffNaturalWarmup(), 120000);
+    if (token !== naturalToken) return;
+    const audio = await withTimeout(synthesizeNaturalVoice(text, lang), NATURAL_FIRST_TIMEOUT_MS);
+    if (token !== naturalToken) return;
+    playAudioBlob(audio.blob, opts?.onEnd);
+  } catch (err) {
+    if (token !== naturalToken) return;
+    console.info("[Athenas-voz] voz natural não ficou pronta — silêncio (nunca a voz genérica)", err instanceof Error ? err.message : "");
+    opts?.onEnd?.();
+  }
 }
 
 function refreshCache(): SpeechSynthesisVoice[] {
@@ -265,9 +274,9 @@ function refreshCache(): SpeechSynthesisVoice[] {
 
 /**
  * Fala AGORA com a voz Dii (Piper pt-BR feminina, HuggingFace) — modelo
- * já quente. Se a síntese falhar, cai na voz remota feminina.
+ * já quente. Se a síntese falhar, fica em silêncio — nunca genérica.
  */
-async function speakPiperFast(text: string, lang: string, opts?: SpeakOpts) {
+async function speakPiperFast(text: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
     const blob = await withTimeout(synthesizePiper(text), 45000);
@@ -275,30 +284,28 @@ async function speakPiperFast(text: string, lang: string, opts?: SpeakOpts) {
     playAudioBlob(blob, opts?.onEnd);
   } catch {
     if (token !== naturalToken) return;
-    // NUNCA a voz feia do navegador: voz remota Google Cloud FEMININA.
-    speakRemoteFast(text, lang, opts);
+    console.info("[Athenas-voz] síntese Dii falhou — silêncio (nunca a voz genérica)");
+    opts?.onEnd?.();
   }
 }
 
 /**
- * FALLBACK/PRIMEIRA FALA: voz remota Google Cloud FEMININA (sem chave,
- * ~700ms) — usada quando o modelo local (HuggingFace/Piper) ainda está
- * carregando ou falhou. NUNCA a voz do navegador. Sem internet, fica em
- * silêncio (melhor que voz feia).
+ * ESPERA pela voz Dii (Piper pt-BR) e fala com ela — o botão pulsa
+ * enquanto o modelo baixa na 1ª vez (runtime + modelo ≈ 170 MB; depois
+ * fica em cache e é rápido). Se a Dii FALHAR de verdade, fica em
+ * silêncio — NUNCA a voz genérica (Google/navegador).
  */
-async function speakRemoteFast(text: string, lang: string, opts?: SpeakOpts) {
+async function speakWhenPiperReady(text: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
-    const blob = await withTimeout(synthesizeRemote(text, lang), 6000);
+    await withTimeout(piperWarmup(), 240000);
+    if (token !== naturalToken) return;
+    const blob = await withTimeout(synthesizePiper(text), 45000);
     if (token !== naturalToken) return;
     playAudioBlob(blob, opts?.onEnd);
-    return;
   } catch (err) {
     if (token !== naturalToken) return;
-    console.info(
-      "[Athenas-voz] modelo local e remoto falharam — silêncio (nunca a voz feia do navegador)",
-      err instanceof Error ? err.message : ""
-    );
+    console.info("[Athenas-voz] voz Dii não ficou pronta — silêncio (nunca a voz genérica)", err instanceof Error ? err.message : "");
     opts?.onEnd?.();
   }
 }
@@ -324,8 +331,8 @@ export function useSpeech(): SpeechResult {
     const t = setTimeout(load, 400);
     // 🎀 PRÉ-CARGA da voz do HuggingFace: começa a baixar/carregar o
     // modelo assim que o app abre (em worker, sem travar a tela). Assim
-    // a primeira fala do usuário já é a voz natural do HuggingFace — a
-    // ponte remota fica só para os primeiros segundos da sessão.
+    // a primeira fala do usuário já é a voz natural do HuggingFace (o
+    // botão pulsa até ela ficar pronta).
     const pre = setTimeout(() => {
       kickOffNaturalWarmup();
     }, 2000);
@@ -351,14 +358,7 @@ export function useSpeech(): SpeechResult {
       const hasNatural = langToModel(lang) !== null;
       const isPt = lang.toLowerCase().slice(0, 2) === "pt";
 
-      // Garante que o modelo natural está carregando em segundo plano
-      // (nunca bloqueia o clique — fala sai na hora e o modelo esquenta
-      // para as próximas falas).
-      if (hasNatural && !isNaturalReady()) kickOffNaturalWarmup();
-      if (isPt && !isPiperReady()) void piperWarmup();
-
-      // 1. VOZ DO HUGGINGFACE (a voz da Lulu) — quando o modelo JÁ está
-      //    pronto, é a primeira escolha.
+      // 1. FRANCÊS: modelo HuggingFace JÁ pronto → fala agora.
       if (hasNatural && isNaturalReady() && !naturalBusy) {
         naturalBusy = true;
         stop();
@@ -368,17 +368,29 @@ export function useSpeech(): SpeechResult {
         return true;
       }
 
-      // 2. Português: voz DII (Piper HuggingFace, feminina) pronta.
+      // 2. PORTUGUÊS: voz Dii (Piper) JÁ pronta → fala agora.
       if (isPt && isPiperReady()) {
-        speakPiperFast(cleaned, lang, opts);
+        speakPiperFast(cleaned, opts);
         return true;
       }
 
-      // 3. Modelo ainda carregando (1ª fala da sessão): fala NA HORA com
-      //    a voz remota Google Cloud FEMININA (natural, ~700ms) enquanto
-      //    o modelo local termina de carregar em background. NUNCA a voz
-      //    feia do navegador.
-      speakRemoteFast(cleaned, lang, opts);
+      // 3. Modelo ainda carregando → ESPERA (o botão pulsa) e fala com
+      //    a voz natural assim que pronta. NUNCA a voz genérica — nem a
+      //    do Google, nem a do navegador.
+      if (hasNatural) {
+        kickOffNaturalWarmup();
+        speakWhenNaturalReady(cleaned, lang, opts);
+        return true;
+      }
+      if (isPt) {
+        void piperWarmup();
+        speakWhenPiperReady(cleaned, opts);
+        return true;
+      }
+
+      // 4. Sem voz natural no idioma → silêncio (melhor que voz genérica).
+      console.info(`[Athenas-voz] sem voz natural em ${lang} — silêncio`);
+      opts?.onEnd?.();
       return true;
     },
     [supported]
