@@ -94,55 +94,12 @@ export function detectLang(text: string): "pt-BR" | "fr-FR" {
   return pt >= fr ? "pt-BR" : "fr-FR";
 }
 
-// ── Seleção de voz FEMININA ──────────────────────────────────
-// Nomes comuns de vozes femininas (Windows/Edge, Google/Android,
-// Apple/macOS/iOS) — FR e PT-BR, com um bocado de inglês também
-// (algumas plataformas só oferecem feminina em inglês).
-const FEMALE_HINTS =
-  /(julie|hortense|am[ée]lie|audrey|c[ée]cile|florence|louise|marie|maria|elise|claire|denise|jos[ée]phine|juliette|le?a|manon|ma[ée]va|charlotte|victorine|virginie|chantal|amelia|francisca|thalita|camila|brenda|fernanda|helena|vit[oó]ria|alice|laura|nathalie|emma|ava|bella|emily|hannah|isabella|isabela|karen|mia|natasha|olivia|paula|rebeca|samantha|sara|serena|sofia|susan|zira|joana|julia|gabriela|luciana|marcia|marta|nadia|nora|raquel|valentina|ana|lara|leila|lisa|liz|luana|monica|tessa|victoria|fiona|kate|moira|zoe|amber|jenny|hazel|heather|lily|nina|rosa|sonia|tina|uma|vanessa|vicki|google us english|google uk english female|google portugu[êe]s do brasil|google deutsch|google fran[çc]ais|female|feminin|woman|mulher|voz feminina|siri)/i;
-const MALE_HINTS =
-  /(thomas|antoine|michel|paul|pierre|lucas|daniel|davi|jorge|david|george|alexandre|antonio|f[áa]bio|luciano|joaquim|rogerio|rodrigo|yuri|samuel|thiago|luiz|fernando|carlos|marcos|pedro|miguel|rafael|gustavo|henrique|mark|michael|dylan|ryan|tristan|watson|ian|ken|jason|andy|edward|harry|jack|kyle|lee|noah|william|fred|alex|brian|christopher|eric|guy|james|john|oliver|rishi|male|masculin|homme|homem|voz masculina)/i;
-const QUALITY_HINTS = /(google|microsoft|natural|neural|premium|enhanced|online|high|siri)/i;
-
-/** true quando o nome indica claramente voz feminina. */
-function isFemale(v: SpeechSynthesisVoice): boolean {
-  return FEMALE_HINTS.test(v.name) && !MALE_HINTS.test(v.name);
-}
-
-function qualityScore(v: SpeechSynthesisVoice): number {
-  let s = 0;
-  if (QUALITY_HINTS.test(v.name)) s += 3;
-  if (isFemale(v)) s += 1; // desempate entre femininas
-  return s;
-}
-
-function bestOf(list: SpeechSynthesisVoice[]): SpeechSynthesisVoice {
-  return [...list].sort((a, b) => qualityScore(b) - qualityScore(a))[0];
-}
-
-/**
- * Escolhe a voz do idioma com REGRA ESTRITA: só FEMININA.
- * Se o dispositivo não tiver nenhuma voz feminina no idioma,
- * devolve null — o app fica em silêncio (ou usa a voz natural
- * do HuggingFace, que é feminina) em vez de cair em voz
- * masculina ou de gênero desconhecido.
- */
-export function pickVoice(lang: string, voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
-  const prefix = lang.toLowerCase().slice(0, 2);
-  const matches = voices.filter((v) => v.lang.toLowerCase().startsWith(prefix));
-  if (matches.length === 0) return null;
-  const females = matches.filter(isFemale);
-  if (females.length === 0) return null;
-  return bestOf(females);
-}
-
 // ── Voz natural (HuggingFace no navegador) ────────────────────
 // Áudio natural em reprodução (para o stop() silenciar de qualquer tela).
 let currentAudio: HTMLAudioElement | null = null;
 
-// Proteção contra chamadas simultâneas (o pipeline sintetiza em série)
-// e contra resultados atrasados após o fallback já ter falado.
-let naturalBusy = false;
+// Token anti-duplicação: o clique mais recente vence — um toque rápido
+// por cima do outro não sobrepõe áudio (o resultado antigo é descartado).
 let naturalToken = 0;
 
 // Primeira fala baixa o modelo (≈36 MB) — dá tempo; depois é rápido.
@@ -211,12 +168,6 @@ async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
   }
 }
 
-// O app NÃO fala pela Web Speech API (voz do navegador é feia — o
-// usuário pediu para removê-la para sempre). As funções de seleção
-// (pickVoice etc.) ficam exportadas/testadas, mas nenhum fluxo de fala
-// usa voz de navegador.
-let voiceCache: SpeechSynthesisVoice[] = [];
-
 // ── Warm-up da voz natural (junto com o 1º áudio tocado) ───────
 // O carregamento do modelo do HuggingFace roda em worker (não trava a
 // tela). Enquanto o modelo não está pronto, o botão PULSA esperando;
@@ -260,16 +211,6 @@ async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpt
     console.info("[Athenas-voz] voz natural não ficou pronta — silêncio (nunca a voz genérica)", err instanceof Error ? err.message : "");
     opts?.onEnd?.();
   }
-}
-
-function refreshCache(): SpeechSynthesisVoice[] {
-  try {
-    const list = window.speechSynthesis.getVoices();
-    if (list.length > 0) voiceCache = list;
-  } catch {
-    // alguns navegadores lançam antes de a API estar pronta
-  }
-  return voiceCache;
 }
 
 /**
@@ -317,18 +258,13 @@ interface SpeakOpts {
 }
 
 export function useSpeech(): SpeechResult {
-  const supported = typeof window !== "undefined" && "speechSynthesis" in window;
+  // O app reproduz com <audio> (blob da voz natural) — não depende da
+  // Web Speech API (que só era usada pela voz feia de navegador).
+  const supported = typeof window !== "undefined" && "Audio" in window;
   const canListen = typeof window !== "undefined" && getRecognitionCtor() !== null;
 
   useEffect(() => {
     if (!supported) return;
-    const load = () => {
-      refreshCache();
-    };
-    load();
-    window.speechSynthesis.addEventListener?.("voiceschanged", load);
-    // em alguns navegadores as vozes chegam atrasadas
-    const t = setTimeout(load, 400);
     // 🎀 PRÉ-CARGA da voz do HuggingFace: começa a baixar/carregar o
     // modelo assim que o app abre (em worker, sem travar a tela). Assim
     // a primeira fala do usuário já é a voz natural do HuggingFace (o
@@ -336,11 +272,7 @@ export function useSpeech(): SpeechResult {
     const pre = setTimeout(() => {
       kickOffNaturalWarmup();
     }, 2000);
-    return () => {
-      window.speechSynthesis.removeEventListener?.("voiceschanged", load);
-      clearTimeout(t);
-      clearTimeout(pre);
-    };
+    return () => clearTimeout(pre);
   }, [supported]);
 
   const speak = useCallback(
@@ -358,18 +290,18 @@ export function useSpeech(): SpeechResult {
       const hasNatural = langToModel(lang) !== null;
       const isPt = lang.toLowerCase().slice(0, 2) === "pt";
 
-      // 1. FRANCÊS: modelo HuggingFace JÁ pronto → fala agora.
-      if (hasNatural && isNaturalReady() && !naturalBusy) {
-        naturalBusy = true;
+      // 1. FRANCÊS: modelo HuggingFace JÁ pronto → fala agora
+      //    (stop() interrompe qualquer fala anterior — nunca sobrepõe).
+      if (hasNatural && isNaturalReady()) {
         stop();
-        speakNatural(cleaned, lang, opts).finally(() => {
-          naturalBusy = false;
-        });
+        speakNatural(cleaned, lang, opts);
         return true;
       }
 
-      // 2. PORTUGUÊS: voz Dii (Piper) JÁ pronta → fala agora.
+      // 2. PORTUGUÊS: voz Dii (Piper) JÁ pronta → fala agora
+      //    (stop() interrompe qualquer fala anterior).
       if (isPt && isPiperReady()) {
+        stop();
         speakPiperFast(cleaned, opts);
         return true;
       }
@@ -397,7 +329,6 @@ export function useSpeech(): SpeechResult {
   );
 
   const stop = useCallback(() => {
-    if (supported) window.speechSynthesis.cancel();
     if (currentAudio) {
       try {
         currentAudio.pause();

@@ -46,6 +46,11 @@ function getWorker(): Worker | null {
   worker.onerror = () => {
     workerReady = false;
     worker = null;
+    // Se o worker caiu (memória/rede), o warmup antigo é inválido —
+    // zera para o próximo pedido baixar o modelo de novo. Antes, a
+    // promise já resolvida voltava na hora e a síntese seguinte
+    // falhava/re-baixava 63 MB sem necessidade.
+    warmupPromise = null;
     for (const [, p] of pending) p.reject(new Error("piper_crash"));
     pending.clear();
   };
