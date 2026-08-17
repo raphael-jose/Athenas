@@ -7,14 +7,15 @@
 //      travar) e, se o usuário tocar antes de ficar pronto, o botão
 //      PULSA esperando — nunca troca por voz genérica de navegador.
 //      O francês usa o modelo FEMININO mms-tts-fra (≈36 MB, cacheado,
-//      funciona até offline); o mms-tts-por é masculino e NÃO é usado.
-//   2. VOZ FEMININA DO APARELHO (Web Speech API) — seleção ESTRITA:
-//      só feminina. Usada quando o modelo local falha ou não existe
-//      (português, por exemplo).
-//   3. ÚLTIMO RECURSO (melhor que silêncio): voz remota Google Cloud
-//      FEMININA via ResponsiveVoice (sem chave) — só quando o modelo
-//      local não carrega E o aparelho não tem voz feminina no idioma.
-//   NUNCA voz masculina, em lugar nenhum do projeto.
+//      funciona até offline); o português usa a voz Dii (Piper pt-BR
+//      FEMININA, ≈63 MB).
+//   2. VOZ REMOTA Google Cloud FEMININA (ResponsiveVoice, sem chave)
+//      — fallback quando o modelo local não carrega/falha. Soa natural
+//      e é feminina. NUNCA a voz do navegador (Web Speech API).
+//   3. Sem modelo local E sem internet → silêncio (melhor que a voz
+//      feia do navegador).
+//   NUNCA voz masculina e NUNCA voz genérica de navegador, em lugar
+//   nenhum do projeto.
 //
 // Detecção de idioma: texto em francês → voz fr-FR; texto em
 // português → voz pt-BR. Cada um na sua língua, sem sotaque
@@ -29,8 +30,9 @@ import { cleanForSpeech } from "@/services/speechClean";
 export interface SpeechResult {
   supported: boolean;
   /**
-   * Fala o texto com voz FEMININA NATURAL (HuggingFace no navegador)
-   * ou, se falhar, com a melhor voz feminina do dispositivo.
+   * Fala o texto com voz FEMININA NATURAL (HuggingFace: mms-tts-fra em
+   * francês, Piper Dii em português) ou, se falhar, com a voz remota
+   * Google Cloud FEMININA — NUNCA com a voz do navegador.
    * `lang` força um idioma.
    */
   speak: (text: string, opts?: { rate?: number; lang?: string; onEnd?: () => void }) => boolean;
@@ -199,8 +201,8 @@ function playAudioBlob(blob: Blob, onEnd?: () => void) {
 }
 
 /**
- * Tenta a voz natural; se falhar ou demorar demais, fala com a
- * melhor voz feminina do dispositivo (sem duplicar o áudio).
+ * Tenta a voz natural (HuggingFace); se falhar ou demorar demais,
+ * fala com a voz remota Google Cloud FEMININA (nunca a do navegador).
  */
 async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
@@ -216,28 +218,23 @@ async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
     if (token !== naturalToken) return;
   }
   fellBack = true;
-  if (!pickVoice(lang, refreshCache())) {
-    // sem voz feminina no aparelho: último recurso (melhor que silêncio)
-    speakRemoteFast(text, lang, opts);
-    return;
-  }
-  webSpeak(text, lang, opts);
+  // NUNCA a voz feia do navegador: o fallback é a voz remota Google
+  // Cloud FEMININA (natural) — e, sem ela, silêncio.
+  speakRemoteFast(text, lang, opts);
 }
 
-// Cache global: as vozes chegam de forma assíncrona (voiceschanged).
-// Todas as instâncias de useSpeech alimentam o mesmo cache, e o speak
-// consulta o cache + getVoices() na hora — e, se ainda vazio, ESPERA
-// pelas vozes antes de falar (nunca cai na voz padrão masculina).
+// O app NÃO fala pela Web Speech API (voz do navegador é feia — o
+// usuário pediu para removê-la para sempre). O cache de vozes abaixo
+// fica só para a seleção estrita feminina (pickVoice, exportada e
+// testada) — nenhum fluxo de fala usa voz de navegador.
 let voiceCache: SpeechSynthesisVoice[] = [];
 
 // ── Warm-up da voz natural (junto com o 1º áudio tocado) ───────
-// O carregamento do modelo do HuggingFace (WASM) roda na thread
-// principal e pode CONGELAR a interface por alguns segundos no
-// celular. A regra é: enquanto o modelo não está pronto, falamos
-// IMEDIATAMENTE com a melhor voz do aparelho (zero espera) e o
-// modelo começa a carregar em background junto com esse primeiro
-// áudio; quando estiver pronto, todas as falas seguintes usam a
-// voz natural.
+// O carregamento do modelo do HuggingFace roda em worker (não trava a
+// tela). Enquanto o modelo não está pronto, o botão PULSA esperando —
+// nunca fala com a voz do navegador. Quando pronto, todas as falas
+// usam a voz natural; se o modelo falhar, a voz remota Google Cloud
+// FEMININA assume (nunca a do navegador).
 let warmupPromise: Promise<void> | null = null;
 let warmupFailed = false;
 
@@ -268,7 +265,7 @@ function kickOffNaturalWarmup(): Promise<void> {
  * (o botão pulsa enquanto isso). O tempo de espera cobre o primeiro
  * download (≈36 MB); depois disso o modelo está em cache e carrega
  * rápido. Só se o modelo FALHAR de verdade (rede bloqueada/CDN fora)
- * é que cai na voz feminina do aparelho e, sem ela, no último recurso.
+ * é que cai na voz remota Google Cloud FEMININA — nunca no navegador.
  */
 async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
@@ -286,13 +283,9 @@ async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpt
     playAudioBlob(audio.blob, opts?.onEnd);
   } catch (err) {
     if (token !== naturalToken) return;
-    console.info("[Athenas-voz] voz natural não ficou pronta — fallback para a voz do aparelho", err instanceof Error ? err.message : "");
-    if (!pickVoice(lang, refreshCache())) {
-      // sem voz feminina no aparelho: último recurso (melhor que silêncio)
-      speakRemoteFast(text, lang, opts);
-      return;
-    }
-    webSpeak(text, lang, opts);
+    console.info("[Athenas-voz] voz natural não ficou pronta — fallback para a voz remota feminina", err instanceof Error ? err.message : "");
+    // NUNCA a voz feia do navegador: voz remota Google Cloud FEMININA.
+    speakRemoteFast(text, lang, opts);
   }
 }
 
@@ -325,8 +318,8 @@ async function speakPiperFast(text: string, lang: string, opts?: SpeakOpts) {
 /**
  * ESPERA pela voz Dii (baixa o modelo na 1ª vez, botão pulsa) e fala
  * com ela — igual ao comportamento do francês com a voz do HuggingFace.
- * Só se a Dii falhar de verdade é que cai na voz feminina do aparelho
- * e, sem ela, no último recurso.
+ * Só se a Dii falhar de verdade é que cai na voz remota Google Cloud
+ * FEMININA — nunca no navegador.
  */
 async function speakWhenPiperReady(text: string, lang: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
@@ -338,20 +331,16 @@ async function speakWhenPiperReady(text: string, lang: string, opts?: SpeakOpts)
     playAudioBlob(blob, opts?.onEnd);
   } catch (err) {
     if (token !== naturalToken) return;
-    console.info("[Athenas-voz] voz Dii não ficou pronta — fallback para a voz feminina do aparelho", err instanceof Error ? err.message : "");
-    if (!pickVoice(lang, refreshCache())) {
-      // sem voz feminina no aparelho: último recurso (melhor que silêncio)
-      speakRemoteFast(text, lang, opts);
-      return;
-    }
-    webSpeak(text, lang, opts);
+    console.info("[Athenas-voz] voz Dii não ficou pronta — fallback para a voz remota feminina", err instanceof Error ? err.message : "");
+    // NUNCA a voz feia do navegador: voz remota Google Cloud FEMININA.
+    speakRemoteFast(text, lang, opts);
   }
 }
 
 /**
- * ÚLTIMO RECURSO: voz remota Google Cloud FEMININA (sem chave) — usada
- * só quando o modelo local não carrega E o aparelho não tem voz feminina
- * no idioma. Melhor que silêncio, e continua sendo feminina.
+ * FALLBACK: voz remota Google Cloud FEMININA (sem chave) — usada quando
+ * o modelo local (HuggingFace/Piper) não carrega ou falha. NUNCA a voz
+ * do navegador. Sem internet, fica em silêncio (melhor que voz feia).
  */
 async function speakRemoteFast(text: string, lang: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
@@ -363,7 +352,7 @@ async function speakRemoteFast(text: string, lang: string, opts?: SpeakOpts) {
   } catch (err) {
     if (token !== naturalToken) return;
     console.info(
-      "[Athenas-voz] sem voz possível (modelo local, aparelho e remoto falharam) — silêncio",
+      "[Athenas-voz] modelo local e remoto falharam — silêncio (nunca a voz feia do navegador)",
       err instanceof Error ? err.message : ""
     );
     opts?.onEnd?.();
@@ -374,73 +363,6 @@ interface SpeakOpts {
   rate?: number;
   lang?: string;
   onEnd?: () => void;
-}
-
-/**
- * Fala imediatamente com a voz feminina escolhida. Sem voz feminina
- * no idioma, fica em SILÊNCIO (nunca usa a voz padrão masculina do
- * navegador) e avisa o chamador pelo onEnd.
- */
-function speakNow(text: string, lang: string, voice: SpeechSynthesisVoice | null, opts?: SpeakOpts) {
-  if (!voice) {
-    console.info(`[Athenas-voz] sem voz feminina em ${lang} — silêncio (voz natural feminina assume quando pronta)`);
-    opts?.onEnd?.();
-    return;
-  }
-  const synth = window.speechSynthesis;
-  synth.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang;
-  u.rate = opts?.rate ?? 1.0;
-  u.pitch = 1.05;
-  u.voice = voice;
-  if (opts?.onEnd) u.onend = opts.onEnd;
-  synth.speak(u);
-  synth.resume(); // proteção contra "travamento" do Chrome após cancel()
-}
-
-/**
- * Fala aguardando as vozes carregarem: tenta na hora; se ainda não há
- * vozes no idioma, escuta "voiceschanged" por até 2,5s e fala assim que
- * uma voz (feminina!) aparecer. Só cai para a voz padrão do navegador
- * se absolutamente nenhuma voz chegar.
- */
-function speakWaitingForVoices(text: string, lang: string, opts?: SpeakOpts) {
-  const attempt = (): SpeechSynthesisVoice | null => pickVoice(lang, refreshCache());
-  let done = false;
-  const onVoices = () => {
-    const voice = attempt();
-    if (voice) {
-      done = true;
-      window.speechSynthesis.removeEventListener?.("voiceschanged", onVoices);
-      speakNow(text, lang, voice, opts);
-    }
-  };
-  window.speechSynthesis.addEventListener?.("voiceschanged", onVoices);
-  window.setTimeout(() => {
-    if (done) return;
-    done = true;
-    window.speechSynthesis.removeEventListener?.("voiceschanged", onVoices);
-    speakNow(text, lang, attempt(), opts);
-  }, 2500);
-
-  const voice = attempt();
-  if (voice) {
-    done = true;
-    window.speechSynthesis.removeEventListener?.("voiceschanged", onVoices);
-    speakNow(text, lang, voice, opts);
-  }
-}
-
-/** Fala com a melhor voz feminina do dispositivo (fallback). */
-function webSpeak(text: string, lang: string, opts?: SpeakOpts) {
-  const voice = pickVoice(lang, refreshCache());
-  if (voice) {
-    speakNow(text, lang, voice, opts);
-  } else {
-    // vozes ainda não carregaram: espera por elas antes de falar
-    speakWaitingForVoices(text, lang, opts);
-  }
 }
 
 export function useSpeech(): SpeechResult {
