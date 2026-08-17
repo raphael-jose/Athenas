@@ -21,7 +21,7 @@ import { AudioButton } from "@/components/AudioButton";
 import { RichText } from "@/components/RichText";
 import { useSpeech } from "@/hooks/useSpeech";
 import { usePushToTalk } from "@/hooks/usePushToTalk";
-import { cleanSpokenText } from "@/services/speechClean";
+import { cleanForSpeech, cleanSpokenText } from "@/services/speechClean";
 import { sfxComplete, sfxCorrect, sfxVictory, sfxWrong } from "@/lib/sfx";
 import { fireConfetti } from "@/lib/confetti";
 import { soundFrenchQuiz, isSoundFrenchCorrect, soundFrenchScore, soundFrenchTier } from "@/services/soundFrenchQuiz";
@@ -210,7 +210,10 @@ function ChatMode() {
           return (
             <div key={i} className={m.role === "assistant" ? "lulu-msg-in" : undefined}>
               <div className={`msg ${m.role === "user" ? "user" : "assistant"}`}>
-                <RichText text={m.content} />
+                {/* A Lulu mostra o MESMO texto limpo que ela fala: nada de
+                    markdown cru nem emojis na exibição. As mensagens do aluno
+                    ficam como ele escreveu. */}
+                <RichText text={m.role === "assistant" ? cleanForSpeech(m.content) : m.content} />
                 {m.role === "assistant" && (
                   <span className="msg-audio">
                     <AudioButton text={frenchSpeakText(m.content)} size="sm" label="Ouvir o francês desta resposta" />
@@ -538,7 +541,11 @@ function ConversationMode() {
           <p className="muted small mt-3" style={{ textAlign: "left" }}>
             Estimativa local carinhosa {provider.ready() ? "(a Lulu está refinando…)" : "(demo — configure a IA online para análise real)"}
           </p>
-          {feedback.text && <div className="card-soft mt-2 small" style={{ textAlign: "left" }}><RichText text={feedback.text} /></div>}
+          {feedback.text && (
+            <div className="card-soft mt-2 small" style={{ textAlign: "left" }}>
+              <RichText text={cleanForSpeech(feedback.text)} />
+            </div>
+          )}
           <div className="card-soft mt-3" style={{ textAlign: "left" }}>
             <div className="small bold mb-2 row" style={{ gap: 6 }}>
               <Icon name="chatCircleDots" size={14} /> Como um francês diria — ouça de novo
@@ -801,7 +808,7 @@ function SoundFrenchMode() {
           <div className="feedback good">
             <Icon name="sparkle" size={15} style={{ verticalAlign: -2 }} /> <strong>Lulu (online) analisou:</strong>
           </div>
-          <p className="mt-2 mb-0" style={{ whiteSpace: "pre-wrap" }}>{aiNote}</p>
+          <p className="mt-2 mb-0" style={{ whiteSpace: "pre-wrap" }}>{cleanForSpeech(aiNote)}</p>
         </Card>
       )}
 
