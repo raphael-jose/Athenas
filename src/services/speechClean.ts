@@ -27,6 +27,44 @@ const STUTTER_RE = /(\b[a-zà-ÿ]{1,2})-(\1[a-zà-ÿ]*)/gi;
  * - colapsa palavras repetidas seguidas ("je je veux" → "je veux")
  * - normaliza espaços e pontuação final
  */
+/**
+ * Limpa um texto ANTES de ser FALADO pela Lulu:
+ * - remove marcadores de formatação (markdown): **negrito**, *itálico*,
+ *   _sublinhado_, `código`, # título, > citação, [link](url), listas…
+ * - remove EMOJIS (a voz não deve descrever "coração", "rosa"…)
+ * - preserva letras, números, pontuação, apóstrofos e hífens do francês
+ *   (aujourd'hui, peut-être) — e símbolos de texto reais (→, ✓, ▲).
+ * Usado no speak() para a voz nunca ler lixo de formatação.
+ */
+export function cleanForSpeech(raw: string): string {
+  let s = (raw ?? "").replace(/’/g, "'");
+
+  // 1. EMOJIS — remove junto com variação de tom/pele, VS16 e ZWJ
+  s = s.replace(/[\u{1F3FB}-\u{1F3FF}\uFE0F\u200D]/gu, "");
+  s = s.replace(/\p{Extended_Pictographic}/gu, "");
+
+  // 2. Markdown inline — mantém o conteúdo, tira a formatação
+  s = s.replace(/\*\*([^*]+)\*\*/g, "$1"); // **negrito**
+  s = s.replace(/(^|[\s(])[*_]([^*_\n]+)[*_](?=[\s.,;:!?)…]|$)/g, "$1$2"); // *itálico* / _itálico_
+  s = s.replace(/~~([^~]+)~~/g, "$1"); // ~~tachado~~
+  s = s.replace(/`([^`]+)`/g, "$1"); // `código`
+  s = s.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1"); // [texto](url)
+
+  // 3. Markdown de linha — títulos, citações, listas
+  s = s.replace(/^\s*#{1,6}\s*/gm, ""); // # Título
+  s = s.replace(/^\s*>\s?/gm, ""); // > citação
+  s = s.replace(/^\s*[-*+]\s+/gm, ""); // - item
+  s = s.replace(/^\s*\d+[.)]\s+/gm, ""); // 1. item
+  s = s.replace(/^\s*```[a-z]*\s*$/gim, ""); // blocos de código
+
+  // 4. Sobras de marcação solta (nunca parte de palavra em fr/pt) + tabelas
+  s = s.replace(/[*_#~`|]/g, " ");
+
+  // 5. Normaliza espaços/pontuação
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
+
 export function cleanSpokenText(raw: string): string {
   let s = (raw ?? "").replace(STUTTER_RE, "$2").trim();
   const tokens = s.split(/\s+/).filter(Boolean);

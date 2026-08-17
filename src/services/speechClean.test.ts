@@ -1,36 +1,48 @@
+// ══════════════════════════════════════════════════════════════
+// Athenas — Testes da limpeza de texto para a voz da Lulu
+// A voz não deve ler formatação (markdown) nem descrever emojis.
+// ══════════════════════════════════════════════════════════════
 import { describe, expect, it } from "vitest";
-import { cleanSpokenText } from "./speechClean";
+import { cleanForSpeech } from "./speechClean";
 
-describe("cleanSpokenText", () => {
-  it("colapsa gaguejos de sílaba", () => {
-    expect(cleanSpokenText("j-je veux un café")).toBe("je veux un café");
-    expect(cleanSpokenText("p-pourquoi pas")).toBe("pourquoi pas");
+describe("cleanForSpeech — voz não lê formatação nem emojis", () => {
+  it("remove negrito **texto**", () => {
+    expect(cleanForSpeech("**Bonjour** comment ça va ?")).toBe("Bonjour comment ça va ?");
   });
 
-  it("colapsa palavras repetidas seguidas", () => {
-    expect(cleanSpokenText("je je veux un café")).toBe("je veux un café");
-    expect(cleanSpokenText("bonjour bonjour bonjour !")).toBe("bonjour !");
-    expect(cleanSpokenText("le le le croissant est bon")).toBe("le croissant est bon");
+  it("remove itálico *texto* e _texto_", () => {
+    expect(cleanForSpeech("*salut* _tout le monde_")).toBe("salut tout le monde");
   });
 
-  it("remove vícios de fala em francês e português", () => {
-    expect(cleanSpokenText("euh je voudrais euh un pain")).toBe("je voudrais un pain");
-    expect(cleanSpokenText("tipo né eu quero um croissant")).toBe("eu quero um croissant");
-    expect(cleanSpokenText("hum oui merci")).toBe("oui merci");
+  it("remove código `inline`", () => {
+    expect(cleanForSpeech("Le mot `bonjour` signifie bonjour")).toBe("Le mot bonjour signifie bonjour");
   });
 
-  it("não remove palavras reais que parecem vícios", () => {
-    expect(cleanSpokenText("ben oui")).toBe("oui");
-    expect(cleanSpokenText("ah bon ?")).toBe("ah bon ?");
+  it("remove títulos, citações e listas", () => {
+    expect(cleanForSpeech("# Vocabulaire\n\n> Astuce\n- un\n- deux\n\n1. trois")).toBe("Vocabulaire Astuce un deux trois");
   });
 
-  it("normaliza espaços e pontuação final", () => {
-    expect(cleanSpokenText("  je   veux  du  café  ")).toBe("je veux du café");
-    expect(cleanSpokenText("merci beaucoup...")).toBe("merci beaucoup");
-    expect(cleanSpokenText("bonjour , ça va ?")).toBe("bonjour, ça va ?");
+  it("remove links mas mantém o texto do link", () => {
+    expect(cleanForSpeech("Veja [esta aula](https://exemplo.com)")).toBe("Veja esta aula");
   });
 
-  it("não altera repetições intencionais separadas", () => {
-    expect(cleanSpokenText("je veux je veux")).toBe("je veux je veux");
+  it("remove emojis (não descreve)", () => {
+    expect(cleanForSpeech("Bora continuar ! 🌸")).toBe("Bora continuar !");
+    expect(cleanForSpeech("Une rose pour moi ? 🌹")).toBe("Une rose pour moi ?");
+    expect(cleanForSpeech("❤️😘✨ C'est parti !")).toBe("C'est parti !");
+  });
+
+  it("mantém apóstrofos e hífens do francês", () => {
+    expect(cleanForSpeech("aujourd'hui")).toBe("aujourd'hui");
+    expect(cleanForSpeech("peut-être")).toBe("peut-être");
+  });
+
+  it("mantém pontuação e símbolos de texto reais", () => {
+    expect(cleanForSpeech("Paris → Lyon ✓")).toBe("Paris → Lyon ✓");
+  });
+
+  it("devolve vazio quando só havia emojis", () => {
+    expect(cleanForSpeech("🌸🌹❤️")).toBe("");
+    expect(cleanForSpeech("")).toBe("");
   });
 });

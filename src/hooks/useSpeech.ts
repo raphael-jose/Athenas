@@ -23,6 +23,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { isNaturalReady, langToModel, synthesizeNaturalVoice } from "@/services/naturalVoice";
 import { synthesizeRemote } from "@/services/remoteTTS";
+import { cleanForSpeech } from "@/services/speechClean";
 
 export interface SpeechResult {
   supported: boolean;
@@ -429,7 +430,15 @@ export function useSpeech(): SpeechResult {
   const speak = useCallback(
     (text: string, opts?: SpeakOpts) => {
       if (!supported) return false;
-      const lang = opts?.lang ?? detectLang(text);
+      // A voz nunca deve ler formatação (**, *, _, #, `) nem descrever
+      // emojis — limpa o texto antes de falar (mantém apóstrofos e
+      // hífens do francês). Se sobrar nada (só emojis), não fala.
+      const cleaned = cleanForSpeech(text);
+      if (!cleaned) {
+        opts?.onEnd?.();
+        return true;
+      }
+      const lang = opts?.lang ?? detectLang(cleaned);
       const hasNatural = langToModel(lang) !== null;
 
       // 1. VOZ DO HUGGINGFACE (a voz da Lulu) — sempre a primeira.
@@ -440,25 +449,25 @@ export function useSpeech(): SpeechResult {
         if (isNaturalReady() && !naturalBusy) {
           naturalBusy = true;
           stop();
-          speakNatural(text, lang, opts).finally(() => {
+          speakNatural(cleaned, lang, opts).finally(() => {
             naturalBusy = false;
           });
           return true;
         }
         // Modelo ainda carregando: ESPERA pela voz do HuggingFace
         // (o botão pulsa enquanto isso). NADA de voz genérica.
-        speakWhenNaturalReady(text, lang, opts);
+        speakWhenNaturalReady(cleaned, lang, opts);
         return true;
       }
 
       // 2. Sem modelo local (português): voz feminina do aparelho.
       if (pickVoice(lang, refreshCache())) {
-        webSpeak(text, lang, opts);
+        webSpeak(cleaned, lang, opts);
         return true;
       }
       // Sem voz feminina no aparelho: último recurso (melhor que
       // silêncio, e ainda é FEMININA).
-      speakRemoteFast(text, lang, opts);
+      speakRemoteFast(cleaned, lang, opts);
       return true;
     },
     [supported]
