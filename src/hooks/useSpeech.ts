@@ -23,6 +23,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { isNaturalReady, langToModel, synthesizeNaturalVoice } from "@/services/naturalVoice";
 import { synthesizeRemote } from "@/services/remoteTTS";
+import { isPiperReady, piperWarmup, synthesizePiper } from "@/services/piperVoice";
 import { cleanForSpeech } from "@/services/speechClean";
 
 export interface SpeechResult {
@@ -306,6 +307,48 @@ function refreshCache(): SpeechSynthesisVoice[] {
 }
 
 /**
+ * Fala AGORA com a voz Dii (Piper pt-BR feminina, HuggingFace) — modelo
+ * já quente. Se a síntese falhar, cai na espera/fallback.
+ */
+async function speakPiperFast(text: string, lang: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  try {
+    const blob = await withTimeout(synthesizePiper(text), 45000);
+    if (token !== naturalToken) return;
+    playAudioBlob(blob, opts?.onEnd);
+  } catch {
+    if (token !== naturalToken) return;
+    speakWhenPiperReady(text, lang, opts);
+  }
+}
+
+/**
+ * ESPERA pela voz Dii (baixa o modelo na 1ª vez, botão pulsa) e fala
+ * com ela — igual ao comportamento do francês com a voz do HuggingFace.
+ * Só se a Dii falhar de verdade é que cai na voz feminina do aparelho
+ * e, sem ela, no último recurso.
+ */
+async function speakWhenPiperReady(text: string, lang: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  try {
+    await withTimeout(piperWarmup(), 150000);
+    if (token !== naturalToken) return;
+    const blob = await withTimeout(synthesizePiper(text), 45000);
+    if (token !== naturalToken) return;
+    playAudioBlob(blob, opts?.onEnd);
+  } catch (err) {
+    if (token !== naturalToken) return;
+    console.info("[Athenas-voz] voz Dii não ficou pronta — fallback para a voz feminina do aparelho", err instanceof Error ? err.message : "");
+    if (!pickVoice(lang, refreshCache())) {
+      // sem voz feminina no aparelho: último recurso (melhor que silêncio)
+      speakRemoteFast(text, lang, opts);
+      return;
+    }
+    webSpeak(text, lang, opts);
+  }
+}
+
+/**
  * ÚLTIMO RECURSO: voz remota Google Cloud FEMININA (sem chave) — usada
  * só quando o modelo local não carrega E o aparelho não tem voz feminina
  * no idioma. Melhor que silêncio, e continua sendo feminina.
@@ -460,14 +503,14 @@ export function useSpeech(): SpeechResult {
         return true;
       }
 
-      // 2. Sem modelo local (português): voz feminina do aparelho.
-      if (pickVoice(lang, refreshCache())) {
-        webSpeak(cleaned, lang, opts);
+      // 2. Sem modelo local (português): voz DII (Piper HuggingFace,
+      //    feminina) — espera ela ficar pronta (botão pulsa) e fala;
+      //    se falhar, cai na voz feminina do aparelho.
+      if (isPiperReady()) {
+        speakPiperFast(cleaned, lang, opts);
         return true;
       }
-      // Sem voz feminina no aparelho: último recurso (melhor que
-      // silêncio, e ainda é FEMININA).
-      speakRemoteFast(cleaned, lang, opts);
+      speakWhenPiperReady(cleaned, lang, opts);
       return true;
     },
     [supported]

@@ -2,6 +2,7 @@ import path from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 // base: "./" → assets relativos: funcionam em qualquer subpath do GitHub Pages
 // (https://user.github.io/repo/) sem precisar conhecer o nome do repo.
@@ -37,9 +38,23 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: "index.html",
-        globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2}"]
+        globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2}"],
+        // A voz pt-BR (Piper/Dii) é baixada SOB DEMANDA (quando o app fala
+        // português) — nunca entra no precache do PWA (senão a instalação
+        // inicial baixaria ~110 MB de runtime de voz).
+        globIgnores: ["worker/**", "onnx/**", "piper/**", "assets/piperVoice.worker-*.js"]
       },
       devOptions: { enabled: false }
+    }),
+    // Runtime da voz pt-BR (Piper): copiado para a raiz do site e carregado
+    // só quando o app fala português. CPU (OnnxWebWorker) + espeak-ng
+    // (piper_phonemize) — sem WebGPU para não inflar o deploy.
+    viteStaticCopy({
+      targets: [
+        { src: "node_modules/piper-tts-web/dist/onnx/*.wasm", dest: "onnx", rename: { stripBase: true } },
+        { src: "node_modules/piper-tts-web/dist/piper/*", dest: "piper", rename: { stripBase: true } },
+        { src: "node_modules/piper-tts-web/dist/worker/*.js", dest: "worker", rename: { stripBase: true } }
+      ]
     })
   ],
   test: {
