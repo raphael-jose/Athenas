@@ -43,6 +43,14 @@ function getSynth(model: string): Promise<TextToAudioPipeline> {
       loaders.delete(model);
       return p;
     });
+    // Se o download do modelo falhar (rede caiu, CDN lento), REMOVE do
+    // cache de carregamento para o próximo toque tentar de novo — antes,
+    // a promessa rejeitada ficava presa para sempre e a voz natural
+    // nunca mais funcionava até recarregar a página.
+    loading = loading.catch((err: unknown) => {
+      loaders.delete(model);
+      throw err;
+    });
     loaders.set(model, loading);
   }
   return loading;

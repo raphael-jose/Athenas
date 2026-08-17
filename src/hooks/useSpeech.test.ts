@@ -25,10 +25,10 @@ describe("pickVoice — voz feminina em todo o app", () => {
   it("escolhe a melhor feminina entre várias (qualidade como desempate)", () => {
     const voices = [
       v("Microsoft Julie - French (France)", FR),
-      v("Google français", FR), // masculino no Android — nunca escolhido se houver feminina
+      v("Google français", FR), // feminina (Android) — perde só no desempate por qualidade
       v("Microsoft Denise - French (France)", FR)
     ];
-    // as duas femininas existem; qualquer uma vale, mas nunca o Google français
+    // as três são femininas; qualquer uma vale, mas a de melhor qualidade vence
     const chosen = pickVoice(FR, voices);
     expect(chosen?.name).not.toContain("Google");
   });
@@ -71,8 +71,15 @@ describe("pickVoice — voz feminina em todo o app", () => {
     expect(pickVoice(PT, voices)?.name).toContain("Google português");
   });
 
+  it("Google français (Android) é FEMININA e fala quando é a única opção", () => {
+    // A voz padrão de francês do Android é feminina — antigamente era
+    // classificada como masculina e o chat ficava mudo no celular.
+    const voices = [v("Google français", FR)];
+    expect(pickVoice(FR, voices)?.name).toContain("Google français");
+  });
+
   it("masculina conhecida NUNCA é usada — nem como último recurso", () => {
-    const voices = [v("Google français", FR)]; // única opção (Android sem voz feminina FR)
+    const voices = [v("Microsoft Thomas - French (France)", FR)]; // única opção e masculina
     expect(pickVoice(FR, voices)).toBeNull();
   });
 

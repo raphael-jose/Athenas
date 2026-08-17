@@ -100,9 +100,9 @@ export function detectLang(text: string): "pt-BR" | "fr-FR" {
 // Apple/macOS/iOS) — FR e PT-BR, com um bocado de inglês também
 // (algumas plataformas só oferecem feminina em inglês).
 const FEMALE_HINTS =
-  /(julie|hortense|am[ée]lie|audrey|c[ée]cile|florence|louise|marie|maria|elise|claire|denise|jos[ée]phine|juliette|le?a|manon|ma[ée]va|charlotte|victorine|virginie|chantal|amelia|francisca|thalita|camila|brenda|fernanda|helena|vit[oó]ria|alice|laura|nathalie|emma|ava|bella|emily|hannah|isabella|isabela|karen|mia|natasha|olivia|paula|rebeca|samantha|sara|serena|sofia|susan|zira|joana|julia|gabriela|luciana|marcia|marta|nadia|nora|raquel|valentina|ana|lara|leila|lisa|liz|luana|monica|tessa|victoria|fiona|kate|moira|zoe|amber|jenny|hazel|heather|lily|nina|rosa|sonia|tina|uma|vanessa|vicki|google us english|google uk english female|google portugu[êe]s do brasil|google deutsch|female|feminin|woman|mulher|voz feminina|siri)/i;
+  /(julie|hortense|am[ée]lie|audrey|c[ée]cile|florence|louise|marie|maria|elise|claire|denise|jos[ée]phine|juliette|le?a|manon|ma[ée]va|charlotte|victorine|virginie|chantal|amelia|francisca|thalita|camila|brenda|fernanda|helena|vit[oó]ria|alice|laura|nathalie|emma|ava|bella|emily|hannah|isabella|isabela|karen|mia|natasha|olivia|paula|rebeca|samantha|sara|serena|sofia|susan|zira|joana|julia|gabriela|luciana|marcia|marta|nadia|nora|raquel|valentina|ana|lara|leila|lisa|liz|luana|monica|tessa|victoria|fiona|kate|moira|zoe|amber|jenny|hazel|heather|lily|nina|rosa|sonia|tina|uma|vanessa|vicki|google us english|google uk english female|google portugu[êe]s do brasil|google deutsch|google fran[çc]ais|female|feminin|woman|mulher|voz feminina|siri)/i;
 const MALE_HINTS =
-  /(thomas|antoine|michel|paul|pierre|lucas|daniel|davi|jorge|david|george|alexandre|antonio|f[áa]bio|luciano|joaquim|rogerio|rodrigo|yuri|samuel|thiago|luiz|fernando|carlos|marcos|pedro|miguel|rafael|gustavo|henrique|mark|michael|dylan|ryan|tristan|watson|ian|ken|jason|andy|edward|harry|jack|kyle|lee|noah|william|fred|alex|brian|christopher|eric|guy|james|john|oliver|rishi|google fran[çc]ais|male|masculin|homme|homem|voz masculina)/i;
+  /(thomas|antoine|michel|paul|pierre|lucas|daniel|davi|jorge|david|george|alexandre|antonio|f[áa]bio|luciano|joaquim|rogerio|rodrigo|yuri|samuel|thiago|luiz|fernando|carlos|marcos|pedro|miguel|rafael|gustavo|henrique|mark|michael|dylan|ryan|tristan|watson|ian|ken|jason|andy|edward|harry|jack|kyle|lee|noah|william|fred|alex|brian|christopher|eric|guy|james|john|oliver|rishi|male|masculin|homme|homem|voz masculina)/i;
 const QUALITY_HINTS = /(google|microsoft|natural|neural|premium|enhanced|online|high|siri)/i;
 
 /** true quando o nome indica claramente voz feminina. */
@@ -149,9 +149,10 @@ let naturalToken = 0;
 // Primeira fala baixa o modelo (≈36 MB) — dá tempo; depois é rápido.
 const NATURAL_FIRST_TIMEOUT_MS = 45000;
 // Síntese com modelo quente: em WASM no navegador a inferência pode
-// levar 10-20s mesmo em frases curtas — o timeout curto demais cortava
-// a fala bem na hora e caía no fallback silencioso ("botão morto").
-const NATURAL_FAST_TIMEOUT_MS = 20000;
+// levar 10-20s em desktop e 20-30s em celular mesmo em frases curtas —
+// o timeout curto demais cortava a fala bem na hora e caía no fallback
+// silencioso ("botão morto").
+const NATURAL_FAST_TIMEOUT_MS = 30000;
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
