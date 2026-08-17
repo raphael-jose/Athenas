@@ -7,8 +7,10 @@
 //      O modelo (≈36 MB) é baixado uma vez do CDN público e fica no
 //      cache — depois funciona até offline.
 //   2. FALLBACK: a melhor voz FEMININA do dispositivo (Web Speech
-//      API) — cache global + retry + seleção estrita, nunca a voz
-//      padrão masculina genérica do navegador.
+//      API) — cache global + retry + seleção ESTRITA: só feminina.
+//      Se o aparelho não tiver voz feminina no idioma, fica em
+//      silêncio (a voz natural assume quando pronta) — NUNCA voz
+//      masculina, em lugar nenhum do projeto.
 //
 // Detecção de idioma: texto em francês → voz fr-FR; texto em
 // português → voz pt-BR. Cada um na sua língua, sem sotaque
@@ -106,11 +108,6 @@ function isFemale(v: SpeechSynthesisVoice): boolean {
   return FEMALE_HINTS.test(v.name) && !MALE_HINTS.test(v.name);
 }
 
-/** true quando o nome indica claramente voz masculina. */
-function isMale(v: SpeechSynthesisVoice): boolean {
-  return MALE_HINTS.test(v.name) && !FEMALE_HINTS.test(v.name);
-}
-
 function qualityScore(v: SpeechSynthesisVoice): number {
   let s = 0;
   if (QUALITY_HINTS.test(v.name)) s += 3;
@@ -123,22 +120,19 @@ function bestOf(list: SpeechSynthesisVoice[]): SpeechSynthesisVoice {
 }
 
 /**
- * Escolhe a voz do idioma com REGRA ESTRITA de feminilidade:
- *  1. feminina conhecida (a de melhor qualidade);
- *  2. senão, voz de gênero NEUTRO (evita masculina conhecida);
- *  3. só no fim, masculina conhecida — quando o dispositivo não tem
- *     nenhuma outra opção no idioma.
- * Nunca escolhe masculina enquanto existir uma feminina.
+ * Escolhe a voz do idioma com REGRA ESTRITA: só FEMININA.
+ * Se o dispositivo não tiver nenhuma voz feminina no idioma,
+ * devolve null — o app fica em silêncio (ou usa a voz natural
+ * do HuggingFace, que é feminina) em vez de cair em voz
+ * masculina ou de gênero desconhecido.
  */
 export function pickVoice(lang: string, voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
   const prefix = lang.toLowerCase().slice(0, 2);
   const matches = voices.filter((v) => v.lang.toLowerCase().startsWith(prefix));
   if (matches.length === 0) return null;
   const females = matches.filter(isFemale);
-  if (females.length > 0) return bestOf(females);
-  const neutrals = matches.filter((v) => !isMale(v));
-  if (neutrals.length > 0) return bestOf(neutrals);
-  return bestOf(matches);
+  if (females.length === 0) return null;
+  return bestOf(females);
 }
 
 // ── Voz natural (HuggingFace no navegador) ────────────────────
@@ -259,19 +253,24 @@ interface SpeakOpts {
   onEnd?: () => void;
 }
 
-/** Fala imediatamente com a voz escolhida (ou sem voz se não houver nenhuma). */
+/**
+ * Fala imediatamente com a voz feminina escolhida. Sem voz feminina
+ * no idioma, fica em SILÊNCIO (nunca usa a voz padrão masculina do
+ * navegador) e avisa o chamador pelo onEnd.
+ */
 function speakNow(text: string, lang: string, voice: SpeechSynthesisVoice | null, opts?: SpeakOpts) {
+  if (!voice) {
+    console.info(`[Athenas-voz] sem voz feminina em ${lang} — silêncio (voz natural feminina assume quando pronta)`);
+    opts?.onEnd?.();
+    return;
+  }
   const synth = window.speechSynthesis;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang;
   u.rate = opts?.rate ?? 1.0;
   u.pitch = 1.05;
-  if (voice) u.voice = voice;
-  if (voice && isMale(voice)) {
-    // Diagnóstico: só acontece quando o dispositivo NÃO tem voz feminina no idioma.
-    console.info(`[Athenas-voz] sem feminina em ${lang} — fallback: ${voice.name}`);
-  }
+  u.voice = voice;
   if (opts?.onEnd) u.onend = opts.onEnd;
   synth.speak(u);
   synth.resume(); // proteção contra "travamento" do Chrome após cancel()

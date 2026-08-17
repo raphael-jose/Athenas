@@ -2251,3 +2251,26 @@ input, textarea, select {
 @media (min-width: 900px) {
   .app { padding-left: var(--sp-6); padding-right: var(--sp-6); }
 }
+
+/* ── Lulu do cabeçalho: acena e pisca ao abrir a página ─────── */
+.lulu-hello {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lulu-wave 1.6s var(--ease-pop) both;
+}
+.lulu-hello .mc-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lulu-blink 2.4s ease-in-out 2;
+}
+@keyframes lulu-wave {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-9deg); }
+  40% { transform: rotate(9deg); }
+  60% { transform: rotate(-6deg); }
+  80% { transform: rotate(5deg); }
+}
+@keyframes lulu-blink {
+  0%, 88%, 100% { transform: scaleY(1); }
+  94% { transform: scaleY(0.08); }
+}

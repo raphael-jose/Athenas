@@ -5,6 +5,7 @@ import { useRouter } from "@/lib/router";
 import { useApp } from "@/hooks/useApp";
 import { nextReviewCount } from "@/services/srs";
 import { Icon } from "@/components/Icons";
+import { Mascot } from "@/components/Mascot";
 import type { IconName } from "@/types";
 import { sfxClick } from "@/lib/sfx";
 
@@ -27,7 +28,11 @@ export function BottomNav() {
         const active = path === it.path || (it.path !== "/" && path.startsWith(it.path + "/"));
         return (
           <button key={it.path} className={active ? "active" : ""} onClick={() => { sfxClick(); navigate(it.path); }} aria-current={active ? "page" : undefined}>
-            <Icon name={it.icon} size={23} filled={active} className="ico" />
+            {it.path === "/ai" ? (
+              <Mascot mood="happy" size={26} className="ico" />
+            ) : (
+              <Icon name={it.icon} size={23} filled={active} className="ico" />
+            )}
             <span>{it.label}</span>
             {it.path === "/review" && due > 0 && <span className="nav-dot">{due > 9 ? "9+" : due}</span>}
           </button>

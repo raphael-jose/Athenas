@@ -50,17 +50,17 @@ describe("pickVoice — voz feminina em todo o app", () => {
     expect(pickVoice(PT, voices)?.name).not.toContain("Daniel");
   });
 
-  it("cai para a melhor voz nativa quando NÃO existe feminina no idioma", () => {
+  it("NUNCA cai para voz masculina: sem feminina no idioma, devolve null (silêncio)", () => {
     const voices = [v("Microsoft Thomas - French (France)", FR), v("Microsoft Pierre - French (France)", FR)];
-    expect(pickVoice(FR, voices)?.name).toContain("Thomas");
+    expect(pickVoice(FR, voices)).toBeNull();
   });
 
-  it("prefere voz de gênero neutro a uma masculina conhecida (sem feminina)", () => {
+  it("NUNCA usa voz de gênero desconhecido/neutro quando não há feminina", () => {
     const voices = [
       v("Microsoft Thomas - French (France)", FR), // masculina conhecida
       v("Voz do Sistema - French (France)", FR) // gênero desconhecido
     ];
-    expect(pickVoice(FR, voices)?.name).not.toContain("Thomas");
+    expect(pickVoice(FR, voices)).toBeNull();
   });
 
   it("Google português do Brasil é feminina (Android) e vence a masculina", () => {
@@ -71,9 +71,9 @@ describe("pickVoice — voz feminina em todo o app", () => {
     expect(pickVoice(PT, voices)?.name).toContain("Google português");
   });
 
-  it("masculina conhecida é o ÚLTIMO recurso, quando só ela existe", () => {
+  it("masculina conhecida NUNCA é usada — nem como último recurso", () => {
     const voices = [v("Google français", FR)]; // única opção (Android sem voz feminina FR)
-    expect(pickVoice(FR, voices)?.name).toContain("Google français");
+    expect(pickVoice(FR, voices)).toBeNull();
   });
 
   it("ignora vozes de outros idiomas (filtro por prefixo)", () => {

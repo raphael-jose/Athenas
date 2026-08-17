@@ -103,6 +103,25 @@ describe("AIProvider (abstração)", () => {
     expect(b).toContain("connais");
   });
 
+  it("mock NÃO responde em inglês: mensagem em inglês redireciona para o francês", async () => {
+    const p = new MockProvider();
+    const out = await p.chat({ messages: [{ role: "user", content: "What is the capital of France and how are you today my friend?", at: 0 }], system: "x" });
+    expect(out).toMatch(/ingl[eê]s|franc[eê]s/);
+    expect(out.toLowerCase()).not.toContain("paris is");
+  });
+
+  it("mock NÃO responde assunto fora do francês: redireciona com carinho", async () => {
+    const p = new MockProvider();
+    const out = await p.chat({ messages: [{ role: "user", content: "quanto é 2+2?", at: 0 }], system: "x" });
+    expect(out).toMatch(/franc[eê]s|palavra|exerc[ií]cio/);
+  });
+
+  it("mock continua respondendo perguntas de francês (significado)", async () => {
+    const p = new MockProvider();
+    const out = await p.chat({ messages: [{ role: "user", content: "o que significa bonjour?", at: 0 }], system: "x" });
+    expect(out.toLowerCase()).toContain("bonjour");
+  });
+
   it("chave ausente no ollama lança erro mapeável", async () => {
     const p = new OllamaProvider({ baseUrl: "https://ollama.com/api", model: "qwen3:8b", apiKey: "" });
     await expect(p.chat({ messages: [], system: "x" })).rejects.toThrow("missing_api_key");

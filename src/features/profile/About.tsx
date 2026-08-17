@@ -47,7 +47,7 @@ export function AboutPage() {
         <a className="contact-row" href={mailHref}>
           <span className="s-ico tint-lilac"><Icon name="chat" size={20} /></span>
           <span className="grow">
-            <strong>Email</strong>
+            <strong>E-mail</strong>
             <span className="muted small" style={{ display: "block" }}>{CONTACTS.email}</span>
           </span>
           <span>→</span>

@@ -340,6 +340,20 @@ export class MockProvider implements AIProvider {
     const hasFrenchChars = /[àâçéèêëîïôûùüÿœ]/.test(text);
     if (hasFrenchChars) return this.correctSentence(text);
 
+    // Inglês ou assunto fora do francês? A Lulu NÃO responde — redireciona
+    // com carinho para o francês (sempre em português, nunca em inglês).
+    const EN_WORDS = ["the", "and", "you", "your", "my", "hello", "please", "thank", "thanks", "what", "how", "are", "do", "don't", "can", "want", "need", "tell", "give", "this", "that", "with", "from", "for", "have", "not", "yes", "is", "me", "it", "to"];
+    const enHits = EN_WORDS.filter((w) => new RegExp(`\\b${w}\\b`, "i").test(text)).length;
+    const wantsEnglish = /english|em ingl[eê]s|traduz(ir|a)? (para|pra|em) ingl[eê]s/.test(t);
+    if (wantsEnglish || enHits >= 3) {
+      return `Opa, parece que você escreveu em inglês… 😊 Aqui na Athenas a gente conversa em português e aprende francês ! Me pergunta qualquer coisa do francês — palavra, verbo, pronúncia — que eu te ajudo com carinho !`;
+    }
+    const OFF_TOPIC =
+      /matem[aá]tica|quanto [ée] |[0-9]\s*\+\s*[0-9]|receita de bolo|hor[óo]scopo|futebol|piada|not[ií]cia|pol[ií]tica do brasil|hist[óo]ria do brasil|em alem[aã]o|em espanhol|em italiano|em japon[eê]s/;
+    if (OFF_TOPIC.test(t)) {
+      return `Hmm, isso foge do nosso francês ! 😅 Eu sou professora de francês, lembra? Me pergunta uma palavra, pede uma conjugação ou um mini exercício, que eu te ajudo com muito gosto !`;
+    }
+
     return `${sample(FALLBACKS)}`;
   }
 

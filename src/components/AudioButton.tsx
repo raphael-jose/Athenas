@@ -22,7 +22,10 @@ export function AudioButton({
   return (
     <button
       className={`${cls} ${playing ? "playing" : ""}`}
-      onClick={() => {
+      onClick={(e) => {
+        // Para o clique NÃO subir para o Card pai (que também fala) —
+        // senão o mesmo toque dispara duas vozes ao mesmo tempo.
+        e.stopPropagation();
         setPlaying(true);
         speak(text, { onEnd: () => setPlaying(false) });
       }}

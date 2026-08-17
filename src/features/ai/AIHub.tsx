@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "@/hooks/useApp";
 import { useRouter } from "@/lib/router";
-import { buildStudentProfile, buildSystemPrompt } from "@/services/ai/prompts";
+import { buildStudentProfile, buildSystemPrompt, type StudentProfile } from "@/services/ai/prompts";
 import { createProvider, providerErrorToMessage, MockProvider } from "@/services/ai";
 import { relayChat } from "@/services/ai/relay";
 import { analyzeFrench, SOUND_FRENCH_TIPS } from "@/services/ai/corrections";
@@ -53,6 +53,28 @@ function naturalSuggestion(text: string): string | null {
   return res.suggestion && res.suggestion !== res.original ? res.suggestion : null;
 }
 
+/**
+ * Saudação inicial da Lulu — usa a MEMÓRIA DE LONGO PRAZO (perfil) para
+ * retomar de onde o aluno parou. Sem progresso ainda, dá as boas-vindas
+ * clássicas. É exibida quando a conversa está vazia (primeira vez ou
+ * depois de "Limpar conversa").
+ */
+export function buildGreeting(profile: StudentProfile, name: string): string {
+  const nome = profile.name && profile.name !== "amigue" ? profile.name : name || "amigue";
+  const hasProgress = profile.lessonsCompleted > 0 || profile.wordsLearned > 0 || profile.streak > 0;
+  if (!hasProgress) {
+    return `Bonjour, ${nome} ! Eu sou a Lulu, sua professora de francês. Pode me perguntar qualquer coisa — significados, conjugações, diferenças entre palavras, correções… ou me pedir um mini exercício !`;
+  }
+  const pl = (n: number, sing: string, plur: string) => `${n} ${n === 1 ? sing : plur}`;
+  const stats: string[] = [];
+  if (profile.wordsLearned > 0) stats.push(pl(profile.wordsLearned, "palavra aprendida", "palavras aprendidas"));
+  if (profile.lessonsCompleted > 0) stats.push(pl(profile.lessonsCompleted, "aula feita", "aulas feitas"));
+  if (profile.streak > 0) stats.push(pl(profile.streak, "dia seguido", "dias seguidos"));
+  const statsTxt = stats.length > 0 ? ` (${stats.join(" · ")})` : "";
+  const onde = profile.lastLesson ? ` Você parou na aula "${profile.lastLesson}".` : "";
+  return `Bonjour, ${nome} ! Que bom te ver de novo ! 🌸 Você está no nível ${profile.cefr}${statsTxt}.${onde} Bora continuar de onde paramos ? Pode me perguntar uma palavra, pedir um exercício ou me dizer o que quer revisar hoje !`;
+}
+
 export function AIHub() {
   const { state } = useApp();
   const { navigate } = useRouter();
@@ -61,7 +83,14 @@ export function AIHub() {
   return (
     <div className="page">
       <PageHeader
-        title={<><Icon name="robot" size={20} style={{ verticalAlign: -3 }} /> Lulu IA</>}
+        title={
+          <>
+            <span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6 }}>
+              <Mascot mood="happy" size={28} className="lulu-hello" />
+            </span>{" "}
+            Lulu IA
+          </>
+        }
         sub="Sua professora particular de francês"
         onBack={() => navigate("/")}
       />
@@ -98,11 +127,12 @@ export function AIHub() {
 // Chat
 // ══════════════════════════════════════════════════════════════
 function ChatMode() {
-  const { state, sendAiMessage, toast } = useApp();
+  const { state, sendAiMessage, clearAiMessages, toast } = useApp();
   const { navigate } = useRouter();
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   const provider = useMemo(() => createProvider(state.settings), [state.settings]);
@@ -110,7 +140,7 @@ function ChatMode() {
   const system = useMemo(() => buildSystemPrompt(profile), [profile]);
 
   const messages = state.aiMessages.filter((m) => m.role !== "system");
-  const history: ChatMessage[] = messages.length > 0 ? messages : [{ role: "assistant", content: `Bonjour, ${state.name || "amigue"} ! Eu sou a Lulu, sua professora de francês. Pode me perguntar qualquer coisa — significados, conjugações, diferenças entre palavras, correções… ou me pedir um mini exercício !`, at: Date.now() }];
+  const history: ChatMessage[] = messages.length > 0 ? messages : [{ role: "assistant", content: buildGreeting(profile, state.name), at: Date.now() }];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -153,8 +183,26 @@ function ChatMode() {
     }
   };
 
+  const clearChat = () => {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      window.setTimeout(() => setConfirmClear(false), 4000);
+      return;
+    }
+    setConfirmClear(false);
+    clearAiMessages();
+    toast("Conversa limpa — mas a Lulu continua lembrando de você! 🌸", "trash");
+  };
+
   return (
     <>
+      {messages.length > 0 && (
+        <div className="row center mb-3" style={{ justifyContent: "center" }}>
+          <Button variant="ghost" size="sm" onClick={clearChat} aria-label="Limpar conversa com a Lulu">
+            <Icon name="trash" size={14} style={{ verticalAlign: -2 }} /> {confirmClear ? "Tem certeza?" : "Limpar conversa"}
+          </Button>
+        </div>
+      )}
       <div className="chat-list">
         {history.map((m, i) => {
           const prev = history[i - 1];

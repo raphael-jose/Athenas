@@ -48,6 +48,8 @@ export interface AppApi {
   completeBoss: (bossId: string, worldId: string, xp: number) => void;
   reviewWords: (ratings: { wordId: string; quality: number }[]) => void;
   sendAiMessage: (role: "user" | "assistant", content: string) => void;
+  /** Limpa o histórico da conversa com a Lulu. A memória de longo prazo (perfil, progresso, preferências) fica intacta. */
+  clearAiMessages: () => void;
   logConversation: (log: ConversationLog) => void;
   buyTheme: (themeId: string) => boolean;
   /** Compra uma roupinha da Lulu (desconta étoiles e aplica na hora). */
@@ -333,6 +335,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         s = withAchievements(s);
         commit(s);
+      },
+      clearAiMessages: () => {
+        // Só apaga o papo atual. A memória de longo prazo da Lulu vem do
+        // perfil (nome, nível, erros, preferências) — que fica intacto.
+        commit({ ...stateRef.current, aiMessages: [] });
       },
       logConversation: (log) => {
         const s0 = stateRef.current;

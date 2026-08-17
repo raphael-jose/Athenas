@@ -52,11 +52,11 @@ export function ReviewPage() {
     setDone((d) => d + 1);
     setFlipped(false);
     reviewWords([{ wordId: item.wordId, quality }]);
-    // Errou? A palavra entra no reforço e a pronúncia toca na hora.
+    // Errou? A palavra entra no reforço — que toca a pronúncia dela
+    // (com calma, uma por vez) no final da revisão. Nada de falar a
+    // palavra antiga enquanto a próxima já está na tela.
     if (quality < 3) {
       setMissed((m) => (m.includes(item.wordId) ? m : [...m, item.wordId]));
-      const w = wordById(item.wordId);
-      if (w) speak(w.fr);
     }
   };
 
@@ -268,7 +268,15 @@ export function ReviewPage() {
               </div>
             )}
             <p className="muted small mt-2">Toque para revelar a tradução</p>
-            <Button variant="ghost" block onClick={() => setFlipped(true)}>
+            <Button
+              variant="ghost"
+              block
+              onClick={(e) => {
+                // Não deixa o clique subir para o Card (que fala a palavra).
+                e.stopPropagation();
+                setFlipped(true);
+              }}
+            >
               Mostrar tradução
             </Button>
           </>
@@ -284,13 +292,13 @@ export function ReviewPage() {
             )}
             <div className="small muted mt-2">Você lembrou ?</div>
             <div className="row mt-3" style={{ justifyContent: "center" }}>
-              <Button variant="ghost" onClick={() => rate(current, 1)}>
+              <Button variant="ghost" onClick={(e) => { e.stopPropagation(); rate(current, 1); }}>
                 <Icon name="smileySad" size={16} /> Esqueci
               </Button>
-              <Button variant="soft" onClick={() => rate(current, 3)}>
+              <Button variant="soft" onClick={(e) => { e.stopPropagation(); rate(current, 3); }}>
                 <Icon name="smileyMeh" size={16} /> Difícil
               </Button>
-              <Button onClick={() => rate(current, 5)}>
+              <Button onClick={(e) => { e.stopPropagation(); rate(current, 5); }}>
                 <Icon name="smiley" size={16} /> Fácil
               </Button>
             </div>

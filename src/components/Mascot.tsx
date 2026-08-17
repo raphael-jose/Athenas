@@ -250,7 +250,10 @@ export function Mascot({ mood = "happy", size = 120, className = "", speaking }:
       {/* rosto */}
       <g className="mc-face-base">
         <Brows kind={m.brows} />
-        <Eyes kind={m.eyes} />
+        {/* olhos em grupo próprio: permite a piscada via CSS (scaleY) */}
+        <g className="mc-eyes">
+          <Eyes kind={m.eyes} />
+        </g>
         <Mouth kind={m.mouth} />
       </g>
 

@@ -118,7 +118,7 @@ export function GrammarDuelPage() {
   if (phase === "intro") {
     return (
       <div className="page">
-        <PageHeader title={<><Icon name="sword" size={20} style={{ verticalAlign: -3 }} /> Grammar Duel</>} sub="Duelo de gramática contra a Lulu" onBack={() => navigate("/grammar")} />
+        <PageHeader title={<><Icon name="sword" size={20} style={{ verticalAlign: -3 }} /> Duelo de Gramática</>} sub="Duelo de gramática contra a Lulu" onBack={() => navigate("/grammar")} />
         <Card className="center">
           <Mascot mood="excited" size={110} />
           <h2>Prête pour le duel ?</h2>
@@ -144,7 +144,7 @@ export function GrammarDuelPage() {
   if (phase === "done") {
     return (
       <div className="page">
-        <PageHeader title={<><Icon name="sword" size={20} style={{ verticalAlign: -3 }} /> Grammar Duel</>} sub="Resultado" onBack={() => navigate("/grammar")} />
+        <PageHeader title={<><Icon name="sword" size={20} style={{ verticalAlign: -3 }} /> Duelo de Gramática</>} sub="Resultado" onBack={() => navigate("/grammar")} />
         <Card className="center">
           <Mascot mood={victory ? "excited" : "happy"} size={120} />
           <h2 className="row" style={{ justifyContent: "center", gap: 8 }}>
@@ -174,7 +174,7 @@ export function GrammarDuelPage() {
 
   return (
     <div className="page">
-      <PageHeader title={<><Icon name="sword" size={20} style={{ verticalAlign: -3 }} /> Grammar Duel</>} sub={`Round ${Math.min(round + 1, DUEL_CONFIG.totalRounds)} de ${DUEL_CONFIG.totalRounds}`} onBack={() => navigate("/grammar")} />
+      <PageHeader title={<><Icon name="sword" size={20} style={{ verticalAlign: -3 }} /> Duelo de Gramática</>} sub={`Round ${Math.min(round + 1, DUEL_CONFIG.totalRounds)} de ${DUEL_CONFIG.totalRounds}`} onBack={() => navigate("/grammar")} />
 
       {/* Barras: Lulu HP + vidas do aluno */}
       <div className="card-soft mb-3 duel-hud">
