@@ -49,11 +49,17 @@ export default defineConfig({
     // Runtime da voz pt-BR (Piper): copiado para a raiz do site e carregado
     // só quando o app fala português. CPU (OnnxWebWorker) + espeak-ng
     // (piper_phonemize) — sem WebGPU para não inflar o deploy.
+    // Só o que o fluxo CPU realmente usa: o OnnxWebRuntime carrega apenas
+    // ort-wasm-simd-threaded.wasm (o jsep.wasm é do caminho WebGPU/WebNN e o
+    // OnnxWebGPUWorker.js de 45MB nunca é criado). Cortar esses dois reduz o
+    // download do celular em ~66MB na primeira vez que a Lulu fala português.
     viteStaticCopy({
       targets: [
-        { src: "node_modules/piper-tts-web/dist/onnx/*.wasm", dest: "onnx", rename: { stripBase: true } },
+        { src: "node_modules/piper-tts-web/dist/onnx/ort-wasm-simd-threaded.wasm", dest: "onnx", rename: { stripBase: true } },
         { src: "node_modules/piper-tts-web/dist/piper/*", dest: "piper", rename: { stripBase: true } },
-        { src: "node_modules/piper-tts-web/dist/worker/*.js", dest: "worker", rename: { stripBase: true } }
+        { src: "node_modules/piper-tts-web/dist/worker/OnnxWebWorker.js", dest: "worker", rename: { stripBase: true } },
+        { src: "node_modules/piper-tts-web/dist/worker/PhonemizeWebWorker.js", dest: "worker", rename: { stripBase: true } },
+        { src: "node_modules/piper-tts-web/dist/worker/ExpressionWebWorker.js", dest: "worker", rename: { stripBase: true } }
       ]
     })
   ],

@@ -3,8 +3,8 @@
 //
 // Cliente do worker (piperVoice.worker.ts): o main-thread só posta o
 // texto e recebe o WAV pronto. O worker é criado SOB DEMANDA — a voz
-// Dii (runtime + modelo ≈ 110 MB) só é baixada quando o app realmente
-// fala português pela primeira vez.
+// Dii (runtime + modelo ≈ 100 MB, a maior parte do PRÓPRIO site) só é
+// baixada quando o app realmente fala português pela primeira vez.
 // ══════════════════════════════════════════════════════════════
 
 let worker: Worker | null = null;
@@ -68,8 +68,9 @@ let warmupPromise: Promise<void> | null = null;
 /**
  * Espera (ou inicia) o carregamento da voz Dii — baixa o runtime e o
  * modelo na primeira vez e faz uma síntese curta para aquecer o engine.
- * Resolve quando pronta; rejeita se falhar (o chamador cai na voz do
- * aparelho). Re-tenta no próximo pedido após uma falha.
+ * Resolve quando pronta; rejeita se falhar (o chamador fica em silêncio
+ * e tenta de novo no próximo toque). Re-tenta no próximo pedido após
+ * uma falha.
  */
 export function piperWarmup(): Promise<void> {
   if (warmupPromise) return warmupPromise;
@@ -88,8 +89,8 @@ export function piperWarmup(): Promise<void> {
 
 /**
  * Sintetiza o texto na voz Dii (pt-BR, feminina). Rejeita se o worker
- * não estiver disponível ou a síntese falhar — o chamador cai na voz
- * feminina do aparelho.
+ * não estiver disponível ou a síntese falhar — o chamador fica em
+ * silêncio (nunca voz genérica) e tenta de novo no próximo toque.
  */
 export function synthesizePiper(text: string): Promise<Blob> {
   return new Promise((resolve, reject) => {

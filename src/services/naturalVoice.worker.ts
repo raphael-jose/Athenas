@@ -7,19 +7,25 @@
 // idioma} e recebe o WAV pronto (ArrayBuffer transferível).
 //
 // Protocolo:
-//   in : { type: "synth", id, text, lang }
+//   in : { type: "init", baseUrl }            (raiz do site)
+//        { type: "synth", id, text, lang }
 //   out: { type: "ready" }                    (modelo carregado)
 //        { type: "result", id, buffer, durationMs }
 //        { type: "error",  id, error }
 // ══════════════════════════════════════════════════════════════
 import { env, pipeline, type TextToAudioPipeline } from "@huggingface/transformers";
 
-// Tudo do CDN público do HuggingFace — nada de arquivos locais
-// (evita 404 no GitHub Pages) e nada de chave.
-env.allowLocalModels = false;
+// 🎀 Modelo de voz hospedado NO PRÓPRIO SITE (public/models → dist): o
+// download vem da MESMA ORIGEM do app (rápido e confiável até no celular,
+// sem depender do CDN do HuggingFace). Se algum arquivo faltar, o
+// transformers.js cai sozinho no CDN remoto (allowRemoteModels = true).
+let siteBase = "/";
+env.allowLocalModels = true;
+env.localModelPath = "/models/";
+env.allowRemoteModels = true;
 
 // Só o francês tem modelo natural FEMININO. O mms-tts-por (português) tem
-// voz masculina — não é usado; português fala na voz feminina do aparelho.
+// voz masculina — não é usado; português fala na voz Dii (Piper).
 const FR_MODEL = "Xenova/mms-tts-fra";
 
 function langToModel(lang: string): string | null {
@@ -87,8 +93,13 @@ function floatToWav(audio: Float32Array, sampleRate: number): ArrayBuffer {
   return buffer;
 }
 
-(self as unknown as Worker).onmessage = async (e: MessageEvent<{ type: string; id: number; text: string; lang: string }>) => {
-  const { type, id, text, lang } = e.data;
+(self as unknown as Worker).onmessage = async (e: MessageEvent<{ type: string; id: number; text: string; lang: string; baseUrl: string }>) => {
+  const { type, id, text, lang, baseUrl } = e.data;
+  if (type === "init") {
+    siteBase = baseUrl;
+    env.localModelPath = siteBase + "models/";
+    return;
+  }
   if (type !== "synth") return;
   try {
     const model = langToModel(lang);

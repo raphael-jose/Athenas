@@ -3,8 +3,10 @@
 //
 // 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
 //   SÓ existem DUAS vozes, ambas NATURAIS e FEMININAS do HuggingFace:
-//     1. FRANCÊS → mms-tts-fra (≈36 MB, cacheado, funciona até offline)
+//     1. FRANCÊS → mms-tts-fra (≈38 MB)
 //     2. PORTUGUÊS → Dii (Piper pt-BR, ≈63 MB)
+//   Os modelos ficam no PRÓPRIO SITE (download confiável e rápido até
+//   no celular) e sobem do CDN do HuggingFace só se faltarem.
 //   Enquanto o modelo não está pronto, o botão PULSA esperando; quando
 //   pronto, fala com a voz natural. Se o modelo falhar de verdade, fica
 //   em SILÊNCIO — NUNCA a voz genérica (nem Google, nem navegador) e
@@ -102,13 +104,30 @@ let currentAudio: HTMLAudioElement | null = null;
 // por cima do outro não sobrepõe áudio (o resultado antigo é descartado).
 let naturalToken = 0;
 
-// Primeira fala baixa o modelo (≈36 MB) — dá tempo; depois é rápido.
-const NATURAL_FIRST_TIMEOUT_MS = 45000;
-// Síntese com modelo quente: em WASM no navegador a inferência pode
-// levar 10-20s em desktop e 20-30s em celular mesmo em frases curtas —
-// o timeout curto demais cortava a fala bem na hora e caía no fallback
-// silencioso ("botão morto").
-const NATURAL_FAST_TIMEOUT_MS = 30000;
+// ── Tempo de espera POR DISPOSITIVO ───────────────────────────
+// A síntese roda em WASM de thread única: no DESKTOP leva 3-7s; no
+// CELULAR (mesmo modelo) leva 20-40s+ — o timeout curto de 30s cortava
+// a fala no meio e o app ficava em silêncio exatamente no celular.
+// Por isso o celular ganha timeouts bem mais generosos.
+function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  if (/Mobi|Android|iPhone|iPad|iPod|Windows Phone|Silk/i.test(ua)) return true;
+  const data = (navigator as { userAgentData?: { mobile?: boolean } }).userAgentData;
+  return data?.mobile === true;
+}
+const IS_MOBILE = isMobileDevice();
+
+// Síntese com modelo já quente (sem download).
+const SYNTH_TIMEOUT_MS = IS_MOBILE ? 120000 : 30000;
+// Primeira síntese (modelo ainda baixando/carregando).
+const FIRST_TIMEOUT_MS = IS_MOBILE ? 150000 : 45000;
+// Espera do modelo terminar de baixar (warm-up).
+const WARMUP_TIMEOUT_MS = IS_MOBILE ? 300000 : 120000;
+// Síntese da voz pt-BR (Dii/Piper).
+const PIPER_SYNTH_TIMEOUT_MS = IS_MOBILE ? 150000 : 45000;
+// Espera da Dii (runtime + modelo ≈ 100 MB na 1ª vez).
+const PIPER_WARMUP_TIMEOUT_MS = IS_MOBILE ? 420000 : 240000;
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -155,7 +174,7 @@ function playAudioBlob(blob: Blob, onEnd?: () => void) {
  */
 async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
-  const timeoutMs = isNaturalReady() ? NATURAL_FAST_TIMEOUT_MS : NATURAL_FIRST_TIMEOUT_MS;
+  const timeoutMs = isNaturalReady() ? SYNTH_TIMEOUT_MS : FIRST_TIMEOUT_MS;
   try {
     const audio = await withTimeout(synthesizeNaturalVoice(text, lang), timeoutMs);
     // outra fala assumiu — não duplica áudio
@@ -201,9 +220,9 @@ function kickOffNaturalWarmup(): Promise<void> {
 async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
-    await withTimeout(kickOffNaturalWarmup(), 120000);
+    await withTimeout(kickOffNaturalWarmup(), WARMUP_TIMEOUT_MS);
     if (token !== naturalToken) return;
-    const audio = await withTimeout(synthesizeNaturalVoice(text, lang), NATURAL_FIRST_TIMEOUT_MS);
+    const audio = await withTimeout(synthesizeNaturalVoice(text, lang), FIRST_TIMEOUT_MS);
     if (token !== naturalToken) return;
     playAudioBlob(audio.blob, opts?.onEnd);
   } catch (err) {
@@ -220,7 +239,7 @@ async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpt
 async function speakPiperFast(text: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
-    const blob = await withTimeout(synthesizePiper(text), 45000);
+    const blob = await withTimeout(synthesizePiper(text), PIPER_SYNTH_TIMEOUT_MS);
     if (token !== naturalToken) return;
     playAudioBlob(blob, opts?.onEnd);
   } catch {
@@ -239,9 +258,9 @@ async function speakPiperFast(text: string, opts?: SpeakOpts) {
 async function speakWhenPiperReady(text: string, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
-    await withTimeout(piperWarmup(), 240000);
+    await withTimeout(piperWarmup(), PIPER_WARMUP_TIMEOUT_MS);
     if (token !== naturalToken) return;
-    const blob = await withTimeout(synthesizePiper(text), 45000);
+    const blob = await withTimeout(synthesizePiper(text), PIPER_SYNTH_TIMEOUT_MS);
     if (token !== naturalToken) return;
     playAudioBlob(blob, opts?.onEnd);
   } catch (err) {

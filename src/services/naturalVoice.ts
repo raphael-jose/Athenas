@@ -13,17 +13,19 @@
 //
 // 🎀 Voz feminina por idioma:
 //   francês → Xenova/mms-tts-fra (voz FEMININA natural de francês)
-//   português → NÃO tem modelo natural feminino compatível aqui: o
-//     Xenova/mms-tts-por tem voz MASCULINA (confirmado em
-//     huggingface.co/Xenova/mms-tts-por e transformers.js #547), então
-//     o app NÃO o usa — português fala na voz FEMININA do aparelho
-//     (Google/Microsoft pt-BR), com a regra estrita de nunca masculina.
+//   português → voz Dii (Piper pt-BR, feminina) — ver piperVoice.ts
 //
 // Se algo falhar (sem internet, CDN fora do ar, navegador sem suporte),
-// o app cai automaticamente na melhor voz feminina do dispositivo.
+// o app fica em silêncio e tenta de novo no próximo toque — NUNCA a
+// voz genérica do navegador nem voz masculina.
 // ══════════════════════════════════════════════════════════════
 
 export const FR_MODEL = "Xenova/mms-tts-fra";
+
+/** Raiz do site (ex.: https://user.github.io/Athenas/) para os assets. */
+function siteBaseUrl(): string {
+  return new URL(import.meta.env.BASE_URL, window.location.href).href;
+}
 
 /**
  * Modelo de voz natural para o idioma (null = sem voz natural disponível).
@@ -84,6 +86,9 @@ function getWorker(): Worker | null {
     for (const [, p] of pending) p.reject(new Error("worker_crash"));
     pending.clear();
   };
+  // Avisa o worker da raiz do site (para ele carregar o modelo de voz
+  // do PRÓPRIO site, não do CDN — mais confiável no celular).
+  worker.postMessage({ type: "init", baseUrl: siteBaseUrl() });
   return worker;
 }
 

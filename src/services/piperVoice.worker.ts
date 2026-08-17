@@ -12,24 +12,43 @@
 // ══════════════════════════════════════════════════════════════
 import { ExpressionWebRuntime, OnnxWebRuntime, PhonemizeWebRuntime, PiperWebEngine } from "piper-tts-web";
 
-// Repositório da voz Dii no HuggingFace (arquivos na raiz).
-const DII_REPO = "https://huggingface.co/OpenVoiceOS/pipertts_pt-BR_dii/resolve/main/";
+// Repositório da voz Dii no HuggingFace (arquivos na raiz) — usado só
+// como FALLBACK: o download normal vem do PRÓPRIO SITE (models/dii),
+// mais rápido e confiável no celular.
+const DII_HF = "https://huggingface.co/OpenVoiceOS/pipertts_pt-BR_dii/resolve/main/";
 
-/** Provider que aponta direto para os arquivos da Dii (a raiz do repo).
- * CACHEIA o modelo (63 MB): se baixasse de novo a cada fala, criaria
- * uma nova sessão ONNX e travaria a máquina — com cache, o modelo é
- * baixado uma vez e as falas seguintes são só inferência. */
+/** Provider da voz Dii: busca os arquivos no PRÓPRIO SITE primeiro
+ * (mesma origem = download confiável até no celular) e cai no CDN do
+ * HuggingFace se faltarem. CACHEIA o modelo (63 MB): se baixasse de
+ * novo a cada fala, criaria uma nova sessão ONNX e travaria a máquina
+ * — com cache, o modelo é baixado uma vez e as falas seguintes são só
+ * inferência. */
 class DiiVoiceProvider {
   private cached: [Record<string, unknown>, string] | null = null;
   async list(): Promise<string[]> {
     return ["dii_pt-BR"];
   }
+  private async fetchFrom(base: string): Promise<[Record<string, unknown>, string]> {
+    const [cfg, model] = await Promise.all([
+      fetch(base + "dii_pt-BR.onnx.json").then((r) => {
+        if (!r.ok) throw new Error("config_missing");
+        return r.json();
+      }),
+      fetch(base + "dii_pt-BR.onnx").then(async (r) => {
+        if (!r.ok) throw new Error("model_missing");
+        return URL.createObjectURL(await r.blob());
+      })
+    ]);
+    return [cfg, model];
+  }
   async fetch(_name: string): Promise<[Record<string, unknown>, string]> {
     if (this.cached) return this.cached;
-    this.cached = await Promise.all([
-      fetch(DII_REPO + "dii_pt-BR.onnx.json").then((r) => r.json()),
-      fetch(DII_REPO + "dii_pt-BR.onnx").then(async (r) => URL.createObjectURL(await r.blob()))
-    ]);
+    try {
+      this.cached = await this.fetchFrom(siteBase + "models/dii/");
+    } catch {
+      // arquivos não publicados no site (ou rede bloqueada) → CDN
+      this.cached = await this.fetchFrom(DII_HF);
+    }
     return this.cached;
   }
   destroy(): void {
