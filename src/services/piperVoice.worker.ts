@@ -84,21 +84,24 @@ class MultiVoiceProvider {
   }
 }
 
-let engine: PiperWebEngine | null = null;
+// Um engine separado POR VOZ — o PiperWebEngine pode caches o modelo
+// ONNX carregado e ignorar trocas de voz no mesmo engine.
+const engines = new Map<string, PiperWebEngine>();
 let siteBase = "/";
-let voiceProvider: MultiVoiceProvider | null = null;
+const voiceProvider = new MultiVoiceProvider();
 
-function getEngine(): PiperWebEngine {
-  if (!engine) {
-    voiceProvider = new MultiVoiceProvider();
-    engine = new PiperWebEngine({
+function getEngine(voiceKey: string): PiperWebEngine {
+  let eng = engines.get(voiceKey);
+  if (!eng) {
+    eng = new PiperWebEngine({
       onnxRuntime: new OnnxWebRuntime({ basePath: siteBase + "onnx/" }),
       phonemizeRuntime: new PhonemizeWebRuntime({ basePath: siteBase + "piper/" }),
       expressionRuntime: new ExpressionWebRuntime(),
       voiceProvider
     });
+    engines.set(voiceKey, eng);
   }
-  return engine;
+  return eng;
 }
 
 const post = (msg: unknown, transfer?: Transferable[]) => {
@@ -115,7 +118,8 @@ const post = (msg: unknown, transfer?: Transferable[]) => {
   try {
     // "dii" → "dii_pt-BR" (português), "siwis" → "siwis" (francês)
     const voiceName = voice === "siwis" ? "siwis" : "dii_pt-BR";
-    const out = await getEngine().generate(text, voiceName, 0);
+    // Cada voz tem seu engine separado para não misturar modelos.
+    const out = await getEngine(voiceName).generate(text, voiceName, 0);
     post({ type: "result", id, blob: out.file, durationMs: out.duration });
   } catch (err) {
     post({ type: "error", id, error: err instanceof Error ? err.message : String(err) });

@@ -68,28 +68,30 @@ export function isPiperReady(): boolean {
   return workerReady;
 }
 
-let warmupPromise: Promise<void> | null = null;
+// Warmup separado por voz — cada modelo precisa ser baixado e
+// carregado individualmente na sessão ONNX do engine Piper.
+const warmupPromises = new Map<PiperVoice, Promise<void>>();
 
 /**
- * Espera (ou inicia) o carregamento do modelo Piper — baixa o runtime
- * e o(s) modelo(s) na primeira vez e faz uma síntese curta para aquecer.
- * Resolve quando pronto; rejeita se falhar.
+ * Espera (ou inicia) o carregamento de UMA voz Piper — baixa o modelo
+ * e faz uma síntese curta para aquecer o engine. Resolve quando pronto;
+ * rejeita se falhar. Cada voz tem seu próprio warmup (não se sobrepõe).
  * @param voice "dii" para português, "siwis" para francês
  */
 export function piperWarmup(voice: PiperVoice = "dii"): Promise<void> {
-  // Se já aqueceu um modelo, não re-baixa — o engine suporta múltiplos.
-  if (warmupPromise) return warmupPromise;
-  if (workerReady) return Promise.resolve();
+  const existing = warmupPromises.get(voice);
+  if (existing) return existing;
   const warmText = voice === "siwis" ? "bonjour" : "olá";
-  warmupPromise = synthesizePiper(warmText, voice)
+  const p = synthesizePiper(warmText, voice)
     .then(() => {
       workerReady = true;
     })
     .catch(() => {
-      warmupPromise = null;
-      throw new Error("piper_warmup_failed");
+      warmupPromises.delete(voice);
+      throw new Error(`piper_warmup_failed_${voice}`);
     });
-  return warmupPromise;
+  warmupPromises.set(voice, p);
+  return p;
 }
 
 /**
