@@ -207,21 +207,39 @@ function ChatMode() {
         {history.map((m, i) => {
           const prev = history[i - 1];
           const sug = m.role === "assistant" && prev && prev.role === "user" ? naturalSuggestion(prev.content) : null;
+          const sameAsPrev = prev && prev.role === m.role;
+          const ts = m.at ? new Date(m.at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : null;
           return (
-            <div key={i} className={m.role === "assistant" ? "lulu-msg-in" : undefined}>
-              <div className={`msg ${m.role === "user" ? "user" : "assistant"}`}>
-                {/* A Lulu mostra o MESMO texto limpo que ela fala: nada de
-                    markdown cru nem emojis na exibição. As mensagens do aluno
-                    ficam como ele escreveu. */}
-                <RichText text={m.role === "assistant" ? cleanForSpeech(m.content) : m.content} />
-                {m.role === "assistant" && (
-                  <span className="msg-audio">
-                    <AudioButton text={frenchSpeakText(m.content)} size="sm" label="Ouvir o francês desta resposta" />
-                  </span>
-                )}
-              </div>
+            <div key={i} className={m.role === "assistant" ? "lulu-msg-in" : "user-msg-in"}>
+              {m.role === "assistant" && (
+                <div className="chat-row" style={{ maxWidth: "88%" }}>
+                  <div className="chat-avatar" aria-hidden>
+                    <Icon name="robot" size={20} />
+                  </div>
+                  <div>
+                    {!sameAsPrev && <div className="chat-sender">Lulu</div>}
+                    <div className="msg assistant">
+                      <RichText text={cleanForSpeech(m.content)} />
+                      <span className="msg-audio">
+                        <AudioButton text={frenchSpeakText(m.content)} size="sm" label="Ouvir o francês desta resposta" />
+                      </span>
+                    </div>
+                    {ts && <div className="chat-ts">{ts}</div>}
+                  </div>
+                </div>
+              )}
+              {m.role === "user" && (
+                <div className="chat-row user-row" style={{ maxWidth: "88%" }}>
+                  <div>
+                    <div className="msg user">
+                      <RichText text={m.content} />
+                    </div>
+                    {ts && <div className="chat-ts">{ts}</div>}
+                  </div>
+                </div>
+              )}
               {sug && (
-                <div className="card-soft mt-2" style={{ textAlign: "left" }}>
+                <div className="card-soft mt-2" style={{ textAlign: "left", marginLeft: 40 }}>
                   <div className="small bold mb-1 row" style={{ gap: 5 }}>
                     <Icon name="sparkle" size={14} /> Mais natural:
                   </div>
@@ -235,9 +253,17 @@ function ChatMode() {
           );
         })}
         {typing && (
-          <div className="msg assistant">
-            <div className="typing-dots" aria-label="Lulu está pensando">
-              <span /><span /><span />
+          <div className="chat-row" style={{ maxWidth: "88%" }}>
+            <div className="chat-avatar" aria-hidden>
+              <Icon name="robot" size={20} />
+            </div>
+            <div>
+              <div className="chat-sender">Lulu</div>
+              <div className="msg assistant">
+                <div className="typing-dots" aria-label="Lulu está pensando">
+                  <span /><span /><span />
+                </div>
+              </div>
             </div>
           </div>
         )}
