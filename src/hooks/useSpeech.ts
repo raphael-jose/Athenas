@@ -2,13 +2,15 @@
 // Athenas — Fala: síntese + reconhecimento
 //
 // 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
-//   A Lulu é francesa e fala TUDO com a voz siwis (Piper VITS, fr_FR).
-//   O modelo fica no PRÓPRIO SITE (download confiável e rápido até
-//   no celular).
-//   Enquanto o modelo não está pronto, o botão PULSA esperando; quando
-//   pronto, fala com a voz feminina. Se o modelo falhar de verdade, fica
-//   em SILÊNCIO — NUNCA a voz genérica (nem Google, nem navegador) e
-//   NUNCA voz masculina, em lugar nenhum do projeto.
+//   Dois modelos Piper FEMININOS, cada um no seu idioma:
+//     1. FRANCÊS → siwis (Piper VITS, fr_FR, ≈60 MB)
+//     2. PORTUGUÊS → Dii (Piper VITS, pt_BR, ≈63 MB)
+//   Texto MISTO (ex: "bonjour, tudo bem?") é splitado por frase,
+//   cada trecho fala com a voz do idioma correto, e os áudios
+//   são concatenados em sequência.
+//   Os modelos ficam no PRÓPRIO SITE (download confiável) e
+//   depois ficam no cache do navegador (funcionam OFFLINE).
+//   Se o modelo falhar, fica em SILÊNCIO — NUNCA voz genérica.
 // ══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useMemo } from "react";
 import { isPiperReady, piperWarmup, synthesizePiper, type PiperVoice } from "@/services/piperVoice";
@@ -156,18 +158,180 @@ function playAudioBlob(blob: Blob, onEnd?: () => void) {
 
 /**
  * Mapeia idioma detectado → voz Piper.
- * Siwis (francês) é usada para AMBOS os idiomas — a Lulu é francesa
- * e fala tudo com a mesma voz, aceitando sotaque no português.
+ * Francês → siwis, Português → Dii.
  */
-export function langToPiperVoice(_lang: string): PiperVoice {
-  return "siwis";
+export function langToPiperVoice(lang: string): PiperVoice {
+  return lang.toLowerCase().startsWith("pt") ? "dii" : "siwis";
+}
+
+// ── Texto misto (FR + PT) ────────────────────────────────────
+// Separa o texto em trechos por idioma, para cada trecho falar
+// com a voz correta. Ex: "bonjour, tudo bem?" →
+//   [{ text: "bonjour,", lang: "fr" }, { text: "tudo bem?", lang: "pt" }]
+function splitByLanguage(text: string): Array<{ text: string; voice: PiperVoice }> {
+  // Divide por pontuação (frases) — preserva o delimitador.
+  const parts = text.split(/(?<=[.!?…])\s+/).filter(Boolean);
+  if (parts.length <= 1) {
+    // Texto curto ou sem pontuação: detecta o idioma inteiro.
+    const lang = detectLang(text);
+    return [{ text, voice: langToPiperVoice(lang) }];
+  }
+  return parts.map((p) => ({
+    text: p,
+    voice: langToPiperVoice(detectLang(p))
+  }));
+}
+
+// ── Concatenação de WAV ───────────────────────────────────────
+/** Converte um Blob WAV em Float32Array + sampleRate. */
+async function wavToFloat32(blob: Blob): Promise<{ samples: Float32Array; sampleRate: number }> {
+  const buf = await blob.arrayBuffer();
+  const view = new DataView(buf);
+  // Cabeçalho WAV padrão: sampleRate em offset 24, dados em offset 44.
+  const sampleRate = view.getUint32(24, true);
+  const dataLen = view.getUint32(40, true);
+  const numSamples = Math.floor(dataLen / 2); // 16-bit mono
+  const samples = new Float32Array(numSamples);
+  for (let i = 0; i < numSamples; i++) {
+    samples[i] = view.getInt16(44 + i * 2, true) / 32768;
+  }
+  return { samples, sampleRate };
+}
+
+/** Converte Float32Array em Blob WAV (16-bit mono). */
+function float32ToWavBlob(samples: Float32Array, sampleRate: number): Blob {
+  const buf = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buf);
+  const writeStr = (o: number, s: string) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+  writeStr(0, "RIFF");
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeStr(8, "WAVE");
+  writeStr(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, "data");
+  view.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([buf], { type: "audio/wav" });
+}
+
+/** Junta vários blobs WAV em um único blob (resample todos para a mesma taxa). */
+async function concatWavBlobs(blobs: Blob[]): Promise<Blob> {
+  if (blobs.length === 0) throw new Error("no_blobs");
+  if (blobs.length === 1) return blobs[0];
+  const parts = await Promise.all(blobs.map(wavToFloat32));
+  // Resample todos para a taxa do primeiro blob.
+  const targetRate = parts[0].sampleRate;
+  const allSamples: Float32Array[] = [];
+  for (const p of parts) {
+    if (p.sampleRate === targetRate) {
+      allSamples.push(p.samples);
+    } else {
+      // Resample simples (linear) — suficiente para voz.
+      const ratio = targetRate / p.sampleRate;
+      const newLen = Math.floor(p.samples.length * ratio);
+      const resampled = new Float32Array(newLen);
+      for (let i = 0; i < newLen; i++) {
+        const srcIdx = i / ratio;
+        const idx = Math.floor(srcIdx);
+        const frac = srcIdx - idx;
+        resampled[i] = idx + 1 < p.samples.length
+          ? p.samples[idx] * (1 - frac) + p.samples[idx + 1] * frac
+          : p.samples[idx] ?? 0;
+      }
+      allSamples.push(resampled);
+    }
+  }
+  // Concatena com uma pausa curta (100ms de silêncio) entre idiomas.
+  const pause = new Float32Array(Math.floor(targetRate * 0.1)); // 100ms
+  const total = allSamples.reduce((sum, s) => sum + s.length + pause.length, -pause.length);
+  const merged = new Float32Array(total);
+  let offset = 0;
+  for (let i = 0; i < allSamples.length; i++) {
+    merged.set(allSamples[i], offset);
+    offset += allSamples[i].length;
+    if (i < allSamples.length - 1) {
+      merged.set(pause, offset);
+      offset += pause.length;
+    }
+  }
+  return float32ToWavBlob(merged, targetRate);
 }
 
 /**
- * Fala AGORA com a voz Piper (femimina) — modelo já quente.
- * Se a síntese falhar, fica em silêncio — nunca genérica.
+ * Fala AGORA com a voz Piper — modelo já quente.
+ * Suporta texto MISTO: splita por idioma, sintetiza cada trecho
+ * com a voz correta, concatena e toca.
  */
-async function speakPiperFast(text: string, voice: PiperVoice, opts?: SpeakOpts) {
+async function speakPiperFast(text: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  try {
+    const segments = splitByLanguage(text);
+    let blob: Blob;
+    if (segments.length === 1) {
+      blob = await withTimeout(synthesizePiper(segments[0].text, segments[0].voice), SYNTH_TIMEOUT_MS);
+    } else {
+      const blobs = await Promise.all(
+        segments.map((s) => withTimeout(synthesizePiper(s.text, s.voice), SYNTH_TIMEOUT_MS))
+      );
+      blob = await concatWavBlobs(blobs);
+    }
+    if (token !== naturalToken) return;
+    playAudioBlob(blob, opts?.onEnd);
+  } catch {
+    if (token !== naturalToken) return;
+    console.info("[Athenas-voz] síntese Piper falhou — silêncio (nunca a voz genérica)");
+    opts?.onEnd?.();
+  }
+}
+
+/**
+ * ESPERA pela voz Piper e fala com ela — o botão pulsa enquanto
+ * o modelo baixa na 1ª vez. Suporta texto MISTO.
+ */
+async function speakWhenPiperReady(text: string, opts?: SpeakOpts) {
+  const token = ++naturalToken;
+  try {
+    // Warmup ambos os modelos (siwis e Dii) — o primeiro que precisar
+    // já vai estar quente; o outro baixa em paralelo se necessário.
+    await withTimeout(
+      Promise.all([piperWarmup("siwis"), piperWarmup("dii")]),
+      WARMUP_TIMEOUT_MS
+    );
+    if (token !== naturalToken) return;
+    // Agora sintetiza (o modelo já está quente).
+    const segments = splitByLanguage(text);
+    let blob: Blob;
+    if (segments.length === 1) {
+      blob = await withTimeout(synthesizePiper(segments[0].text, segments[0].voice), SYNTH_TIMEOUT_MS);
+    } else {
+      const blobs = await Promise.all(
+        segments.map((s) => withTimeout(synthesizePiper(s.text, s.voice), SYNTH_TIMEOUT_MS))
+      );
+      blob = await concatWavBlobs(blobs);
+    }
+    if (token !== naturalToken) return;
+    playAudioBlob(blob, opts?.onEnd);
+  } catch (err) {
+    if (token !== naturalToken) return;
+    console.info("[Athenas-voz] voz Piper não ficou pronta — silêncio (nunca a voz genérica)", err instanceof Error ? err.message : "");
+    opts?.onEnd?.();
+  }
+}
+
+/**
+ * Fala com UMA voz específica (sem split de idioma) — usado
+ * quando lang é forçado pelo caller.
+ */
+async function speakSingleVoice(text: string, voice: PiperVoice, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
     const blob = await withTimeout(synthesizePiper(text, voice), SYNTH_TIMEOUT_MS);
@@ -175,17 +339,16 @@ async function speakPiperFast(text: string, voice: PiperVoice, opts?: SpeakOpts)
     playAudioBlob(blob, opts?.onEnd);
   } catch {
     if (token !== naturalToken) return;
-    console.info(`[Athenas-voz] síntese ${voice} falhou — silêncio (nunca a voz genérica)`);
+    console.info(`[Athenas-voz] síntese ${voice} falhou — silêncio`);
     opts?.onEnd?.();
   }
 }
 
 /**
- * ESPERA pela voz Piper (femimina) e fala com ela — o botão pulsa
- * enquanto o modelo baixa na 1ª vez. Se FALHAR de verdade, fica em
- * silêncio — NUNCA a voz genérica (Google/navegador).
+ * ESPERA pela voz Piper e fala com UMA voz específica — usado
+ * quando lang é forçado pelo caller.
  */
-async function speakWhenPiperReady(text: string, voice: PiperVoice, opts?: SpeakOpts) {
+async function speakSingleVoiceWhenReady(text: string, voice: PiperVoice, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
     await withTimeout(piperWarmup(voice), WARMUP_TIMEOUT_MS);
@@ -195,7 +358,7 @@ async function speakWhenPiperReady(text: string, voice: PiperVoice, opts?: Speak
     playAudioBlob(blob, opts?.onEnd);
   } catch (err) {
     if (token !== naturalToken) return;
-    console.info(`[Athenas-voz] voz ${voice} não ficou pronta — silêncio (nunca a voz genérica)`, err instanceof Error ? err.message : "");
+    console.info(`[Athenas-voz] voz ${voice} não ficou pronta — silêncio`, err instanceof Error ? err.message : "");
     opts?.onEnd?.();
   }
 }
@@ -214,12 +377,16 @@ export function useSpeech(): SpeechResult {
 
   useEffect(() => {
     if (!supported) return;
-    // 🎀 PRÉ-CARGA da voz francêsa (siwis): começa a baixar/carregar o
-    // modelo assim que o app abre (em worker, sem travar a tela). Assim
-    // a primeira fala do usuário já é a voz feminina (o botão pulsa até
-    // ela ficar pronta).
+    // 🎀 PRÉ-CARGA dos modelos Piper: começa a baixar/carregar AMBOS
+    // (siwis + Dii) assim que o app abre (em worker, sem travar a tela).
+    // Assim a primeira fala do usuário já tem voz disponível (o botão
+    // pulsa até ficar pronto). Depois da 1ª vez, ficam no cache do
+    // navegador e funcionam OFFLINE.
     const pre = setTimeout(() => {
-      piperWarmup("siwis").catch(() => {});
+      Promise.all([
+        piperWarmup("siwis").catch(() => {}),
+        piperWarmup("dii").catch(() => {})
+      ]);
     }, 2000);
     return () => clearTimeout(pre);
   }, [supported]);
@@ -235,21 +402,29 @@ export function useSpeech(): SpeechResult {
         opts?.onEnd?.();
         return true;
       }
-      const lang = opts?.lang ?? detectLang(cleaned);
-      const voice: PiperVoice = langToPiperVoice(lang);
-
-      // 1. Modelo Piper JÁ pronto → fala agora
-      //    (stop() interrompe qualquer fala anterior — nunca sobrepõe).
-      if (isPiperReady()) {
-        stop();
-        speakPiperFast(cleaned, voice, opts);
+      // Se lang for forçado, sintetiza tudo com uma voz (sem split).
+      if (opts?.lang) {
+        const forcedVoice: PiperVoice = langToPiperVoice(opts.lang);
+        if (isPiperReady()) {
+          stop();
+          speakSingleVoice(cleaned, forcedVoice, opts);
+        } else {
+          speakSingleVoiceWhenReady(cleaned, forcedVoice, opts);
+        }
         return true;
       }
 
-      // 2. Modelo ainda carregando → ESPERA (o botão pulsa) e fala com
-      //    a voz feminina assim que pronta. NUNCA a voz genérica — nem a
-      //    do Google, nem a do navegador.
-      speakWhenPiperReady(cleaned, voice, opts);
+      // 1. Modelo Piper JÁ pronto → fala agora com split de idioma
+      //    (stop() interrompe qualquer fala anterior — nunca sobrepõe).
+      if (isPiperReady()) {
+        stop();
+        speakPiperFast(cleaned, opts);
+        return true;
+      }
+
+      // 2. Modelo ainda carregando → ESPERA (o botão pulsa) e fala
+      //    com a voz feminina assim que pronta.
+      speakWhenPiperReady(cleaned, opts);
       return true;
     },
     [supported]
