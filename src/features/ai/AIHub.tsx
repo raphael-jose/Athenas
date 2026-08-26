@@ -214,7 +214,7 @@ function ChatMode() {
               {m.role === "assistant" && (
                 <div className="chat-row" style={{ maxWidth: "88%" }}>
                   <div className="chat-avatar" aria-hidden>
-                    <Icon name="robot" size={20} />
+                    <Mascot mood="happy" size={32} />
                   </div>
                   <div>
                     {!sameAsPrev && <div className="chat-sender">Lulu</div>}
@@ -255,7 +255,7 @@ function ChatMode() {
         {typing && (
           <div className="chat-row" style={{ maxWidth: "88%" }}>
             <div className="chat-avatar" aria-hidden>
-              <Icon name="robot" size={20} />
+              <Mascot mood="thinking" size={32} />
             </div>
             <div>
               <div className="chat-sender">Lulu</div>

@@ -1245,8 +1245,8 @@ input, textarea, select {
   flex-direction: row-reverse;
 }
 .chat-avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--c-primary-soft);
   display: flex;
@@ -1255,8 +1255,9 @@ input, textarea, select {
   flex-shrink: 0;
   margin-bottom: 2px;
   color: var(--c-primary-deep);
+  overflow: hidden;
 }
-.chat-avatar svg { width: 20px; height: 20px; }
+.chat-avatar svg { width: 36px; height: 36px; border-radius: 50%; }
 .chat-sender {
   font-size: 0.72rem;
   font-weight: 700;
