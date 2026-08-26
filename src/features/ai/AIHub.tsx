@@ -219,7 +219,7 @@ function ChatMode() {
                   <div>
                     {!sameAsPrev && <div className="chat-sender">Lulu</div>}
                     <div className="msg assistant">
-                      <RichText text={cleanForSpeech(m.content)} />
+                      <RichText text={m.content} />
                       <span className="msg-audio">
                         <AudioButton text={frenchSpeakText(m.content)} size="sm" label="Ouvir o francês desta resposta" />
                       </span>

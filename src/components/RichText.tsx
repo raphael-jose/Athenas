@@ -22,7 +22,6 @@ function inline(text: string, keyBase: string): ReactNode[] {
 }
 
 const LIST_RE = /^(\s*)([-•*]|\d+[.)])\s+(.*)$/;
-const TABLE_SEP_RE = /^\s*\|?[\s:|-]+\|?\s*$/; // linha só de --- separadora
 
 function tableRow(line: string, keyBase: string): ReactNode {
   const cells = line
@@ -72,16 +71,50 @@ export function RichText({ text }: { text: string }) {
     flushList();
     const trimmed = line.trim();
     if (!trimmed) continue;
-    // separador de tabela (---) → pula
-    if (TABLE_SEP_RE.test(trimmed) && trimmed.includes("-")) continue;
+    // separador de tabela / horizontal rule (---, ***, ___)
+    if (/^[-*_]{3,}$/.test(trimmed)) {
+      blocks.push(<hr key={`hr${key++}`} className="rich-hr" />);
+      continue;
+    }
     // linha de tabela → linha estilizada
     if (trimmed.startsWith("|")) {
       blocks.push(tableRow(trimmed, `t${key++}`));
       continue;
     }
-    // título markdown (### ) → destaque
-    if (trimmed.startsWith("### ")) {
-      blocks.push(<p key={`p${key++}`} className="rich-h">{inline(trimmed.slice(4), `h${key}`)}</p>);
+    // blockquote (> texto)
+    if (trimmed.startsWith("> ")) {
+      blocks.push(
+        <blockquote key={`bq${key++}`} className="rich-quote">
+          {inline(trimmed.slice(2), `bq${key}`)}
+        </blockquote>
+      );
+      continue;
+    }
+    // títulos markdown (## / ### )
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      blocks.push(
+        <p key={`h${key++}`} className="rich-h" style={{ fontSize: level <= 2 ? '1.05em' : undefined }}>
+          {inline(headingMatch[2], `h${key}`)}
+        </p>
+      );
+      continue;
+    }
+    // bloco de código (```)
+    if (trimmed.startsWith("```")) {
+      // coleta até o próximo ```
+      const codeLines: string[] = [];
+      while (lines.length > 0) {
+        const next = lines.shift()!.trim();
+        if (next.startsWith("```")) break;
+        codeLines.push(next);
+      }
+      blocks.push(
+        <pre key={`code${key++}`} className="rich-code-block">
+          <code>{codeLines.join("\n")}</code>
+        </pre>
+      );
       continue;
     }
     blocks.push(<p key={`p${key++}`} className="rich-p">{inline(trimmed, `p${key}`)}</p>);

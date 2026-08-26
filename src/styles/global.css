@@ -1455,29 +1455,84 @@ input, textarea, select {
 }
 
 /* Formatação das mensagens da Lulu */
-.rich-text p { margin: 0 0 8px; }
-.rich-h { font-weight: 700; font-size: 0.98em; color: var(--c-accent-deep); }
+.rich-text p { margin: 0 0 8px; line-height: 1.6; }
+.rich-text strong { font-weight: 700; color: var(--c-ink); }
+.rich-text em { font-style: italic; color: var(--c-ink-soft); }
+.rich-h {
+  font-weight: 800;
+  font-size: 1.02em;
+  color: var(--c-accent-deep);
+  margin: 12px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--c-accent-soft);
+}
+.rich-text blockquote, .rich-quote {
+  margin: 6px 0;
+  padding: 6px 12px;
+  border-left: 3px solid var(--c-accent);
+  background: var(--c-accent-soft);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-style: italic;
+  color: var(--c-ink-soft);
+}
 .rich-tbl-row {
   display: flex;
   gap: 8px;
   margin: 2px 0;
-  padding: 4px 8px;
-  border-radius: 8px;
+  padding: 5px 10px;
+  border-radius: var(--r-sm);
   background: var(--c-surface);
+  font-size: 0.92em;
 }
 .rich-tbl-row:first-of-type { font-weight: 700; background: var(--c-accent-soft); }
 .rich-tbl-cell { flex: 1; min-width: 0; word-break: break-word; }
 .rich-text p:last-child { margin-bottom: 0; }
-.rich-list { margin: 6px 0 10px; padding-left: 22px; }
-.rich-list li { margin: 3px 0; }
-.rich-list li::marker { color: var(--c-primary); }
+.rich-list {
+  margin: 6px 0 10px;
+  padding-left: 22px;
+  list-style: none;
+}
+.rich-list li {
+  margin: 4px 0;
+  padding-left: 4px;
+  position: relative;
+}
+.rich-list li::marker { color: var(--c-primary); font-size: 1.1em; }
+.rich-ol { counter-reset: rich-ol; list-style: none; padding-left: 22px; margin: 6px 0 10px; }
+.rich-ol li { counter-increment: rich-ol; margin: 4px 0; padding-left: 4px; }
+.rich-ol li::before {
+  content: counter(rich-ol) ".";
+  font-weight: 700;
+  color: var(--c-primary-deep);
+  margin-right: 6px;
+}
+.rich-hr {
+  border: none;
+  height: 1px;
+  background: var(--card-border);
+  margin: 12px 0;
+}
 .rich-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.88em;
   background: var(--c-accent-soft);
   border-radius: 6px;
-  padding: 1px 6px;
+  padding: 2px 7px;
   color: var(--c-accent-deep);
+  border: 1px solid var(--c-accent-soft);
+}
+.rich-code-block {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  background: var(--c-surface-2);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  margin: 6px 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--c-ink-soft);
+  border: 1px solid var(--card-border);
 }
 
 /* Roupinhas da Lulu: boina, echarpe e vestido mudam de cor com a loja
