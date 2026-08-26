@@ -1,14 +1,19 @@
 // ══════════════════════════════════════════════════════════════
-// Athenas — Voz pt-BR da Lulu (Piper "Dii", HuggingFace)
+// Athenas — Voz Piper da Lulu (femimina, sem chave)
 //
 // Cliente do worker (piperVoice.worker.ts): o main-thread só posta o
-// texto e recebe o WAV pronto. O worker é criado SOB DEMANDA — a voz
-// Dii (runtime + modelo ≈ 100 MB, a maior parte do PRÓPRIO site) só é
-// baixada quando o app realmente fala português pela primeira vez.
+// texto e recebe o WAV pronto. O worker é criado SOB DEMANDA — as vozes
+// (runtime + modelos ≈ 100 MB cada) são baixadas sob demanda.
+//
+// Vozes disponíveis:
+//   "dii"   → pt-BR (Dii, Piper VITS)
+//   "siwis" → fr-FR (siwis, Piper VITS)
 // ══════════════════════════════════════════════════════════════
 
+export type PiperVoice = "dii" | "siwis";
+
 let worker: Worker | null = null;
-let workerReady = false; // modelo carregado e 1ª síntese concluída
+let workerReady = false; // modelo(s) carregado(s) e 1ª síntese concluída
 let seq = 0;
 
 type Pending = { resolve: (b: Blob) => void; reject: (e: Error) => void };
@@ -66,21 +71,21 @@ export function isPiperReady(): boolean {
 let warmupPromise: Promise<void> | null = null;
 
 /**
- * Espera (ou inicia) o carregamento da voz Dii — baixa o runtime e o
- * modelo na primeira vez e faz uma síntese curta para aquecer o engine.
- * Resolve quando pronta; rejeita se falhar (o chamador fica em silêncio
- * e tenta de novo no próximo toque). Re-tenta no próximo pedido após
- * uma falha.
+ * Espera (ou inicia) o carregamento do modelo Piper — baixa o runtime
+ * e o(s) modelo(s) na primeira vez e faz uma síntese curta para aquecer.
+ * Resolve quando pronto; rejeita se falhar.
+ * @param voice "dii" para português, "siwis" para francês
  */
-export function piperWarmup(): Promise<void> {
+export function piperWarmup(voice: PiperVoice = "dii"): Promise<void> {
+  // Se já aqueceu um modelo, não re-baixa — o engine suporta múltiplos.
   if (warmupPromise) return warmupPromise;
   if (workerReady) return Promise.resolve();
-  warmupPromise = synthesizePiper("olá")
+  const warmText = voice === "siwis" ? "bonjour" : "olá";
+  warmupPromise = synthesizePiper(warmText, voice)
     .then(() => {
       workerReady = true;
     })
     .catch(() => {
-      // falha real (rede bloqueada/CDN fora): permite retentar depois
       warmupPromise = null;
       throw new Error("piper_warmup_failed");
     });
@@ -88,11 +93,12 @@ export function piperWarmup(): Promise<void> {
 }
 
 /**
- * Sintetiza o texto na voz Dii (pt-BR, feminina). Rejeita se o worker
+ * Sintetiza o texto na voz Piper (femimina). Rejeita se o worker
  * não estiver disponível ou a síntese falhar — o chamador fica em
  * silêncio (nunca voz genérica) e tenta de novo no próximo toque.
+ * @param voice "dii" para português, "siwis" para francês
  */
-export function synthesizePiper(text: string): Promise<Blob> {
+export function synthesizePiper(text: string, voice: PiperVoice = "dii"): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const w = getWorker();
     if (!w) {
@@ -101,6 +107,6 @@ export function synthesizePiper(text: string): Promise<Blob> {
     }
     const id = ++seq;
     pending.set(id, { resolve, reject });
-    w.postMessage({ type: "synth", id, text });
+    w.postMessage({ type: "synth", id, text, voice });
   });
 }

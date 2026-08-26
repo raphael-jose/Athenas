@@ -2,13 +2,13 @@
 // Athenas — Fala: síntese + reconhecimento
 //
 // 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
-//   SÓ existem DUAS vozes, ambas NATURAIS e FEMININAS do HuggingFace:
-//     1. FRANCÊS → mms-tts-fra (≈38 MB)
+//   SÓ existem DUAS vozes, ambas FEMININAS do Piper:
+//     1. FRANCÊS → siwis (Piper VITS, fr_FR, ≈60 MB)
 //     2. PORTUGUÊS → Dii (Piper pt-BR, ≈63 MB)
 //   Os modelos ficam no PRÓPRIO SITE (download confiável e rápido até
-//   no celular) e sobem do CDN do HuggingFace só se faltarem.
+//   no celular).
 //   Enquanto o modelo não está pronto, o botão PULSA esperando; quando
-//   pronto, fala com a voz natural. Se o modelo falhar de verdade, fica
+//   pronto, fala com a voz feminina. Se o modelo falhar de verdade, fica
 //   em SILÊNCIO — NUNCA a voz genérica (nem Google, nem navegador) e
 //   NUNCA voz masculina, em lugar nenhum do projeto.
 //
@@ -17,16 +17,15 @@
 // cruzado.
 // ══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useMemo } from "react";
-import { isNaturalReady, langToModel, synthesizeNaturalVoice } from "@/services/naturalVoice";
-import { isPiperReady, piperWarmup, synthesizePiper } from "@/services/piperVoice";
+import { isPiperReady, piperWarmup, synthesizePiper, type PiperVoice } from "@/services/piperVoice";
 import { cleanForSpeech } from "@/services/speechClean";
 
 export interface SpeechResult {
   supported: boolean;
   /**
-   * Fala o texto com voz FEMININA NATURAL (HuggingFace: mms-tts-fra em
-   * francês, Piper Dii em português). O botão pulsa enquanto o modelo
-   * carrega; se falhar, silêncio — NUNCA voz genérica (Google/navegador).
+   * Fala o texto com voz FEMININA (Piper: siwis em francês, Dii em
+   * português). O botão pulsa enquanto o modelo carrega; se falhar,
+   * silêncio — NUNCA voz genérica (Google/navegador).
    * `lang` força um idioma.
    */
   speak: (text: string, opts?: { rate?: number; lang?: string; onEnd?: () => void }) => boolean;
@@ -96,8 +95,7 @@ export function detectLang(text: string): "pt-BR" | "fr-FR" {
   return pt >= fr ? "pt-BR" : "fr-FR";
 }
 
-// ── Voz natural (HuggingFace no navegador) ────────────────────
-// Áudio natural em reprodução (para o stop() silenciar de qualquer tela).
+// ── Áudio em reprodução ──────────────────────────────────────
 let currentAudio: HTMLAudioElement | null = null;
 
 // Token anti-duplicação: o clique mais recente vence — um toque rápido
@@ -119,15 +117,9 @@ function isMobileDevice(): boolean {
 const IS_MOBILE = isMobileDevice();
 
 // Síntese com modelo já quente (sem download).
-const SYNTH_TIMEOUT_MS = IS_MOBILE ? 120000 : 30000;
-// Primeira síntese (modelo ainda baixando/carregando).
-const FIRST_TIMEOUT_MS = IS_MOBILE ? 150000 : 45000;
+const SYNTH_TIMEOUT_MS = IS_MOBILE ? 150000 : 45000;
 // Espera do modelo terminar de baixar (warm-up).
-const WARMUP_TIMEOUT_MS = IS_MOBILE ? 300000 : 120000;
-// Síntese da voz pt-BR (Dii/Piper).
-const PIPER_SYNTH_TIMEOUT_MS = IS_MOBILE ? 150000 : 45000;
-// Espera da Dii (runtime + modelo ≈ 100 MB na 1ª vez).
-const PIPER_WARMUP_TIMEOUT_MS = IS_MOBILE ? 420000 : 240000;
+const WARMUP_TIMEOUT_MS = IS_MOBILE ? 420000 : 240000;
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -169,103 +161,46 @@ function playAudioBlob(blob: Blob, onEnd?: () => void) {
 }
 
 /**
- * Tenta a voz natural (HuggingFace); se a síntese falhar, fica em
- * silêncio — NUNCA cai na voz genérica (Google/navegador).
+ * Mapeia idioma detectado → voz Piper.
  */
-async function speakNatural(text: string, lang: string, opts?: SpeakOpts) {
-  const token = ++naturalToken;
-  const timeoutMs = isNaturalReady() ? SYNTH_TIMEOUT_MS : FIRST_TIMEOUT_MS;
-  try {
-    const audio = await withTimeout(synthesizeNaturalVoice(text, lang), timeoutMs);
-    // outra fala assumiu — não duplica áudio
-    if (token !== naturalToken) return;
-    playAudioBlob(audio.blob, opts?.onEnd);
-  } catch {
-    if (token !== naturalToken) return;
-    console.info("[Athenas-voz] síntese natural falhou — silêncio (nunca a voz genérica)");
-    opts?.onEnd?.();
-  }
-}
-
-// ── Warm-up da voz natural (junto com o 1º áudio tocado) ───────
-// O carregamento do modelo do HuggingFace roda em worker (não trava a
-// tela). Enquanto o modelo não está pronto, o botão PULSA esperando;
-// quando pronto, fala com a voz natural. Nunca a do navegador.
-let warmupPromise: Promise<void> | null = null;
-
-/**
- * Inicia o carregamento do modelo em background (uma vez por sessão,
- * e de novo após uma falha — o worker retenta o download). Devolve a
- * promise do aquecimento (resolve quando o modelo + 1ª síntese
- * terminam).
- */
-function kickOffNaturalWarmup(): Promise<void> {
-  if (warmupPromise) return warmupPromise;
-  if (isNaturalReady()) return Promise.resolve();
-  warmupPromise = synthesizeNaturalVoice("bonjour", "fr-FR")
-    .then(() => undefined)
-    .catch(() => {
-      // falha real (rede bloqueada/CDN fora): permite retentar no próximo toque
-      warmupPromise = null;
-    });
-  return warmupPromise;
+export function langToPiperVoice(lang: string): PiperVoice {
+  const prefix = lang.toLowerCase().slice(0, 2);
+  return prefix === "fr" ? "siwis" : "dii";
 }
 
 /**
- * ESPERA pela voz do HuggingFace (francês) e fala com ela — o botão
- * pulsa enquanto o modelo baixa/carrega (1ª vez ≈ 36 MB; depois fica
- * em cache e é rápido). Se o modelo FALHAR de verdade, fica em
- * silêncio — NUNCA a voz genérica (Google/navegador).
+ * Fala AGORA com a voz Piper (femimina) — modelo já quente.
+ * Se a síntese falhar, fica em silêncio — nunca genérica.
  */
-async function speakWhenNaturalReady(text: string, lang: string, opts?: SpeakOpts) {
+async function speakPiperFast(text: string, voice: PiperVoice, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
-    await withTimeout(kickOffNaturalWarmup(), WARMUP_TIMEOUT_MS);
-    if (token !== naturalToken) return;
-    const audio = await withTimeout(synthesizeNaturalVoice(text, lang), FIRST_TIMEOUT_MS);
-    if (token !== naturalToken) return;
-    playAudioBlob(audio.blob, opts?.onEnd);
-  } catch (err) {
-    if (token !== naturalToken) return;
-    console.info("[Athenas-voz] voz natural não ficou pronta — silêncio (nunca a voz genérica)", err instanceof Error ? err.message : "");
-    opts?.onEnd?.();
-  }
-}
-
-/**
- * Fala AGORA com a voz Dii (Piper pt-BR feminina, HuggingFace) — modelo
- * já quente. Se a síntese falhar, fica em silêncio — nunca genérica.
- */
-async function speakPiperFast(text: string, opts?: SpeakOpts) {
-  const token = ++naturalToken;
-  try {
-    const blob = await withTimeout(synthesizePiper(text), PIPER_SYNTH_TIMEOUT_MS);
+    const blob = await withTimeout(synthesizePiper(text, voice), SYNTH_TIMEOUT_MS);
     if (token !== naturalToken) return;
     playAudioBlob(blob, opts?.onEnd);
   } catch {
     if (token !== naturalToken) return;
-    console.info("[Athenas-voz] síntese Dii falhou — silêncio (nunca a voz genérica)");
+    console.info(`[Athenas-voz] síntese ${voice} falhou — silêncio (nunca a voz genérica)`);
     opts?.onEnd?.();
   }
 }
 
 /**
- * ESPERA pela voz Dii (Piper pt-BR) e fala com ela — o botão pulsa
- * enquanto o modelo baixa na 1ª vez (runtime + modelo ≈ 170 MB; depois
- * fica em cache e é rápido). Se a Dii FALHAR de verdade, fica em
+ * ESPERA pela voz Piper (femimina) e fala com ela — o botão pulsa
+ * enquanto o modelo baixa na 1ª vez. Se FALHAR de verdade, fica em
  * silêncio — NUNCA a voz genérica (Google/navegador).
  */
-async function speakWhenPiperReady(text: string, opts?: SpeakOpts) {
+async function speakWhenPiperReady(text: string, voice: PiperVoice, opts?: SpeakOpts) {
   const token = ++naturalToken;
   try {
-    await withTimeout(piperWarmup(), PIPER_WARMUP_TIMEOUT_MS);
+    await withTimeout(piperWarmup(voice), WARMUP_TIMEOUT_MS);
     if (token !== naturalToken) return;
-    const blob = await withTimeout(synthesizePiper(text), PIPER_SYNTH_TIMEOUT_MS);
+    const blob = await withTimeout(synthesizePiper(text, voice), SYNTH_TIMEOUT_MS);
     if (token !== naturalToken) return;
     playAudioBlob(blob, opts?.onEnd);
   } catch (err) {
     if (token !== naturalToken) return;
-    console.info("[Athenas-voz] voz Dii não ficou pronta — silêncio (nunca a voz genérica)", err instanceof Error ? err.message : "");
+    console.info(`[Athenas-voz] voz ${voice} não ficou pronta — silêncio (nunca a voz genérica)`, err instanceof Error ? err.message : "");
     opts?.onEnd?.();
   }
 }
@@ -284,12 +219,12 @@ export function useSpeech(): SpeechResult {
 
   useEffect(() => {
     if (!supported) return;
-    // 🎀 PRÉ-CARGA da voz do HuggingFace: começa a baixar/carregar o
+    // 🎀 PRÉ-CARGA da voz francêsa (siwis): começa a baixar/carregar o
     // modelo assim que o app abre (em worker, sem travar a tela). Assim
-    // a primeira fala do usuário já é a voz natural do HuggingFace (o
-    // botão pulsa até ela ficar pronta).
+    // a primeira fala do usuário já é a voz feminina (o botão pulsa até
+    // ela ficar pronta).
     const pre = setTimeout(() => {
-      kickOffNaturalWarmup();
+      piperWarmup("siwis").catch(() => {});
     }, 2000);
     return () => clearTimeout(pre);
   }, [supported]);
@@ -306,42 +241,20 @@ export function useSpeech(): SpeechResult {
         return true;
       }
       const lang = opts?.lang ?? detectLang(cleaned);
-      const hasNatural = langToModel(lang) !== null;
-      const isPt = lang.toLowerCase().slice(0, 2) === "pt";
+      const voice: PiperVoice = langToPiperVoice(lang);
 
-      // 1. FRANCÊS: modelo HuggingFace JÁ pronto → fala agora
+      // 1. Modelo Piper JÁ pronto → fala agora
       //    (stop() interrompe qualquer fala anterior — nunca sobrepõe).
-      if (hasNatural && isNaturalReady()) {
+      if (isPiperReady()) {
         stop();
-        speakNatural(cleaned, lang, opts);
+        speakPiperFast(cleaned, voice, opts);
         return true;
       }
 
-      // 2. PORTUGUÊS: voz Dii (Piper) JÁ pronta → fala agora
-      //    (stop() interrompe qualquer fala anterior).
-      if (isPt && isPiperReady()) {
-        stop();
-        speakPiperFast(cleaned, opts);
-        return true;
-      }
-
-      // 3. Modelo ainda carregando → ESPERA (o botão pulsa) e fala com
-      //    a voz natural assim que pronta. NUNCA a voz genérica — nem a
+      // 2. Modelo ainda carregando → ESPERA (o botão pulsa) e fala com
+      //    a voz feminina assim que pronta. NUNCA a voz genérica — nem a
       //    do Google, nem a do navegador.
-      if (hasNatural) {
-        kickOffNaturalWarmup();
-        speakWhenNaturalReady(cleaned, lang, opts);
-        return true;
-      }
-      if (isPt) {
-        void piperWarmup();
-        speakWhenPiperReady(cleaned, opts);
-        return true;
-      }
-
-      // 4. Sem voz natural no idioma → silêncio (melhor que voz genérica).
-      console.info(`[Athenas-voz] sem voz natural em ${lang} — silêncio`);
-      opts?.onEnd?.();
+      speakWhenPiperReady(cleaned, voice, opts);
       return true;
     },
     [supported]

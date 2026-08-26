@@ -1,71 +1,101 @@
 // ══════════════════════════════════════════════════════════════
-// Athenas — Worker da voz pt-BR (Piper "Dii", HuggingFace)
+// Athenas — Worker da voz (Piper VITS, femimina)
 //
-// A Lulu fala português com a voz FEMININA "Dii" (Piper VITS,
-// OpenVoiceOS/pipertts_pt-BR_dii) rodando no navegador — sem chave,
-// sem servidor. O runtime (espeak-ng + onnxruntime-web) e o modelo
-// (≈64 MB) são baixados SOB DEMANDA, só na primeira vez que o app fala
-// português; depois ficam no cache do navegador.
+// A Lulu fala com vozes FEMININAS do Piper:
+//   português → "Dii" (OpenVoiceOS/pipertts_pt-BR_dii)
+//   francês   → "siwis" (rhasspy/piper-voices, fr_FR/siwis)
+//
+// O runtime (espeak-ng + onnxruntime-web) e os modelos são baixados
+// SOB DEMANDA e ficam no cache do navegador.
 //
 // Tudo roda AQUI, em um Web Worker: baixar o modelo e sintetizar nunca
-// congelam a interface. O main-thread posta {texto} e recebe o WAV.
+// congelam a interface. O main-thread posta {texto, voz} e recebe o WAV.
 // ══════════════════════════════════════════════════════════════
 import { ExpressionWebRuntime, OnnxWebRuntime, PhonemizeWebRuntime, PiperWebEngine } from "piper-tts-web";
 
-// Repositório da voz Dii no HuggingFace (arquivos na raiz) — usado só
-// como FALLBACK: o download normal vem do PRÓPRIO SITE (models/dii),
-// mais rápido e confiável no celular.
-const DII_HF = "https://huggingface.co/OpenVoiceOS/pipertts_pt-BR_dii/resolve/main/";
+// ── Configuração das vozes femininas ─────────────────────────
+interface VoiceConfig {
+  /** Nome do modelo (ex.: "dii_pt-BR", "siwis") */
+  modelId: string;
+  /** Caminho relativo em public/models/ */
+  localPath: string;
+  /** Nome do arquivo .onnx (sem extensão) */
+  onnxFile: string;
+  /** Fallback remoto (HuggingFace) */
+  hfBase?: string;
+}
 
-/** Provider da voz Dii: busca os arquivos no PRÓPRIO SITE primeiro
- * (mesma origem = download confiável até no celular) e cai no CDN do
- * HuggingFace se faltarem. CACHEIA o modelo (63 MB): se baixasse de
- * novo a cada fala, criaria uma nova sessão ONNX e travaria a máquina
- * — com cache, o modelo é baixado uma vez e as falas seguintes são só
- * inferência. */
-class DiiVoiceProvider {
-  private cached: [Record<string, unknown>, string] | null = null;
-  async list(): Promise<string[]> {
-    return ["dii_pt-BR"];
+const VOICES: Record<string, VoiceConfig> = {
+  dii: {
+    modelId: "dii_pt-BR",
+    localPath: "models/dii/",
+    onnxFile: "dii_pt-BR",
+    hfBase: "https://huggingface.co/OpenVoiceOS/pipertts_pt-BR_dii/resolve/main/"
+  },
+  siwis: {
+    modelId: "siwis",
+    localPath: "models/fr_FR/siwis/",
+    onnxFile: "fr_FR-siwis-medium",
+    hfBase: "https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/"
   }
-  private async fetchFrom(base: string): Promise<[Record<string, unknown>, string]> {
-    const [cfg, model] = await Promise.all([
-      fetch(base + "dii_pt-BR.onnx.json").then((r) => {
+};
+
+/** Provider multi-voz: busca os arquivos no PRÓPRIO SITE primeiro
+ * (mesma origem = download confiável até no celular) e cai no CDN do
+ * HuggingFace se faltarem. CACHEIA cada modelo: se baixasse de
+ * novo a cada fala, criaria uma nova sessão ONNX e travaria a máquina.
+ */
+class MultiVoiceProvider {
+  private cache = new Map<string, [Record<string, unknown>, string]>();
+  async list(): Promise<string[]> {
+    return Object.values(VOICES).map((v) => v.modelId);
+  }
+  private async fetchFrom(base: string, cfg: VoiceConfig): Promise<[Record<string, unknown>, string]> {
+    const [config, model] = await Promise.all([
+      fetch(base + cfg.onnxFile + ".onnx.json").then((r) => {
         if (!r.ok) throw new Error("config_missing");
         return r.json();
       }),
-      fetch(base + "dii_pt-BR.onnx").then(async (r) => {
+      fetch(base + cfg.onnxFile + ".onnx").then(async (r) => {
         if (!r.ok) throw new Error("model_missing");
         return URL.createObjectURL(await r.blob());
       })
     ]);
-    return [cfg, model];
+    return [config, model];
   }
-  async fetch(_name: string): Promise<[Record<string, unknown>, string]> {
-    if (this.cached) return this.cached;
+  async fetch(name: string): Promise<[Record<string, unknown>, string]> {
+    const cached = this.cache.get(name);
+    if (cached) return cached;
+    // Encontra a config da voz pelo modelId
+    const cfg = Object.values(VOICES).find((v) => v.modelId === name);
+    if (!cfg) throw new Error(`voice_not_found: ${name}`);
+    let result: [Record<string, unknown>, string];
     try {
-      this.cached = await this.fetchFrom(siteBase + "models/dii/");
+      result = await this.fetchFrom(siteBase + cfg.localPath, cfg);
     } catch {
-      // arquivos não publicados no site (ou rede bloqueada) → CDN
-      this.cached = await this.fetchFrom(DII_HF);
+      if (!cfg.hfBase) throw new Error(`voice_fetch_failed: ${name}`);
+      result = await this.fetchFrom(cfg.hfBase, cfg);
     }
-    return this.cached;
+    this.cache.set(name, result);
+    return result;
   }
   destroy(): void {
-    // sem estado próprio
+    this.cache.clear();
   }
 }
 
 let engine: PiperWebEngine | null = null;
 let siteBase = "/";
+let voiceProvider: MultiVoiceProvider | null = null;
 
 function getEngine(): PiperWebEngine {
   if (!engine) {
+    voiceProvider = new MultiVoiceProvider();
     engine = new PiperWebEngine({
       onnxRuntime: new OnnxWebRuntime({ basePath: siteBase + "onnx/" }),
       phonemizeRuntime: new PhonemizeWebRuntime({ basePath: siteBase + "piper/" }),
       expressionRuntime: new ExpressionWebRuntime(),
-      voiceProvider: new DiiVoiceProvider()
+      voiceProvider
     });
   }
   return engine;
@@ -75,15 +105,17 @@ const post = (msg: unknown, transfer?: Transferable[]) => {
   (self as unknown as { postMessage: (m: unknown, t?: Transferable[]) => void }).postMessage(msg, transfer);
 };
 
-(self as unknown as Worker).onmessage = async (e: MessageEvent<{ type: string; id: number; text: string; baseUrl: string }>) => {
-  const { type, id, text, baseUrl } = e.data;
+(self as unknown as Worker).onmessage = async (e: MessageEvent<{ type: string; id: number; text: string; baseUrl: string; voice?: string }>) => {
+  const { type, id, text, baseUrl, voice } = e.data;
   if (type === "init") {
     siteBase = baseUrl;
     return;
   }
   if (type !== "synth") return;
   try {
-    const out = await getEngine().generate(text, "dii_pt-BR", 0);
+    // "dii" → "dii_pt-BR" (português), "siwis" → "siwis" (francês)
+    const voiceName = voice === "siwis" ? "siwis" : "dii_pt-BR";
+    const out = await getEngine().generate(text, voiceName, 0);
     post({ type: "result", id, blob: out.file, durationMs: out.duration });
   } catch (err) {
     post({ type: "error", id, error: err instanceof Error ? err.message : String(err) });

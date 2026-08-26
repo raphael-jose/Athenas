@@ -39,16 +39,16 @@ export default defineConfig({
       workbox: {
         navigateFallback: "index.html",
         globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2}"],
-        // A voz pt-BR (Piper/Dii) é baixada SOB DEMANDA (quando o app fala
-        // português) — nunca entra no precache do PWA (senão a instalação
-        // inicial baixaria ~110 MB de runtime de voz).
+        // As vozes Piper (Dii pt-BR + siwis fr-FR) são baixadas SOB DEMANDA
+        // (quando o app fala) — nunca entram no precache do PWA (senão a
+        // instalação inicial baixaria ~200 MB de modelos de voz).
         globIgnores: ["worker/**", "onnx/**", "piper/**", "assets/piperVoice.worker-*.js"]
       },
       devOptions: { enabled: false }
     }),
-    // Runtime da voz pt-BR (Piper): copiado para a raiz do site e carregado
-    // só quando o app fala português. CPU (OnnxWebWorker) + espeak-ng
-    // (piper_phonemize) — sem WebGPU para não inflar o deploy.
+    // Runtime da voz Piper (pt-BR + fr-FR): copiado para a raiz do site e
+    // carregado sob demanda. CPU (OnnxWebWorker) + espeak-ng (piper_phonemize)
+    // — sem WebGPU para não inflar o deploy.
     // Só o que o fluxo CPU realmente usa: o OnnxWebRuntime carrega apenas
     // ort-wasm-simd-threaded.wasm (o jsep.wasm é do caminho WebGPU/WebNN e o
     // OnnxWebGPUWorker.js de 45MB nunca é criado). Cortar esses dois reduz o
