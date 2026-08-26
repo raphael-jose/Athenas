@@ -2,19 +2,13 @@
 // Athenas — Fala: síntese + reconhecimento
 //
 // 🎀 VOZ DA LULU (regra única em todo o app, SEM configuração):
-//   SÓ existem DUAS vozes, ambas FEMININAS do Piper:
-//     1. FRANCÊS → siwis (Piper VITS, fr_FR, ≈60 MB)
-//     2. PORTUGUÊS → Dii (Piper pt-BR, ≈63 MB)
-//   Os modelos ficam no PRÓPRIO SITE (download confiável e rápido até
+//   A Lulu é francesa e fala TUDO com a voz siwis (Piper VITS, fr_FR).
+//   O modelo fica no PRÓPRIO SITE (download confiável e rápido até
 //   no celular).
 //   Enquanto o modelo não está pronto, o botão PULSA esperando; quando
 //   pronto, fala com a voz feminina. Se o modelo falhar de verdade, fica
 //   em SILÊNCIO — NUNCA a voz genérica (nem Google, nem navegador) e
 //   NUNCA voz masculina, em lugar nenhum do projeto.
-//
-// Detecção de idioma: texto em francês → voz fr-FR; texto em
-// português → voz pt-BR. Cada um na sua língua, sem sotaque
-// cruzado.
 // ══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useMemo } from "react";
 import { isPiperReady, piperWarmup, synthesizePiper, type PiperVoice } from "@/services/piperVoice";
@@ -162,10 +156,11 @@ function playAudioBlob(blob: Blob, onEnd?: () => void) {
 
 /**
  * Mapeia idioma detectado → voz Piper.
+ * Siwis (francês) é usada para AMBOS os idiomas — a Lulu é francesa
+ * e fala tudo com a mesma voz, aceitando sotaque no português.
  */
-export function langToPiperVoice(lang: string): PiperVoice {
-  const prefix = lang.toLowerCase().slice(0, 2);
-  return prefix === "fr" ? "siwis" : "dii";
+export function langToPiperVoice(_lang: string): PiperVoice {
+  return "siwis";
 }
 
 /**

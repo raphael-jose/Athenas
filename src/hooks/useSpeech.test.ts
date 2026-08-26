@@ -7,20 +7,20 @@
 import { describe, expect, it } from "vitest";
 import { langToPiperVoice } from "@/hooks/useSpeech";
 
-describe("langToPiperVoice — voz feminina Piper", () => {
+describe("langToPiperVoice — voz feminina Piper (siwis para tudo)", () => {
   it("francês usa a voz siwis (feminina)", () => {
     expect(langToPiperVoice("fr-FR")).toBe("siwis");
     expect(langToPiperVoice("fr")).toBe("siwis");
   });
 
-  it("português usa a voz Dii (feminina)", () => {
-    expect(langToPiperVoice("pt-BR")).toBe("dii");
-    expect(langToPiperVoice("pt")).toBe("dii");
+  it("português também usa siwis (a Lulu é francesa)", () => {
+    expect(langToPiperVoice("pt-BR")).toBe("siwis");
+    expect(langToPiperVoice("pt")).toBe("siwis");
   });
 
-  it("idiomas desconhecidos caem na voz Dii (pt-BR)", () => {
-    expect(langToPiperVoice("en-US")).toBe("dii");
-    expect(langToPiperVoice("de-DE")).toBe("dii");
-    expect(langToPiperVoice("")).toBe("dii");
+  it("idiomas desconhecidos também usam siwis", () => {
+    expect(langToPiperVoice("en-US")).toBe("siwis");
+    expect(langToPiperVoice("de-DE")).toBe("siwis");
+    expect(langToPiperVoice("")).toBe("siwis");
   });
 });
