@@ -30,23 +30,6 @@ import type { ChatMessage, ConversationLog, IconName } from "@/types";
 
 type Tab = "chat" | "conversa" | "sonne";
 
-// ── Áudio nas falas da Lulu ────────────────────────────────────
-// Fala mista (português com exemplos em francês entre aspas): extrai
-// os trechos em francês para o aluno ouvir como um francês diria.
-const FR_QUOTE_RE = /«([^»]+)»|"([^"]+)"|'((?:[^']|'(?=[a-zà-ÿ]))+)'/g;
-const FR_MARKERS =
-  /\b(je|tu|il|elle|on|nous|vous|ils|elles|est|sont|avec|pour|très|pas|oui|non|mais|bien|bonjour|merci|comment|quoi|ça|une|des|au|aux|du|dans|sur|c'est|qu'est|voudrais|plaisir|plaît|salut)\b|[àâçéèêëîïôûùœ]/i;
-
-/** Texto para a Lulu falar: só o francês das falas; sem trechos, a fala inteira. */
-function frenchSpeakText(text: string): string {
-  const segs: string[] = [];
-  for (const m of text.replace(/’/g, "'").matchAll(FR_QUOTE_RE)) {
-    const seg = (m[1] ?? m[2] ?? m[3] ?? "").trim();
-    if (seg.length >= 3 && FR_MARKERS.test(seg)) segs.push(seg);
-  }
-  return segs.length > 0 ? segs.join(". ") : text;
-}
-
 /** Sugestão "Mais natural" para uma frase do aluno (mesma regra do modo de análise). */
 function naturalSuggestion(text: string): string | null {
   const res = analyzeFrench(text);
@@ -221,7 +204,7 @@ function ChatMode() {
                     <div className="msg assistant">
                       <RichText text={m.content} />
                       <span className="msg-audio">
-                        <AudioButton text={frenchSpeakText(m.content)} size="sm" label="Ouvir o francês desta resposta" />
+                        <AudioButton text={m.content} size="sm" label="Ouvir esta resposta" />
                       </span>
                     </div>
                     {ts && <div className="chat-ts">{ts}</div>}

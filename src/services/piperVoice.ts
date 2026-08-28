@@ -55,7 +55,7 @@ function getWorker(): Worker | null {
     // zera para o próximo pedido baixar o modelo de novo. Antes, a
     // promise já resolvida voltava na hora e a síntese seguinte
     // falhava/re-baixava 63 MB sem necessidade.
-    warmupPromise = null;
+    warmupPromises.clear();
     for (const [, p] of pending) p.reject(new Error("piper_crash"));
     pending.clear();
   };
